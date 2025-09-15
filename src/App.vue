@@ -1,21 +1,14 @@
 <script setup lang="ts">
+import GlobalNotifications from '@/views/components/GlobalNotifications.vue';
+import LoadingOverlay from '@/components/LoadingOverlay/LoadingOverlay.vue';
 </script>
 
 <template>
-  <router-view />
-</template>
+  <RouterView />
 
-<style scoped>
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.vue:hover {
-  filter: drop-shadow(0 0 2em #42b883aa);
-}
-</style>
+  <!-- Notificaciones globales disponibles en toda la app -->
+  <GlobalNotifications />
+
+  <!-- Loading global disponible en toda la app -->
+  <LoadingOverlay />
+</template>

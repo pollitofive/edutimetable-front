@@ -1,0 +1,7 @@
+{
+  "menu": {
+    "dashboard": "Dashboard",
+    "teachers": "Profesores",
+    "logout": "Cerrar sesión"
+  }
+}
