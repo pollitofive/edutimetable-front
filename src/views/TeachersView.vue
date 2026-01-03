@@ -7,6 +7,7 @@ import Button from '@/components/Base/Button'
 import { Dialog } from '@/components/Base/Headless'
 import { FormInput, FormLabel } from '@/components/Base/Form'
 import Table from '@/components/Base/Table'
+import Pagination from '@/components/Base/Pagination'
 import ToastNotification from '@/views/components/ToastNotification.vue'
 import { useI18n } from '@/composables/useI18n'
 
@@ -32,8 +33,8 @@ interface FormData {
 
 // GraphQL Queries & Mutations
 const GET_TEACHERS = gql`
-  query GetTeachers {
-    teachers(first: 50) {
+  query GetTeachers($first: Int!, $page: Int!, $name: String, $email: String) {
+    teachers(first: $first, page: $page, name: $name, email: $email) {
       data {
         id
         name
@@ -47,8 +48,11 @@ const GET_TEACHERS = gql`
       }
       paginatorInfo {
         total
-        hasMorePages
+        count
         currentPage
+        lastPage
+        hasMorePages
+        perPage
       }
     }
   }
@@ -96,8 +100,24 @@ const showToast = ref(false)
 const toastMessage = ref('')
 const toastType = ref<'success' | 'error' | 'info' | 'warning'>('success')
 
+// Pagination state
+const currentPage = ref(1)
+const perPage = ref(10)
+const totalItems = ref(0)
+const lastPage = ref(1)
+
+// Filter state
+const filterName = ref('')
+const filterEmail = ref('')
+let filterTimeout: ReturnType<typeof setTimeout> | null = null
+
 // Apollo Query
-const { result, loading, error, refetch } = useQuery(GET_TEACHERS)
+const { result, loading, error, refetch } = useQuery(GET_TEACHERS, {
+  first: perPage,
+  page: currentPage,
+  name: filterName.value ? `%${filterName.value}%` : undefined,
+  email: filterEmail.value ? `%${filterEmail.value}%` : undefined
+})
 
 // Apollo Mutations
 const { mutate: createTeacher, loading: creating } = useMutation(CREATE_TEACHER)
@@ -108,10 +128,28 @@ const { mutate: deleteTeacher, loading: deleting } = useMutation(DELETE_TEACHER)
 const isSubmitting = computed(() => creating.value || updating.value)
 const modalTitle = computed(() => selectedTeacher.value ? t('teachers.editTeacher') : t('teachers.newTeacher'))
 
+// Pagination computed
+const startItem = computed(() => {
+  return totalItems.value === 0 ? 0 : (currentPage.value - 1) * perPage.value + 1
+})
+
+const endItem = computed(() => {
+  const end = currentPage.value * perPage.value
+  return end > totalItems.value ? totalItems.value : end
+})
+
+const totalPages = computed(() => lastPage.value)
+
 // Watch for query results
 watch(result, (newValue) => {
   if (newValue?.teachers?.data) {
     teachers.value = newValue.teachers.data
+  }
+  if (newValue?.teachers?.paginatorInfo) {
+    const info = newValue.teachers.paginatorInfo
+    totalItems.value = info.total
+    lastPage.value = info.lastPage
+    currentPage.value = info.currentPage
   }
 })
 
@@ -219,6 +257,64 @@ const cancelDelete = () => {
   deleteConfirmModal.value = false
   teacherToDelete.value = null
 }
+
+// Pagination methods
+const goToPage = (page: number) => {
+  if (page >= 1 && page <= lastPage.value) {
+    currentPage.value = page
+    refetch({ first: perPage.value, page })
+  }
+}
+
+const changePerPage = (newPerPage: number) => {
+  perPage.value = newPerPage
+  currentPage.value = 1
+  refetch({ first: newPerPage, page: 1 })
+}
+
+// Filter methods
+const applyFilters = () => {
+  currentPage.value = 1
+  const params: any = {
+    first: perPage.value,
+    page: 1
+  }
+
+  if (filterName.value.trim()) {
+    params.name = `%${filterName.value}%`
+  }
+
+  if (filterEmail.value.trim()) {
+    params.email = `%${filterEmail.value}%`
+  }
+
+  refetch(params)
+}
+
+const debouncedFilter = () => {
+  if (filterTimeout) {
+    clearTimeout(filterTimeout)
+  }
+
+  filterTimeout = setTimeout(() => {
+    applyFilters()
+  }, 500)
+}
+
+const clearFilters = () => {
+  filterName.value = ''
+  filterEmail.value = ''
+  applyFilters()
+}
+
+const hasActiveFilters = computed(() => {
+  return filterName.value.trim() !== '' || filterEmail.value.trim() !== ''
+})
+
+// Watch for filter changes
+watch([filterName, filterEmail], () => {
+  debouncedFilter()
+})
 </script>
 
 <template>
@@ -233,6 +329,54 @@ const cancelDelete = () => {
   </div>
 
   <div class="box box--stacked flex flex-col mt-5">
+    <!-- Filter Section -->
+    <div class="p-5 border-b border-slate-200/60">
+      <div class="flex flex-col gap-4 sm:flex-row sm:items-center">
+        <!-- Search by Name -->
+        <div class="flex-1">
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+              <Lucide icon="Search" class="w-4 h-4 text-slate-400" />
+            </div>
+            <FormInput
+              v-model="filterName"
+              type="text"
+              :placeholder="t('teachers.filters.searchByName')"
+              class="pl-10"
+            />
+          </div>
+        </div>
+
+        <!-- Search by Email -->
+        <div class="flex-1">
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+              <Lucide icon="Mail" class="w-4 h-4 text-slate-400" />
+            </div>
+            <FormInput
+              v-model="filterEmail"
+              type="text"
+              :placeholder="t('teachers.filters.searchByEmail')"
+              class="pl-10"
+            />
+          </div>
+        </div>
+
+        <!-- Clear Filters Button -->
+        <div>
+          <Button
+            v-if="hasActiveFilters"
+            variant="outline-secondary"
+            @click="clearFilters"
+            class="w-full sm:w-auto"
+          >
+            <Lucide icon="X" class="w-4 h-4 mr-2" />
+            {{ t('teachers.actions.clearFilters') }}
+          </Button>
+        </div>
+      </div>
+    </div>
+
     <!-- Loading State -->
     <div v-if="loading" class="flex items-center justify-center p-10">
       <div class="flex flex-col items-center gap-3">
@@ -334,6 +478,88 @@ const cancelDelete = () => {
           </Table.Tr>
         </Table.Tbody>
       </Table>
+    </div>
+
+    <!-- Pagination Controls -->
+    <div v-if="!loading && !error && totalItems > 0" class="flex flex-col items-center gap-4 p-5 border-t sm:flex-row border-slate-200/60">
+      <!-- Items per page selector -->
+      <div class="flex items-center gap-2">
+        <span class="text-sm text-slate-600">Show</span>
+        <select
+          v-model.number="perPage"
+          @change="changePerPage(perPage)"
+          class="px-3 py-2 text-sm border rounded-md border-slate-300 dark:border-darkmode-400 dark:bg-darkmode-800 focus:ring-2 focus:ring-primary focus:border-primary"
+        >
+          <option :value="10">10</option>
+          <option :value="25">25</option>
+          <option :value="50">50</option>
+          <option :value="100">100</option>
+        </select>
+        <span class="text-sm text-slate-600">entries</span>
+      </div>
+
+      <!-- Showing info -->
+      <div class="text-sm text-slate-600 sm:ml-auto">
+        Showing {{ startItem }} to {{ endItem }} of {{ totalItems }} teachers
+      </div>
+
+      <!-- Page navigation -->
+      <Pagination class="flex-1 sm:flex-initial">
+        <!-- Previous button -->
+        <Pagination.Link
+          @click="goToPage(currentPage - 1)"
+          :class="{ 'cursor-not-allowed opacity-50': currentPage === 1 }"
+        >
+          <Lucide icon="ChevronLeft" class="w-4 h-4" />
+        </Pagination.Link>
+
+        <!-- First page -->
+        <Pagination.Link
+          v-if="totalPages > 0"
+          :active="currentPage === 1"
+          @click="goToPage(1)"
+        >
+          1
+        </Pagination.Link>
+
+        <!-- Ellipsis before current page -->
+        <Pagination.Link v-if="currentPage > 3" disabled>
+          ...
+        </Pagination.Link>
+
+        <!-- Pages around current page -->
+        <template v-for="page in totalPages" :key="page">
+          <Pagination.Link
+            v-if="page > 1 && page < totalPages && Math.abs(page - currentPage) <= 1"
+            :active="currentPage === page"
+            @click="goToPage(page)"
+          >
+            {{ page }}
+          </Pagination.Link>
+        </template>
+
+        <!-- Ellipsis after current page -->
+        <Pagination.Link v-if="currentPage < totalPages - 2" disabled>
+          ...
+        </Pagination.Link>
+
+        <!-- Last page -->
+        <Pagination.Link
+          v-if="totalPages > 1"
+          :active="currentPage === totalPages"
+          @click="goToPage(totalPages)"
+        >
+          {{ totalPages }}
+        </Pagination.Link>
+
+        <!-- Next button -->
+        <Pagination.Link
+          @click="goToPage(currentPage + 1)"
+          :class="{ 'cursor-not-allowed opacity-50': currentPage === totalPages }"
+        >
+          <Lucide icon="ChevronRight" class="w-4 h-4" />
+        </Pagination.Link>
+      </Pagination>
     </div>
   </div>
 

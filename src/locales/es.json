@@ -21,7 +21,12 @@
       "delete": "Eliminar",
       "save": "Guardar",
       "cancel": "Cancelar",
-      "retry": "Reintentar"
+      "retry": "Reintentar",
+      "clearFilters": "Limpiar Filtros"
+    },
+    "filters": {
+      "searchByName": "Buscar por nombre...",
+      "searchByEmail": "Buscar por correo..."
     },
     "form": {
       "nameLabel": "Nombre",
