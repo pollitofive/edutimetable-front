@@ -47,6 +47,7 @@ const nestedMenu = (menu: Array<Menu | string>, route: Route) => {
         pageName: item.pageName,
         subMenu: item.subMenu,
         ignore: item.ignore,
+        action: item.action,
       };
       menuItem.active =
         ((route.forceActiveMenu !== undefined &&
@@ -80,7 +81,10 @@ const linkTo = (menu: FormattedMenu, router: Router) => {
   if (menu.subMenu) {
     menu.activeDropdown = !menu.activeDropdown;
   } else {
-    if (menu.pageName !== undefined) {
+    // Check if menu has an action callback
+    if (menu.action) {
+      menu.action();
+    } else if (menu.pageName !== undefined) {
       router.push({
         name: menu.pageName,
       });

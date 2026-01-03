@@ -7,6 +7,7 @@ import Breadcrumb from "@/components/Base/Breadcrumb";
 import { Menu } from "@/components/Base/Headless";
 import { useMenuStore } from "@/stores/menu";
 import { useCompactMenuStore } from "@/stores/compact-menu";
+import { useAuthStore } from "@/stores/auth";
 import {
   type ProvideForceActiveMenu,
   forceActiveMenu,
@@ -540,10 +541,7 @@ onMounted(() => {
                   <Menu.Item
                     @click="
                       () => {
-                        router.push({
-                          name: 'settings',
-                          query: { page: 'security' },
-                        });
+                        useAuthStore().logout();
                       }
                     "
                   >
