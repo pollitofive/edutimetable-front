@@ -8,6 +8,10 @@ import { Dialog } from '@/components/Base/Headless'
 import { FormInput, FormLabel } from '@/components/Base/Form'
 import Table from '@/components/Base/Table'
 import ToastNotification from '@/views/components/ToastNotification.vue'
+import { useI18n } from '@/composables/useI18n'
+
+// i18n setup
+const { t } = useI18n()
 
 interface Teacher {
   id: string
@@ -102,7 +106,7 @@ const { mutate: deleteTeacher, loading: deleting } = useMutation(DELETE_TEACHER)
 
 // Computed
 const isSubmitting = computed(() => creating.value || updating.value)
-const modalTitle = computed(() => selectedTeacher.value ? 'Edit Teacher' : 'New Teacher')
+const modalTitle = computed(() => selectedTeacher.value ? t('teachers.editTeacher') : t('teachers.newTeacher'))
 
 // Watch for query results
 watch(result, (newValue) => {
@@ -128,13 +132,13 @@ const validateForm = (): boolean => {
   formErrors.value = {}
 
   if (!formData.value.name.trim()) {
-    formErrors.value.name = 'Name is required'
+    formErrors.value.name = t('teachers.validation.nameRequired')
   }
 
   if (!formData.value.email.trim()) {
-    formErrors.value.email = 'Email is required'
+    formErrors.value.email = t('teachers.validation.emailRequired')
   } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.value.email)) {
-    formErrors.value.email = 'Invalid email format'
+    formErrors.value.email = t('teachers.validation.emailInvalid')
   }
 
   return Object.keys(formErrors.value).length === 0
@@ -174,17 +178,17 @@ const handleSave = async () => {
         id: selectedTeacher.value.id,
         input: formData.value
       })
-      notify('Teacher updated successfully', 'success')
+      notify(t('teachers.messages.updateSuccess'), 'success')
     } else {
       // Create
       await createTeacher({ input: formData.value })
-      notify('Teacher created successfully', 'success')
+      notify(t('teachers.messages.createSuccess'), 'success')
     }
 
     closeModal()
     refetch()
   } catch (err: any) {
-    const errorMessage = err.message || 'An error occurred'
+    const errorMessage = err.message || t('teachers.messages.generalError')
     notify(errorMessage, 'error')
     console.error('Error saving teacher:', err)
   }
@@ -200,12 +204,12 @@ const handleDelete = async () => {
 
   try {
     await deleteTeacher({ id: teacherToDelete.value.id })
-    notify('Teacher deleted successfully', 'success')
+    notify(t('teachers.messages.deleteSuccess'), 'success')
     deleteConfirmModal.value = false
     teacherToDelete.value = null
     refetch()
   } catch (err: any) {
-    const errorMessage = err.message || 'Error deleting teacher'
+    const errorMessage = err.message || t('teachers.messages.deleteError')
     notify(errorMessage, 'error')
     console.error('Error deleting teacher:', err)
   }
@@ -219,11 +223,11 @@ const cancelDelete = () => {
 
 <template>
   <div class="flex flex-col gap-y-3 md:h-10 md:flex-row md:items-center">
-    <div class="text-base font-medium">Teacher Management</div>
+    <div class="text-base font-medium">{{ t('teachers.title') }}</div>
     <div class="flex flex-col gap-x-3 gap-y-2 sm:flex-row md:ml-auto">
       <Button variant="primary" @click="openCreateModal">
         <Lucide icon="Plus" class="w-4 h-4 mr-2" />
-        New Teacher
+        {{ t('teachers.newTeacher') }}
       </Button>
     </div>
   </div>
@@ -233,7 +237,7 @@ const cancelDelete = () => {
     <div v-if="loading" class="flex items-center justify-center p-10">
       <div class="flex flex-col items-center gap-3">
         <Lucide icon="Loader" class="w-8 h-8 animate-spin text-primary" />
-        <div class="text-sm text-slate-500">Loading teachers...</div>
+        <div class="text-sm text-slate-500">{{ t('teachers.messages.loading') }}</div>
       </div>
     </div>
 
@@ -241,8 +245,8 @@ const cancelDelete = () => {
     <div v-else-if="error" class="flex items-center justify-center p-10">
       <div class="flex flex-col items-center gap-3">
         <Lucide icon="AlertCircle" class="w-8 h-8 text-danger" />
-        <div class="text-sm text-slate-500">Error loading teachers</div>
-        <Button variant="outline-primary" @click="() => refetch()">Retry</Button>
+        <div class="text-sm text-slate-500">{{ t('teachers.messages.error') }}</div>
+        <Button variant="outline-primary" @click="() => refetch()">{{ t('teachers.actions.retry') }}</Button>
       </div>
     </div>
 
@@ -252,19 +256,19 @@ const cancelDelete = () => {
         <Table.Thead>
           <Table.Tr>
             <Table.Td class="py-4 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">
-              ID
+              {{ t('teachers.columns.id') }}
             </Table.Td>
             <Table.Td class="py-4 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">
-              Name
+              {{ t('teachers.columns.name') }}
             </Table.Td>
             <Table.Td class="py-4 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">
-              Email
+              {{ t('teachers.columns.email') }}
             </Table.Td>
             <Table.Td class="py-4 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">
-              Courses
+              {{ t('teachers.columns.courses') }}
             </Table.Td>
             <Table.Td class="py-4 font-medium text-center bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">
-              Actions
+              {{ t('teachers.columns.actions') }}
             </Table.Td>
           </Table.Tr>
         </Table.Thead>
@@ -273,7 +277,7 @@ const cancelDelete = () => {
             <Table.Td colspan="5" class="py-10 text-center text-slate-500">
               <div class="flex flex-col items-center gap-3">
                 <Lucide icon="Inbox" class="w-10 h-10 text-slate-300" />
-                <div>No teachers found. Create your first teacher!</div>
+                <div>{{ t('teachers.messages.noTeachers') }}</div>
               </div>
             </Table.Td>
           </Table.Tr>
@@ -300,10 +304,10 @@ const cancelDelete = () => {
                   v-if="teacher.courses.length > 3"
                   class="px-2 py-0.5 text-xs rounded-md bg-slate-100 text-slate-500"
                 >
-                  +{{ teacher.courses.length - 3 }} more
+                  {{ t('teachers.messages.moreItems', { count: teacher.courses.length - 3 }) }}
                 </span>
               </div>
-              <div v-else class="text-xs text-slate-400">No courses</div>
+              <div v-else class="text-xs text-slate-400">{{ t('teachers.messages.noCourses') }}</div>
             </Table.Td>
             <Table.Td class="relative py-4 border-dashed dark:bg-darkmode-600">
               <div class="flex items-center justify-center gap-2">
@@ -314,7 +318,7 @@ const cancelDelete = () => {
                   class="w-20"
                 >
                   <Lucide icon="Edit" class="w-3.5 h-3.5 mr-1" />
-                  Edit
+                  {{ t('teachers.actions.edit') }}
                 </Button>
                 <Button
                   variant="outline-danger"
@@ -323,7 +327,7 @@ const cancelDelete = () => {
                   class="w-20"
                 >
                   <Lucide icon="Trash2" class="w-3.5 h-3.5 mr-1" />
-                  Delete
+                  {{ t('teachers.actions.delete') }}
                 </Button>
               </div>
             </Table.Td>
@@ -341,12 +345,12 @@ const cancelDelete = () => {
       </Dialog.Title>
       <Dialog.Description class="grid grid-cols-12 gap-4 gap-y-3">
         <div class="col-span-12">
-          <FormLabel htmlFor="teacher-name">Name *</FormLabel>
+          <FormLabel htmlFor="teacher-name">{{ t('teachers.form.nameLabel') }} {{ t('teachers.form.required') }}</FormLabel>
           <FormInput
             id="teacher-name"
             v-model="formData.name"
             type="text"
-            placeholder="Enter teacher name"
+            :placeholder="t('teachers.form.namePlaceholder')"
             :class="{ 'border-danger': formErrors.name }"
           />
           <div v-if="formErrors.name" class="mt-1 text-xs text-danger">
@@ -354,12 +358,12 @@ const cancelDelete = () => {
           </div>
         </div>
         <div class="col-span-12">
-          <FormLabel htmlFor="teacher-email">Email *</FormLabel>
+          <FormLabel htmlFor="teacher-email">{{ t('teachers.form.emailLabel') }} {{ t('teachers.form.required') }}</FormLabel>
           <FormInput
             id="teacher-email"
             v-model="formData.email"
             type="email"
-            placeholder="Enter teacher email"
+            :placeholder="t('teachers.form.emailPlaceholder')"
             :class="{ 'border-danger': formErrors.email }"
           />
           <div v-if="formErrors.email" class="mt-1 text-xs text-danger">
@@ -375,7 +379,7 @@ const cancelDelete = () => {
           :disabled="isSubmitting"
           class="w-20 mr-2"
         >
-          Cancel
+          {{ t('teachers.actions.cancel') }}
         </Button>
         <Button
           type="button"
@@ -385,7 +389,7 @@ const cancelDelete = () => {
           class="w-20"
         >
           <Lucide v-if="isSubmitting" icon="Loader" class="w-4 h-4 animate-spin" />
-          <span v-else>Save</span>
+          <span v-else>{{ t('teachers.actions.save') }}</span>
         </Button>
       </Dialog.Footer>
     </Dialog.Panel>
@@ -396,13 +400,13 @@ const cancelDelete = () => {
     <Dialog.Panel>
       <div class="p-5 text-center">
         <Lucide icon="AlertTriangle" class="w-16 h-16 mx-auto mt-3 text-danger" />
-        <div class="mt-5 text-3xl">Are you sure?</div>
+        <div class="mt-5 text-3xl">{{ t('teachers.delete.confirmTitle') }}</div>
         <div class="mt-2 text-slate-500">
-          Do you really want to delete this teacher?
+          {{ t('teachers.delete.confirmMessage') }}
           <br />
           <span class="font-medium">{{ teacherToDelete?.name }}</span>
           <br />
-          This process cannot be undone.
+          {{ t('teachers.delete.cannotUndo') }}
         </div>
       </div>
       <div class="px-5 pb-8 text-center">
@@ -413,7 +417,7 @@ const cancelDelete = () => {
           :disabled="deleting"
           class="w-24 mr-2"
         >
-          Cancel
+          {{ t('teachers.actions.cancel') }}
         </Button>
         <Button
           type="button"
@@ -423,7 +427,7 @@ const cancelDelete = () => {
           class="w-24"
         >
           <Lucide v-if="deleting" icon="Loader" class="w-4 h-4 animate-spin" />
-          <span v-else>Delete</span>
+          <span v-else>{{ t('teachers.actions.delete') }}</span>
         </Button>
       </div>
     </Dialog.Panel>

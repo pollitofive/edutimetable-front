@@ -3,5 +3,54 @@
     "dashboard": "Dashboard",
     "teachers": "Profesores",
     "logout": "Cerrar sesión"
+  },
+  "teachers": {
+    "title": "Gestión de Profesores",
+    "newTeacher": "Nuevo Profesor",
+    "editTeacher": "Editar Profesor",
+    "deleteTeacher": "Eliminar Profesor",
+    "columns": {
+      "id": "ID",
+      "name": "Nombre",
+      "email": "Correo Electrónico",
+      "courses": "Cursos",
+      "actions": "Acciones"
+    },
+    "actions": {
+      "edit": "Editar",
+      "delete": "Eliminar",
+      "save": "Guardar",
+      "cancel": "Cancelar",
+      "retry": "Reintentar"
+    },
+    "form": {
+      "nameLabel": "Nombre",
+      "emailLabel": "Correo Electrónico",
+      "namePlaceholder": "Ingrese el nombre del profesor",
+      "emailPlaceholder": "Ingrese el correo del profesor",
+      "required": "*"
+    },
+    "validation": {
+      "nameRequired": "El nombre es obligatorio",
+      "emailRequired": "El correo electrónico es obligatorio",
+      "emailInvalid": "Formato de correo electrónico inválido"
+    },
+    "messages": {
+      "loading": "Cargando profesores...",
+      "error": "Error al cargar profesores",
+      "noTeachers": "No se encontraron profesores. ¡Crea tu primer profesor!",
+      "noCourses": "Sin cursos",
+      "moreItems": "+{count} más",
+      "createSuccess": "Profesor creado exitosamente",
+      "updateSuccess": "Profesor actualizado exitosamente",
+      "deleteSuccess": "Profesor eliminado exitosamente",
+      "deleteError": "Error al eliminar profesor",
+      "generalError": "Ocurrió un error"
+    },
+    "delete": {
+      "confirmTitle": "¿Estás seguro?",
+      "confirmMessage": "¿Realmente deseas eliminar este profesor?",
+      "cannotUndo": "Este proceso no se puede deshacer."
+    }
   }
 }

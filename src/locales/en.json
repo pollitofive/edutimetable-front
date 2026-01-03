@@ -3,5 +3,54 @@
     "dashboard": "Dashboard",
     "teachers": "Teachers",
     "logout": "Log Out"
+  },
+  "teachers": {
+    "title": "Teacher Management",
+    "newTeacher": "New Teacher",
+    "editTeacher": "Edit Teacher",
+    "deleteTeacher": "Delete Teacher",
+    "columns": {
+      "id": "ID",
+      "name": "Name",
+      "email": "Email",
+      "courses": "Courses",
+      "actions": "Actions"
+    },
+    "actions": {
+      "edit": "Edit",
+      "delete": "Delete",
+      "save": "Save",
+      "cancel": "Cancel",
+      "retry": "Retry"
+    },
+    "form": {
+      "nameLabel": "Name",
+      "emailLabel": "Email",
+      "namePlaceholder": "Enter teacher name",
+      "emailPlaceholder": "Enter teacher email",
+      "required": "*"
+    },
+    "validation": {
+      "nameRequired": "Name is required",
+      "emailRequired": "Email is required",
+      "emailInvalid": "Invalid email format"
+    },
+    "messages": {
+      "loading": "Loading teachers...",
+      "error": "Error loading teachers",
+      "noTeachers": "No teachers found. Create your first teacher!",
+      "noCourses": "No courses",
+      "moreItems": "+{count} more",
+      "createSuccess": "Teacher created successfully",
+      "updateSuccess": "Teacher updated successfully",
+      "deleteSuccess": "Teacher deleted successfully",
+      "deleteError": "Error deleting teacher",
+      "generalError": "An error occurred"
+    },
+    "delete": {
+      "confirmTitle": "Are you sure?",
+      "confirmMessage": "Do you really want to delete this teacher?",
+      "cannotUndo": "This process cannot be undone."
+    }
   }
 }
