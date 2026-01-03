@@ -7,7 +7,7 @@ import Button from '@/components/Base/Button'
 import { Dialog } from '@/components/Base/Headless'
 import { FormInput, FormLabel } from '@/components/Base/Form'
 import Table from '@/components/Base/Table'
-import Toastify from 'toastify-js'
+import ToastNotification from '@/views/components/ToastNotification.vue'
 
 interface Teacher {
   id: string
@@ -87,6 +87,11 @@ const formErrors = ref<{ name?: string; email?: string }>({})
 const deleteConfirmModal = ref(false)
 const teacherToDelete = ref<Teacher | null>(null)
 
+// Toast notification state
+const showToast = ref(false)
+const toastMessage = ref('')
+const toastType = ref<'success' | 'error' | 'info' | 'warning'>('success')
+
 // Apollo Query
 const { result, loading, error, refetch } = useQuery(GET_TEACHERS)
 
@@ -108,13 +113,14 @@ watch(result, (newValue) => {
 
 // Notification helper
 const notify = (message: string, type: 'success' | 'error' = 'success') => {
-  Toastify({
-    text: message,
-    duration: 3000,
-    gravity: 'top',
-    position: 'right',
-    backgroundColor: type === 'success' ? '#10b981' : '#ef4444',
-  }).showToast()
+  toastMessage.value = message
+  toastType.value = type
+  showToast.value = true
+}
+
+// Handle toast close
+const handleToastClose = () => {
+  showToast.value = false
 }
 
 // Form validation
@@ -422,6 +428,14 @@ const cancelDelete = () => {
       </div>
     </Dialog.Panel>
   </Dialog>
+
+  <!-- Toast Notification -->
+  <ToastNotification
+    :show="showToast"
+    :message="toastMessage"
+    :type="toastType"
+    @close="handleToastClose"
+  />
 </template>
 
 <style scoped>
