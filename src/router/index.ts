@@ -5,12 +5,11 @@ import { useAuthStore } from '@/stores/auth'
 const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
     routes: [
-        /*
         {
             path: "/login",
             name: "login",
-            component: () => import("../views/Login.vue"),
-        },*/
+            component: () => import("../pages/Login.vue"),
+        },
         {
             path: "/",
             component: Layout,
@@ -19,12 +18,13 @@ const router = createRouter({
                 {
                     path: "/",
                     name: "dashboard",
-                    meta: { requiresAdmin: true },
+                    meta: { requiresAuth: true },
                     component: () => import("../pages/DashboardOverview1.vue"),
                 },
                 {
                     path: "/teachers",
                     name: "teachers",
+                    meta: { requiresAuth: true },
                     component: () => import("../views/TeachersView.vue"),
                 }
             ],
@@ -36,20 +36,15 @@ const router = createRouter({
 router.beforeEach((to) => {
     const auth = useAuthStore()
 
-    // // Si la ruta requiere autenticación y el usuario no está autenticado
-    // if (to.meta.requiresAuth && !auth.isAuthenticated()) {
-    //     return '/login'
-    // }
-    //
-    // // Si el usuario está autenticado pero intenta acceder a login, redirigir al dashboard
-    // if (to.name === 'login' && auth.isAuthenticated()) {
-    //     return '/transactions'
-    // }
-    //
-    // // Si la ruta requiere ser admin y el usuario no lo es
-    // if (auth.isAuthenticated() && to.meta.requiresAdmin && !auth.getDataUser().is_admin) {
-    //     return '/transactions'
-    // }
+    // If the route requires authentication and the user is not authenticated
+    if (to.meta.requiresAuth && !auth.isAuthenticated()) {
+        return '/login'
+    }
+
+    // If the user is authenticated but tries to access login, redirect to dashboard
+    if (to.name === 'login' && auth.isAuthenticated()) {
+        return '/teachers'
+    }
 })
 
 

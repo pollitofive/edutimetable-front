@@ -1,12 +1,83 @@
 <script setup lang="ts">
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
+import { useToast } from '@/composables/useToast'
 import { FormCheck, FormInput, FormLabel } from "@/components/Base/Form";
-import Tippy from "@/components/Base/Tippy";
-import users from "@/fakers/users";
 import Button from "@/components/Base/Button";
 import Alert from "@/components/Base/Alert";
 import Lucide from "@/components/Base/Lucide";
-import _ from "lodash";
 import ThemeSwitcher from "@/components/ThemeSwitcher";
+
+const router = useRouter()
+const authStore = useAuthStore()
+const { showError, showSuccess } = useToast()
+
+// Form state
+const email = ref('admin@example.com')
+const password = ref('password')
+const rememberMe = ref(false)
+const isLoading = ref(false)
+
+// Validation errors
+const errors = ref({
+  email: '',
+  password: ''
+})
+
+// Form validation
+const validateForm = (): boolean => {
+  errors.value = { email: '', password: '' }
+  let isValid = true
+
+  // Email validation
+  if (!email.value) {
+    errors.value.email = 'Email is required'
+    isValid = false
+  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value)) {
+    errors.value.email = 'Please enter a valid email address'
+    isValid = false
+  }
+
+  // Password validation
+  if (!password.value) {
+    errors.value.password = 'Password is required'
+    isValid = false
+  } else if (password.value.length < 6) {
+    errors.value.password = 'Password must be at least 6 characters'
+    isValid = false
+  }
+
+  return isValid
+}
+
+// Handle login submission
+const handleLogin = async () => {
+  if (!validateForm()) {
+    return
+  }
+
+  isLoading.value = true
+
+  try {
+    await authStore.login(email.value, password.value)
+    showSuccess('Login successful! Welcome back.')
+    router.push('/teachers')
+  } catch (error: any) {
+    console.error('Login error:', error)
+    const errorMessage = error.response?.data?.message || 'Invalid credentials. Please try again.'
+    showError(errorMessage)
+  } finally {
+    isLoading.value = false
+  }
+}
+
+// Handle enter key press
+const handleKeyPress = (event: KeyboardEvent) => {
+  if (event.key === 'Enter') {
+    handleLogin()
+  }
+}
 </script>
 
 <template>
@@ -76,43 +147,58 @@ import ThemeSwitcher from "@/components/ThemeSwitcher";
           <div class="mt-6">
             <FormLabel>Email*</FormLabel>
             <FormInput
-              type="text"
+              v-model="email"
+              type="email"
               class="block px-4 py-3.5 rounded-[0.6rem] border-slate-300/80"
-              :placeholder="users.fakeUsers()[0].email"
+              :class="{ 'border-red-500': errors.email }"
+              placeholder="admin@example.com"
+              @keypress="handleKeyPress"
+              :disabled="isLoading"
             />
+            <div v-if="errors.email" class="mt-1 text-xs text-red-500">
+              {{ errors.email }}
+            </div>
+
             <FormLabel class="mt-4">Password*</FormLabel>
             <FormInput
+              v-model="password"
               type="password"
               class="block px-4 py-3.5 rounded-[0.6rem] border-slate-300/80"
+              :class="{ 'border-red-500': errors.password }"
               placeholder="************"
+              @keypress="handleKeyPress"
+              :disabled="isLoading"
             />
+            <div v-if="errors.password" class="mt-1 text-xs text-red-500">
+              {{ errors.password }}
+            </div>
+
             <div class="flex mt-4 text-xs text-slate-500 sm:text-sm">
               <div class="flex items-center mr-auto">
                 <FormCheck.Input
                   id="remember-me"
+                  v-model="rememberMe"
                   type="checkbox"
                   class="mr-2.5 border"
+                  :disabled="isLoading"
                 />
                 <label class="cursor-pointer select-none" htmlFor="remember-me">
                   Remember me
                 </label>
               </div>
-              <a href="">Forgot Password?</a>
+              <a href="#" class="hover:text-primary">Forgot Password?</a>
             </div>
+
             <div class="mt-5 text-center xl:mt-8 xl:text-left">
               <Button
                 variant="primary"
                 rounded
                 class="bg-gradient-to-r from-theme-1/70 to-theme-2/70 w-full py-3.5 xl:mr-3 dark:border-darkmode-400"
+                @click="handleLogin"
+                :disabled="isLoading"
               >
-                Sign In
-              </Button>
-              <Button
-                variant="outline-secondary"
-                rounded
-                class="bg-white/70 w-full py-3.5 mt-3 dark:bg-darkmode-400"
-              >
-                Sign Up
+                <Lucide v-if="isLoading" icon="Loader" class="w-4 h-4 mr-2 animate-spin" />
+                {{ isLoading ? 'Signing In...' : 'Sign In' }}
               </Button>
             </div>
           </div>
@@ -151,47 +237,9 @@ import ThemeSwitcher from "@/components/ThemeSwitcher";
           structured, visually stunning dashboards with feature-rich modules.
           Join us today to shape the future of your application development.
         </div>
-        <div class="flex flex-col gap-3 mt-10 xl:items-center xl:flex-row">
-          <div class="flex items-center">
-            <div class="w-9 h-9 2xl:w-11 2xl:h-11 image-fit zoom-in">
-              <Tippy
-                as="img"
-                alt="Tailwise - Admin Dashboard Template"
-                class="rounded-full border-[3px] border-white/50"
-                :src="users.fakeUsers()[0].photo"
-                :content="users.fakeUsers()[0].name"
-              />
-            </div>
-            <div class="-ml-3 w-9 h-9 2xl:w-11 2xl:h-11 image-fit zoom-in">
-              <Tippy
-                as="img"
-                alt="Tailwise - Admin Dashboard Template"
-                class="rounded-full border-[3px] border-white/50"
-                :src="users.fakeUsers()[0].photo"
-                :content="users.fakeUsers()[0].name"
-              />
-            </div>
-            <div class="-ml-3 w-9 h-9 2xl:w-11 2xl:h-11 image-fit zoom-in">
-              <Tippy
-                as="img"
-                alt="Tailwise - Admin Dashboard Template"
-                class="rounded-full border-[3px] border-white/50"
-                :src="users.fakeUsers()[0].photo"
-                :content="users.fakeUsers()[0].name"
-              />
-            </div>
-            <div class="-ml-3 w-9 h-9 2xl:w-11 2xl:h-11 image-fit zoom-in">
-              <Tippy
-                as="img"
-                alt="Tailwise - Admin Dashboard Template"
-                class="rounded-full border-[3px] border-white/50"
-                :src="users.fakeUsers()[0].photo"
-                :content="users.fakeUsers()[0].name"
-              />
-            </div>
-          </div>
-          <div class="text-base xl:ml-2 2xl:ml-3 text-white/70">
-            Over 7k+ strong and growing! Your journey begins here.
+        <div class="mt-10">
+          <div class="text-base leading-relaxed text-white/70">
+            Start managing your educational timetables with ease and efficiency.
           </div>
         </div>
       </div>

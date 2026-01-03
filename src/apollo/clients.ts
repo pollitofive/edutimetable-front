@@ -2,15 +2,18 @@ import { ApolloClient, InMemoryCache, createHttpLink } from "@apollo/client/core
 import { setContext } from "@apollo/client/link/context"
 
 const httpLink = createHttpLink({
-    uri: "http://edutimetable-api.test/api/graphql",
+    uri: import.meta.env.VITE_GRAPHQL_URL || "http://edutimetable-api.test/api/graphql",
     credentials: "include"
 });
 
 const authLink = setContext((_, { headers }) => {
+    // Get token from localStorage (stored by the auth store)
+    const token = localStorage.getItem('token');
+
     return {
         headers: {
             ...headers,
-            Authorization: "bearer 1|32a6eABHyMv1ErsPjFALReYm2fliWZ4vTOm9rN3R75d3ebe3"
+            ...(token ? { Authorization: `Bearer ${token}` } : {})
         }
     }
 });

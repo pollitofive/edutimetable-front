@@ -4,8 +4,8 @@ import App from "./App.vue";
 import router from "./router";
 import "./assets/css/app.css";
 import { createI18n } from 'vue-i18n';
-import { ApolloClient, InMemoryCache, createHttpLink } from '@apollo/client/core';
 import { DefaultApolloClient } from '@vue/apollo-composable';
+import { apolloClient } from './apollo/clients';
 
 import en from './locales/en.json';
 import es from './locales/es.json';
@@ -32,16 +32,6 @@ const i18n = createI18n({
   locale: getInitialLocale(),
   fallbackLocale: 'es',
   messages,
-});
-
-// Configurar Apollo Client
-const httpLink = createHttpLink({
-  uri: import.meta.env.VITE_GRAPHQL_URL || 'http://localhost:4000/graphql',
-});
-
-const apolloClient = new ApolloClient({
-  link: httpLink,
-  cache: new InMemoryCache(),
 });
 
 const app = createApp(App);
