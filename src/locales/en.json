@@ -2,6 +2,7 @@
   "menu": {
     "dashboard": "Dashboard",
     "teachers": "Teachers",
+    "courses": "Courses",
     "logout": "Log Out"
   },
   "teachers": {
@@ -55,6 +56,64 @@
     "delete": {
       "confirmTitle": "Are you sure?",
       "confirmMessage": "Do you really want to delete this teacher?",
+      "cannotUndo": "This process cannot be undone."
+    }
+  },
+  "courses": {
+    "title": "Course Management",
+    "newCourse": "New Course",
+    "editCourse": "Edit Course",
+    "deleteCourse": "Delete Course",
+    "columns": {
+      "id": "ID",
+      "name": "Name",
+      "level": "Level",
+      "year": "Year",
+      "teacher": "Teacher",
+      "actions": "Actions"
+    },
+    "actions": {
+      "edit": "Edit",
+      "delete": "Delete",
+      "save": "Save",
+      "cancel": "Cancel",
+      "retry": "Retry",
+      "clearFilters": "Clear Filters"
+    },
+    "filters": {
+      "allTeachers": "All Teachers",
+      "searchByName": "Search by name...",
+      "searchByLevel": "Search by level...",
+      "searchByYear": "Search by year..."
+    },
+    "form": {
+      "nameLabel": "Course Name",
+      "levelLabel": "Level",
+      "yearLabel": "Year",
+      "teacherLabel": "Teacher",
+      "namePlaceholder": "Enter course name",
+      "levelPlaceholder": "e.g., Beginner, Intermediate, Advanced",
+      "yearPlaceholder": "e.g., 2024",
+      "selectTeacher": "Select a teacher",
+      "required": "*"
+    },
+    "validation": {
+      "nameRequired": "Course name is required",
+      "teacherRequired": "Teacher is required"
+    },
+    "messages": {
+      "loading": "Loading courses...",
+      "error": "Error loading courses",
+      "noCourses": "No courses found. Create your first course!",
+      "createSuccess": "Course created successfully",
+      "updateSuccess": "Course updated successfully",
+      "deleteSuccess": "Course deleted successfully",
+      "deleteError": "Error deleting course",
+      "generalError": "An error occurred"
+    },
+    "delete": {
+      "confirmTitle": "Are you sure?",
+      "confirmMessage": "Do you really want to delete this course?",
       "cannotUndo": "This process cannot be undone."
     }
   }

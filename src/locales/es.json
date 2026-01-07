@@ -2,6 +2,7 @@
   "menu": {
     "dashboard": "Dashboard",
     "teachers": "Profesores",
+    "courses": "Cursos",
     "logout": "Cerrar sesión"
   },
   "teachers": {
@@ -55,6 +56,64 @@
     "delete": {
       "confirmTitle": "¿Estás seguro?",
       "confirmMessage": "¿Realmente deseas eliminar este profesor?",
+      "cannotUndo": "Este proceso no se puede deshacer."
+    }
+  },
+  "courses": {
+    "title": "Gestión de Cursos",
+    "newCourse": "Nuevo Curso",
+    "editCourse": "Editar Curso",
+    "deleteCourse": "Eliminar Curso",
+    "columns": {
+      "id": "ID",
+      "name": "Nombre",
+      "level": "Nivel",
+      "year": "Año",
+      "teacher": "Profesor",
+      "actions": "Acciones"
+    },
+    "actions": {
+      "edit": "Editar",
+      "delete": "Eliminar",
+      "save": "Guardar",
+      "cancel": "Cancelar",
+      "retry": "Reintentar",
+      "clearFilters": "Limpiar Filtros"
+    },
+    "filters": {
+      "allTeachers": "Todos los Profesores",
+      "searchByName": "Buscar por nombre...",
+      "searchByLevel": "Buscar por nivel...",
+      "searchByYear": "Buscar por año..."
+    },
+    "form": {
+      "nameLabel": "Nombre del Curso",
+      "levelLabel": "Nivel",
+      "yearLabel": "Año",
+      "teacherLabel": "Profesor",
+      "namePlaceholder": "Ingrese el nombre del curso",
+      "levelPlaceholder": "ej. Principiante, Intermedio, Avanzado",
+      "yearPlaceholder": "ej. 2024",
+      "selectTeacher": "Seleccione un profesor",
+      "required": "*"
+    },
+    "validation": {
+      "nameRequired": "El nombre del curso es obligatorio",
+      "teacherRequired": "El profesor es obligatorio"
+    },
+    "messages": {
+      "loading": "Cargando cursos...",
+      "error": "Error al cargar cursos",
+      "noCourses": "No se encontraron cursos. ¡Crea tu primer curso!",
+      "createSuccess": "Curso creado exitosamente",
+      "updateSuccess": "Curso actualizado exitosamente",
+      "deleteSuccess": "Curso eliminado exitosamente",
+      "deleteError": "Error al eliminar curso",
+      "generalError": "Ocurrió un error"
+    },
+    "delete": {
+      "confirmTitle": "¿Estás seguro?",
+      "confirmMessage": "¿Realmente deseas eliminar este curso?",
       "cannotUndo": "Este proceso no se puede deshacer."
     }
   }
