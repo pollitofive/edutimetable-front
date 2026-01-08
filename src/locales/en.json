@@ -3,6 +3,7 @@
     "dashboard": "Dashboard",
     "teachers": "Teachers",
     "courses": "Courses",
+    "students": "Students",
     "logout": "Log Out"
   },
   "teachers": {
@@ -114,6 +115,62 @@
     "delete": {
       "confirmTitle": "Are you sure?",
       "confirmMessage": "Do you really want to delete this course?",
+      "cannotUndo": "This process cannot be undone."
+    }
+  },
+  "students": {
+    "title": "Student Management",
+    "newStudent": "New Student",
+    "editStudent": "Edit Student",
+    "deleteStudent": "Delete Student",
+    "columns": {
+      "id": "ID",
+      "name": "Name",
+      "email": "Email",
+      "code": "Code",
+      "actions": "Actions"
+    },
+    "actions": {
+      "edit": "Edit",
+      "delete": "Delete",
+      "save": "Save",
+      "cancel": "Cancel",
+      "retry": "Retry",
+      "clearFilters": "Clear Filters"
+    },
+    "filters": {
+      "searchByName": "Search by name...",
+      "searchByEmail": "Search by email...",
+      "searchByCode": "Search by code..."
+    },
+    "form": {
+      "nameLabel": "Name",
+      "emailLabel": "Email",
+      "codeLabel": "Student Code",
+      "namePlaceholder": "Enter student name",
+      "emailPlaceholder": "Enter student email",
+      "codePlaceholder": "e.g., STU-12345",
+      "required": "*"
+    },
+    "validation": {
+      "nameRequired": "Name is required",
+      "emailRequired": "Email is required",
+      "emailInvalid": "Invalid email format",
+      "codeRequired": "Student code is required"
+    },
+    "messages": {
+      "loading": "Loading students...",
+      "error": "Error loading students",
+      "noStudents": "No students found. Create your first student!",
+      "createSuccess": "Student created successfully",
+      "updateSuccess": "Student updated successfully",
+      "deleteSuccess": "Student deleted successfully",
+      "deleteError": "Error deleting student",
+      "generalError": "An error occurred"
+    },
+    "delete": {
+      "confirmTitle": "Are you sure?",
+      "confirmMessage": "Do you really want to delete this student?",
       "cannotUndo": "This process cannot be undone."
     }
   }

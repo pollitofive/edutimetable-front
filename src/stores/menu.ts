@@ -50,6 +50,11 @@ export const useMenuStore = defineStore("menu", {
                     title: t('menu.courses'),
                 },
                 {
+                    icon: "GraduationCap",
+                    pageName: "students",
+                    title: t('menu.students'),
+                },
+                {
                     icon: "PercentSquare",
                     pageName: "accounts",
                     title: t('menu.accounts'),

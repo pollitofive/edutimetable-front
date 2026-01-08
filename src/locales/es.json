@@ -3,6 +3,7 @@
     "dashboard": "Dashboard",
     "teachers": "Profesores",
     "courses": "Cursos",
+    "students": "Estudiantes",
     "logout": "Cerrar sesión"
   },
   "teachers": {
@@ -114,6 +115,62 @@
     "delete": {
       "confirmTitle": "¿Estás seguro?",
       "confirmMessage": "¿Realmente deseas eliminar este curso?",
+      "cannotUndo": "Este proceso no se puede deshacer."
+    }
+  },
+  "students": {
+    "title": "Gestión de Estudiantes",
+    "newStudent": "Nuevo Estudiante",
+    "editStudent": "Editar Estudiante",
+    "deleteStudent": "Eliminar Estudiante",
+    "columns": {
+      "id": "ID",
+      "name": "Nombre",
+      "email": "Correo Electrónico",
+      "code": "Código",
+      "actions": "Acciones"
+    },
+    "actions": {
+      "edit": "Editar",
+      "delete": "Eliminar",
+      "save": "Guardar",
+      "cancel": "Cancelar",
+      "retry": "Reintentar",
+      "clearFilters": "Limpiar Filtros"
+    },
+    "filters": {
+      "searchByName": "Buscar por nombre...",
+      "searchByEmail": "Buscar por correo...",
+      "searchByCode": "Buscar por código..."
+    },
+    "form": {
+      "nameLabel": "Nombre",
+      "emailLabel": "Correo Electrónico",
+      "codeLabel": "Código de Estudiante",
+      "namePlaceholder": "Ingrese el nombre del estudiante",
+      "emailPlaceholder": "Ingrese el correo del estudiante",
+      "codePlaceholder": "ej. STU-12345",
+      "required": "*"
+    },
+    "validation": {
+      "nameRequired": "El nombre es obligatorio",
+      "emailRequired": "El correo electrónico es obligatorio",
+      "emailInvalid": "Formato de correo electrónico inválido",
+      "codeRequired": "El código de estudiante es obligatorio"
+    },
+    "messages": {
+      "loading": "Cargando estudiantes...",
+      "error": "Error al cargar estudiantes",
+      "noStudents": "No se encontraron estudiantes. ¡Crea tu primer estudiante!",
+      "createSuccess": "Estudiante creado exitosamente",
+      "updateSuccess": "Estudiante actualizado exitosamente",
+      "deleteSuccess": "Estudiante eliminado exitosamente",
+      "deleteError": "Error al eliminar estudiante",
+      "generalError": "Ocurrió un error"
+    },
+    "delete": {
+      "confirmTitle": "¿Estás seguro?",
+      "confirmMessage": "¿Realmente deseas eliminar este estudiante?",
       "cannotUndo": "Este proceso no se puede deshacer."
     }
   }
