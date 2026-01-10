@@ -4,6 +4,7 @@
     "teachers": "Teachers",
     "courses": "Courses",
     "students": "Students",
+    "availabilities": "Availabilities",
     "logout": "Log Out"
   },
   "teachers": {
@@ -171,6 +172,85 @@
     "delete": {
       "confirmTitle": "Are you sure?",
       "confirmMessage": "Do you really want to delete this student?",
+      "cannotUndo": "This process cannot be undone."
+    }
+  },
+  "studentAvailabilities": {
+    "title": "Student Availabilities",
+    "newAvailability": "New Availability",
+    "editAvailability": "Edit Availability",
+    "columns": {
+      "id": "ID",
+      "student": "Student",
+      "dayOfWeek": "Day of Week",
+      "startTime": "Start Time",
+      "endTime": "End Time",
+      "actions": "Actions"
+    },
+    "days": {
+      "monday": "Monday",
+      "tuesday": "Tuesday",
+      "wednesday": "Wednesday",
+      "thursday": "Thursday",
+      "friday": "Friday",
+      "saturday": "Saturday",
+      "sunday": "Sunday"
+    },
+    "actions": {
+      "edit": "Edit",
+      "manage": "Manage",
+      "delete": "Delete",
+      "update": "Update",
+      "save": "Save",
+      "cancel": "Cancel",
+      "retry": "Retry",
+      "clearFilters": "Clear Filters",
+      "addSlot": "Add Another Slot",
+      "removeSlot": "Remove Slot",
+      "createAll": "Create Availabilities",
+      "updateAll": "Update Availabilities"
+    },
+    "filters": {
+      "allStudents": "All Students",
+      "allDays": "All Days"
+    },
+    "form": {
+      "student": "Student",
+      "dayOfWeek": "Day of Week",
+      "startTime": "Start Time",
+      "endTime": "End Time",
+      "selectStudent": "Select student...",
+      "selectDay": "Select day...",
+      "addTitle": "Add Availabilities",
+      "editTitle": "Edit Availabilities for {student}",
+      "editSingleTitle": "Edit Availability",
+      "slot": "Slot {number}",
+      "availabilitySlots": "Availability Slots"
+    },
+    "validation": {
+      "studentRequired": "Student is required",
+      "dayRequired": "Day of week is required",
+      "startTimeRequired": "Start time is required",
+      "endTimeRequired": "End time is required",
+      "endTimeAfterStart": "End time must be after start time",
+      "atLeastOneSlot": "Add at least one availability slot"
+    },
+    "messages": {
+      "loading": "Loading availabilities...",
+      "loadingAvailabilities": "Loading student availabilities...",
+      "loadError": "Error loading availabilities",
+      "error": "Error loading availabilities",
+      "noAvailabilities": "No availabilities found. Create your first availability!",
+      "createSuccess": "Availabilities created successfully",
+      "updateSuccess": "Availabilities updated successfully",
+      "updateSingleSuccess": "Availability updated successfully",
+      "deleteSuccess": "Availability deleted successfully",
+      "deleteError": "Error deleting availability",
+      "generalError": "An error occurred"
+    },
+    "delete": {
+      "confirmTitle": "Are you sure?",
+      "confirmMessage": "Do you really want to delete this availability for {student} on {day}?",
       "cannotUndo": "This process cannot be undone."
     }
   }

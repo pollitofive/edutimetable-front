@@ -4,6 +4,7 @@
     "teachers": "Profesores",
     "courses": "Cursos",
     "students": "Estudiantes",
+    "availabilities": "Disponibilidades",
     "logout": "Cerrar sesión"
   },
   "teachers": {
@@ -171,6 +172,85 @@
     "delete": {
       "confirmTitle": "¿Estás seguro?",
       "confirmMessage": "¿Realmente deseas eliminar este estudiante?",
+      "cannotUndo": "Este proceso no se puede deshacer."
+    }
+  },
+  "studentAvailabilities": {
+    "title": "Disponibilidades de Estudiantes",
+    "newAvailability": "Nueva Disponibilidad",
+    "editAvailability": "Editar Disponibilidad",
+    "columns": {
+      "id": "ID",
+      "student": "Estudiante",
+      "dayOfWeek": "Día de la Semana",
+      "startTime": "Hora de Inicio",
+      "endTime": "Hora de Fin",
+      "actions": "Acciones"
+    },
+    "days": {
+      "monday": "Lunes",
+      "tuesday": "Martes",
+      "wednesday": "Miércoles",
+      "thursday": "Jueves",
+      "friday": "Viernes",
+      "saturday": "Sábado",
+      "sunday": "Domingo"
+    },
+    "actions": {
+      "edit": "Editar",
+      "manage": "Gestionar",
+      "delete": "Eliminar",
+      "update": "Actualizar",
+      "save": "Guardar",
+      "cancel": "Cancelar",
+      "retry": "Reintentar",
+      "clearFilters": "Limpiar Filtros",
+      "addSlot": "Agregar Otro Horario",
+      "removeSlot": "Eliminar Horario",
+      "createAll": "Crear Disponibilidades",
+      "updateAll": "Actualizar Disponibilidades"
+    },
+    "filters": {
+      "allStudents": "Todos los Estudiantes",
+      "allDays": "Todos los Días"
+    },
+    "form": {
+      "student": "Estudiante",
+      "dayOfWeek": "Día de la Semana",
+      "startTime": "Hora de Inicio",
+      "endTime": "Hora de Fin",
+      "selectStudent": "Seleccione estudiante...",
+      "selectDay": "Seleccione día...",
+      "addTitle": "Agregar Disponibilidades",
+      "editTitle": "Editar Disponibilidades de {student}",
+      "editSingleTitle": "Editar Disponibilidad",
+      "slot": "Horario {number}",
+      "availabilitySlots": "Horarios de Disponibilidad"
+    },
+    "validation": {
+      "studentRequired": "El estudiante es obligatorio",
+      "dayRequired": "El día de la semana es obligatorio",
+      "startTimeRequired": "La hora de inicio es obligatoria",
+      "endTimeRequired": "La hora de fin es obligatoria",
+      "endTimeAfterStart": "La hora de fin debe ser posterior a la hora de inicio",
+      "atLeastOneSlot": "Agregue al menos un horario de disponibilidad"
+    },
+    "messages": {
+      "loading": "Cargando disponibilidades...",
+      "loadingAvailabilities": "Cargando disponibilidades del estudiante...",
+      "loadError": "Error al cargar disponibilidades",
+      "error": "Error al cargar disponibilidades",
+      "noAvailabilities": "No se encontraron disponibilidades. ¡Crea tu primera disponibilidad!",
+      "createSuccess": "Disponibilidades creadas exitosamente",
+      "updateSuccess": "Disponibilidades actualizadas exitosamente",
+      "updateSingleSuccess": "Disponibilidad actualizada exitosamente",
+      "deleteSuccess": "Disponibilidad eliminada exitosamente",
+      "deleteError": "Error al eliminar disponibilidad",
+      "generalError": "Ocurrió un error"
+    },
+    "delete": {
+      "confirmTitle": "¿Estás seguro?",
+      "confirmMessage": "¿Realmente deseas eliminar esta disponibilidad de {student} el {day}?",
       "cannotUndo": "Este proceso no se puede deshacer."
     }
   }
