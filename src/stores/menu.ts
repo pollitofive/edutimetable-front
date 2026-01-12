@@ -60,6 +60,11 @@ export const useMenuStore = defineStore("menu", {
                     title: t('menu.availabilities'),
                 },
                 {
+                    icon: "Clock",
+                    pageName: "schedules",
+                    title: t('menu.schedules'),
+                },
+                {
                     icon: "PercentSquare",
                     pageName: "accounts",
                     title: t('menu.accounts'),

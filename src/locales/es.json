@@ -5,6 +5,7 @@
     "courses": "Cursos",
     "students": "Estudiantes",
     "availabilities": "Disponibilidades",
+    "schedules": "Horarios",
     "logout": "Cerrar sesión"
   },
   "teachers": {
@@ -252,6 +253,92 @@
       "confirmTitle": "¿Estás seguro?",
       "confirmMessage": "¿Realmente deseas eliminar esta disponibilidad de {student} el {day}?",
       "cannotUndo": "Este proceso no se puede deshacer."
+    }
+  },
+  "schedules": {
+    "title": "Horarios de Cursos",
+    "columns": {
+      "id": "ID",
+      "course": "Curso",
+      "teacher": "Profesor",
+      "dayOfWeek": "Día de la Semana",
+      "startsAt": "Hora de Inicio",
+      "endsAt": "Hora de Fin",
+      "actions": "Acciones"
+    },
+    "days": {
+      "sunday": "Domingo",
+      "monday": "Lunes",
+      "tuesday": "Martes",
+      "wednesday": "Miércoles",
+      "thursday": "Jueves",
+      "friday": "Viernes",
+      "saturday": "Sábado"
+    },
+    "actions": {
+      "new": "Nuevo Horario",
+      "edit": "Editar",
+      "manage": "Gestionar",
+      "delete": "Eliminar",
+      "update": "Actualizar",
+      "save": "Guardar",
+      "cancel": "Cancelar",
+      "retry": "Reintentar",
+      "clearFilters": "Limpiar Filtros",
+      "addSlot": "Agregar Otro Horario",
+      "removeSlot": "Eliminar Horario",
+      "createAll": "Crear Horarios",
+      "updateAll": "Actualizar Horarios"
+    },
+    "form": {
+      "addTitle": "Agregar Horarios",
+      "editTitle": "Editar Horarios de {course}",
+      "editSingleTitle": "Editar Horario",
+      "course": "Curso",
+      "dayOfWeek": "Día de la Semana",
+      "startsAt": "Hora de Inicio",
+      "endsAt": "Hora de Fin",
+      "selectCourse": "Seleccione curso...",
+      "selectDay": "Seleccione día...",
+      "slot": "Horario {number}",
+      "scheduleSlots": "Horarios"
+    },
+    "validation": {
+      "courseRequired": "El curso es obligatorio",
+      "dayRequired": "El día de la semana es obligatorio",
+      "startTimeRequired": "La hora de inicio es obligatoria",
+      "endTimeRequired": "La hora de fin es obligatoria",
+      "endTimeAfterStart": "La hora de fin debe ser posterior a la hora de inicio",
+      "atLeastOneSlot": "Agregue al menos un horario"
+    },
+    "messages": {
+      "createSuccess": "Horarios creados exitosamente",
+      "updateSuccess": "Horarios actualizados exitosamente",
+      "updateSingleSuccess": "Horario actualizado exitosamente",
+      "deleteSuccess": "Horario eliminado exitosamente",
+      "createError": "Error al crear horario",
+      "updateError": "Error al actualizar horario",
+      "deleteError": "Error al eliminar horario",
+      "loadError": "Error al cargar horarios",
+      "error": "Error al cargar horarios",
+      "generalError": "Ocurrió un error",
+      "loadingSchedules": "Cargando horarios del curso..."
+    },
+    "delete": {
+      "title": "Eliminar Horario",
+      "message": "¿Estás seguro de que deseas eliminar este horario de {course}?",
+      "confirm": "Eliminar",
+      "cancel": "Cancelar",
+      "cannotUndo": "Este proceso no se puede deshacer."
+    },
+    "empty": "No se encontraron horarios",
+    "loading": "Cargando horarios...",
+    "filters": {
+      "allTeachers": "Todos los Profesores",
+      "allCourses": "Todos los Cursos",
+      "allDays": "Todos los Días",
+      "filterByCourse": "Filtrar por Curso",
+      "filterByDay": "Filtrar por Día"
     }
   }
 }

@@ -5,6 +5,7 @@
     "courses": "Courses",
     "students": "Students",
     "availabilities": "Availabilities",
+    "schedules": "Schedules",
     "logout": "Log Out"
   },
   "teachers": {
@@ -252,6 +253,92 @@
       "confirmTitle": "Are you sure?",
       "confirmMessage": "Do you really want to delete this availability for {student} on {day}?",
       "cannotUndo": "This process cannot be undone."
+    }
+  },
+  "schedules": {
+    "title": "Course Schedules",
+    "columns": {
+      "id": "ID",
+      "course": "Course",
+      "teacher": "Teacher",
+      "dayOfWeek": "Day of Week",
+      "startsAt": "Start Time",
+      "endsAt": "End Time",
+      "actions": "Actions"
+    },
+    "days": {
+      "sunday": "Sunday",
+      "monday": "Monday",
+      "tuesday": "Tuesday",
+      "wednesday": "Wednesday",
+      "thursday": "Thursday",
+      "friday": "Friday",
+      "saturday": "Saturday"
+    },
+    "actions": {
+      "new": "New Schedule",
+      "edit": "Edit",
+      "manage": "Manage",
+      "delete": "Delete",
+      "update": "Update",
+      "save": "Save",
+      "cancel": "Cancel",
+      "retry": "Retry",
+      "clearFilters": "Clear Filters",
+      "addSlot": "Add Another Slot",
+      "removeSlot": "Remove Slot",
+      "createAll": "Create Schedules",
+      "updateAll": "Update Schedules"
+    },
+    "form": {
+      "addTitle": "Add Schedules",
+      "editTitle": "Edit Schedules for {course}",
+      "editSingleTitle": "Edit Schedule",
+      "course": "Course",
+      "dayOfWeek": "Day of Week",
+      "startsAt": "Start Time",
+      "endsAt": "End Time",
+      "selectCourse": "Select course...",
+      "selectDay": "Select day...",
+      "slot": "Slot {number}",
+      "scheduleSlots": "Schedule Slots"
+    },
+    "validation": {
+      "courseRequired": "Course is required",
+      "dayRequired": "Day of week is required",
+      "startTimeRequired": "Start time is required",
+      "endTimeRequired": "End time is required",
+      "endTimeAfterStart": "End time must be after start time",
+      "atLeastOneSlot": "Add at least one schedule slot"
+    },
+    "messages": {
+      "createSuccess": "Schedules created successfully",
+      "updateSuccess": "Schedules updated successfully",
+      "updateSingleSuccess": "Schedule updated successfully",
+      "deleteSuccess": "Schedule deleted successfully",
+      "createError": "Error creating schedule",
+      "updateError": "Error updating schedule",
+      "deleteError": "Error deleting schedule",
+      "loadError": "Error loading schedules",
+      "error": "Error loading schedules",
+      "generalError": "An error occurred",
+      "loadingSchedules": "Loading course schedules..."
+    },
+    "delete": {
+      "title": "Delete Schedule",
+      "message": "Are you sure you want to delete this schedule for {course}?",
+      "confirm": "Delete",
+      "cancel": "Cancel",
+      "cannotUndo": "This process cannot be undone."
+    },
+    "empty": "No schedules found",
+    "loading": "Loading schedules...",
+    "filters": {
+      "allTeachers": "All Teachers",
+      "allCourses": "All Courses",
+      "allDays": "All Days",
+      "filterByCourse": "Filter by Course",
+      "filterByDay": "Filter by Day"
     }
   }
 }
