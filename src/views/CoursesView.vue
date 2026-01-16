@@ -25,32 +25,25 @@ interface Course {
   name: string
   level: string | null
   year: number | null
-  teacher_id: string
-  teacher?: {
-    id: string
-    name: string
-    email: string
-  }
+  teachers?: Teacher[]
 }
 
 interface FormData {
   name: string
   level: string
   year: number | null
-  teacher_id: string
 }
 
 // GraphQL Queries & Mutations
 const GET_COURSES = gql`
-  query GetCourses($first: Int!, $page: Int!, $name: String, $level: String, $year: Int, $teacher_id: ID) {
-    courses(first: $first, page: $page, name: $name, level: $level, year: $year, teacher_id: $teacher_id) {
+  query GetCourses($first: Int!, $page: Int!, $name: String, $level: String, $year: Int) {
+    courses(first: $first, page: $page, name: $name, level: $level, year: $year) {
       data {
         id
         name
         level
         year
-        teacher_id
-        teacher {
+        teachers {
           id
           name
           email
@@ -68,18 +61,6 @@ const GET_COURSES = gql`
   }
 `
 
-const GET_TEACHERS = gql`
-  query GetTeachers {
-    teachers(first: 10000) {
-      data {
-        id
-        name
-        email
-      }
-    }
-  }
-`
-
 const CREATE_COURSE = gql`
   mutation CreateCourse($input: CreateCourseInput!) {
     createCourse(input: $input) {
@@ -87,7 +68,6 @@ const CREATE_COURSE = gql`
       name
       level
       year
-      teacher_id
     }
   }
 `
@@ -99,7 +79,6 @@ const UPDATE_COURSE = gql`
       name
       level
       year
-      teacher_id
     }
   }
 `
@@ -114,11 +93,10 @@ const DELETE_COURSE = gql`
 
 // State
 const courses = ref<Course[]>([])
-const teachers = ref<Teacher[]>([])
 const showModal = ref(false)
 const selectedCourse = ref<Course | null>(null)
-const formData = ref<FormData>({ name: '', level: '', year: null, teacher_id: '' })
-const formErrors = ref<{ name?: string; teacher_id?: string }>({})
+const formData = ref<FormData>({ name: '', level: '', year: null })
+const formErrors = ref<{ name?: string }>({})
 const deleteConfirmModal = ref(false)
 const courseToDelete = ref<Course | null>(null)
 
@@ -137,7 +115,6 @@ const lastPage = ref(1)
 const filterName = ref('')
 const filterLevel = ref('')
 const filterYear = ref('')
-const filterTeacherId = ref('')
 let filterTimeout: ReturnType<typeof setTimeout> | null = null
 
 // Apollo Query for Courses
@@ -146,12 +123,8 @@ const { result, loading, error, refetch } = useQuery(GET_COURSES, {
   page: currentPage,
   name: filterName.value ? `%${filterName.value}%` : undefined,
   level: filterLevel.value ? `%${filterLevel.value}%` : undefined,
-  year: filterYear.value ? parseInt(filterYear.value) : undefined,
-  teacher_id: filterTeacherId.value || undefined
+  year: filterYear.value ? parseInt(filterYear.value) : undefined
 })
-
-// Apollo Query for Teachers (for dropdown)
-const { result: teachersResult, loading: teachersLoading } = useQuery(GET_TEACHERS)
 
 // Apollo Mutations
 const { mutate: createCourse, loading: creating } = useMutation(CREATE_COURSE)
@@ -187,15 +160,6 @@ watch(result, (newValue) => {
   }
 })
 
-// Watch for teachers results
-watch(teachersResult, (newValue) => {
-  if (newValue?.teachers?.data) {
-    teachers.value = [...newValue.teachers.data].sort((a, b) =>
-      a.name.localeCompare(b.name)
-    )
-  }
-})
-
 // Notification helper
 const notify = (message: string, type: 'success' | 'error' = 'success') => {
   toastMessage.value = message
@@ -216,17 +180,13 @@ const validateForm = (): boolean => {
     formErrors.value.name = t('courses.validation.nameRequired')
   }
 
-  if (!formData.value.teacher_id) {
-    formErrors.value.teacher_id = t('courses.validation.teacherRequired')
-  }
-
   return Object.keys(formErrors.value).length === 0
 }
 
 // Methods
 const openCreateModal = () => {
   selectedCourse.value = null
-  formData.value = { name: '', level: '', year: null, teacher_id: '' }
+  formData.value = { name: '', level: '', year: null }
   formErrors.value = {}
   showModal.value = true
 }
@@ -234,17 +194,10 @@ const openCreateModal = () => {
 const openEditModal = (course: Course) => {
   selectedCourse.value = course
 
-  // Handle both direct teacher_id and nested teacher.id
-  const teacherId = course.teacher_id || course.teacher?.id || ''
-
-  // Ensure both are strings and trimmed for comparison
-  const teacherIdString = String(teacherId).trim()
-
   formData.value = {
     name: course.name,
     level: course.level || '',
-    year: course.year,
-    teacher_id: teacherIdString
+    year: course.year
   }
 
   formErrors.value = {}
@@ -254,7 +207,7 @@ const openEditModal = (course: Course) => {
 const closeModal = () => {
   showModal.value = false
   selectedCourse.value = null
-  formData.value = { name: '', level: '', year: null, teacher_id: '' }
+  formData.value = { name: '', level: '', year: null }
   formErrors.value = {}
 }
 
@@ -267,8 +220,7 @@ const handleSave = async () => {
     const input = {
       name: formData.value.name,
       level: formData.value.level || null,
-      year: formData.value.year,
-      teacher_id: formData.value.teacher_id
+      year: formData.value.year
     }
 
     if (selectedCourse.value) {
@@ -328,8 +280,7 @@ const goToPage = (page: number) => {
       page,
       name: filterName.value.trim() ? `%${filterName.value.trim()}%` : undefined,
       level: filterLevel.value.trim() ? `%${filterLevel.value.trim()}%` : undefined,
-      year: filterYear.value ? parseInt(filterYear.value) : undefined,
-      teacher_id: filterTeacherId.value || undefined
+      year: filterYear.value ? parseInt(filterYear.value) : undefined
     })
   }
 }
@@ -342,8 +293,7 @@ const changePerPage = (newPerPage: number) => {
     page: 1,
     name: filterName.value.trim() ? `%${filterName.value.trim()}%` : undefined,
     level: filterLevel.value.trim() ? `%${filterLevel.value.trim()}%` : undefined,
-    year: filterYear.value ? parseInt(filterYear.value) : undefined,
-    teacher_id: filterTeacherId.value || undefined
+    year: filterYear.value ? parseInt(filterYear.value) : undefined
   })
 }
 
@@ -355,8 +305,7 @@ const applyFilters = () => {
     page: 1,
     name: filterName.value.trim() ? `%${filterName.value.trim()}%` : undefined,
     level: filterLevel.value.trim() ? `%${filterLevel.value.trim()}%` : undefined,
-    year: filterYear.value ? parseInt(filterYear.value) : undefined,
-    teacher_id: filterTeacherId.value || undefined
+    year: filterYear.value ? parseInt(filterYear.value) : undefined
   })
 }
 
@@ -374,24 +323,18 @@ const clearFilters = () => {
   filterName.value = ''
   filterLevel.value = ''
   filterYear.value = ''
-  filterTeacherId.value = ''
   applyFilters()
 }
 
 const hasActiveFilters = computed(() => {
   return filterName.value.trim() !== '' ||
          filterLevel.value.trim() !== '' ||
-         filterYear.value !== '' ||
-         filterTeacherId.value !== ''
+         filterYear.value !== ''
 })
 
 // Watch for filter changes
 watch([filterName, filterLevel, filterYear], () => {
   debouncedFilter()
-})
-
-watch([filterTeacherId], () => {
-  applyFilters()
 })
 </script>
 
@@ -458,38 +401,17 @@ watch([filterTeacherId], () => {
           </div>
         </div>
 
-        <!-- Second row of filters -->
-        <div class="flex flex-col gap-4 sm:flex-row sm:items-center">
-          <!-- Filter by Teacher -->
-          <div class="flex-1">
-            <div class="relative">
-              <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                <Lucide icon="User" class="w-4 h-4 text-slate-400" />
-              </div>
-              <select
-                v-model="filterTeacherId"
-                class="w-full pl-10 pr-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-primary focus:border-primary dark:bg-darkmode-800 dark:border-darkmode-400"
-              >
-                <option value="">{{ t('courses.filters.allTeachers') }}</option>
-                <option v-for="teacher in teachers" :key="teacher.id" :value="teacher.id">
-                  {{ teacher.name }}
-                </option>
-              </select>
-            </div>
-          </div>
-
-          <!-- Clear Filters Button -->
-          <div>
-            <Button
-              v-if="hasActiveFilters"
-              variant="outline-secondary"
-              @click="clearFilters"
-              class="w-full sm:w-auto"
-            >
-              <Lucide icon="X" class="w-4 h-4 mr-2" />
-              {{ t('courses.actions.clearFilters') }}
-            </Button>
-          </div>
+        <!-- Clear Filters Button Row -->
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-end">
+          <Button
+            v-if="hasActiveFilters"
+            variant="outline-secondary"
+            @click="clearFilters"
+            class="w-full sm:w-auto"
+          >
+            <Lucide icon="X" class="w-4 h-4 mr-2" />
+            {{ t('courses.actions.clearFilters') }}
+          </Button>
         </div>
       </div>
     </div>
@@ -512,12 +434,10 @@ watch([filterTeacherId], () => {
           page: currentPage.value,
           name: filterName.value.trim() ? `%${filterName.value.trim()}%` : undefined,
           level: filterLevel.value.trim() ? `%${filterLevel.value.trim()}%` : undefined,
-          year: filterYear.value ? parseInt(filterYear.value) : undefined,
-          teacher_id: filterTeacherId.value || undefined
+          year: filterYear.value ? parseInt(filterYear.value) : undefined
         })">{{ t('courses.actions.retry') }}</Button>
       </div>
     </div>
-
     <!-- Table -->
     <div v-else class="overflow-x-auto">
       <Table class="border-b border-slate-200/60">
@@ -568,10 +488,16 @@ watch([filterTeacherId], () => {
               <div v-else class="text-xs text-slate-400">-</div>
             </Table.Td>
             <Table.Td class="py-4 border-dashed dark:bg-darkmode-600">
-              <div v-if="course.teacher" class="flex flex-col">
-                <span class="font-medium text-slate-700">{{ course.teacher.name }}</span>
-                <span class="text-xs text-slate-500">{{ course.teacher.email }}</span>
+              <div v-if="course.teachers && course.teachers.length > 0" class="flex flex-col gap-1">
+                <div v-for="teacher in course.teachers.slice(0, 2)" :key="teacher.id" class="flex flex-col">
+                  <span class="font-medium text-slate-700 text-sm">{{ teacher.name }}</span>
+                  <span class="text-xs text-slate-500">{{ teacher.email }}</span>
+                </div>
+                <span v-if="course.teachers.length > 2" class="text-xs text-slate-400 italic">
+                  +{{ course.teachers.length - 2 }} more
+                </span>
               </div>
+              <div v-else class="text-xs text-slate-400">No teachers assigned</div>
             </Table.Td>
             <Table.Td class="relative py-4 border-dashed dark:bg-darkmode-600">
               <div class="flex items-center justify-center gap-2">
@@ -722,22 +648,10 @@ watch([filterTeacherId], () => {
           />
         </div>
         <div class="col-span-12">
-          <FormLabel htmlFor="course-teacher">{{ t('courses.form.teacherLabel') }} {{ t('courses.form.required') }}</FormLabel>
-          <select
-            id="course-teacher"
-            v-model="formData.teacher_id"
-            :class="[
-              'w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-primary focus:border-primary dark:bg-darkmode-800 dark:border-darkmode-400',
-              { 'border-danger': formErrors.teacher_id }
-            ]"
-          >
-            <option value="">{{ t('courses.form.selectTeacher') }}</option>
-            <option v-for="teacher in teachers" :key="teacher.id" :value="teacher.id">
-              {{ teacher.name }} ({{ teacher.email }})
-            </option>
-          </select>
-          <div v-if="formErrors.teacher_id" class="mt-1 text-xs text-danger">
-            {{ formErrors.teacher_id }}
+          <div class="p-3 bg-slate-50 dark:bg-darkmode-700 rounded-lg border border-slate-200 dark:border-darkmode-400">
+            <p class="text-sm text-slate-600 dark:text-slate-400">
+              <strong>Note:</strong> Teachers are now assigned at the schedule level. After creating this course, you can assign teachers when creating schedules for it.
+            </p>
           </div>
         </div>
       </Dialog.Description>

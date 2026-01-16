@@ -264,6 +264,7 @@
       "dayOfWeek": "Día de la Semana",
       "startsAt": "Hora de Inicio",
       "endsAt": "Hora de Fin",
+      "description": "Descripción",
       "actions": "Acciones"
     },
     "days": {
@@ -295,6 +296,10 @@
       "editTitle": "Editar Horarios de {course}",
       "editSingleTitle": "Editar Horario",
       "course": "Curso",
+      "teacher": "Profesor",
+      "selectTeacher": "Seleccione profesor...",
+      "description": "Descripción",
+      "descriptionPlaceholder": "ej. grupo de lunes y miércoles",
       "dayOfWeek": "Día de la Semana",
       "startsAt": "Hora de Inicio",
       "endsAt": "Hora de Fin",
@@ -305,6 +310,8 @@
     },
     "validation": {
       "courseRequired": "El curso es obligatorio",
+      "teacherRequired": "El profesor es obligatorio",
+      "descriptionRequired": "La descripción es obligatoria",
       "dayRequired": "El día de la semana es obligatorio",
       "startTimeRequired": "La hora de inicio es obligatoria",
       "endTimeRequired": "La hora de fin es obligatoria",

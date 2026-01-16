@@ -264,6 +264,7 @@
       "dayOfWeek": "Day of Week",
       "startsAt": "Start Time",
       "endsAt": "End Time",
+      "description": "Description",
       "actions": "Actions"
     },
     "days": {
@@ -295,6 +296,10 @@
       "editTitle": "Edit Schedules for {course}",
       "editSingleTitle": "Edit Schedule",
       "course": "Course",
+      "teacher": "Teacher",
+      "selectTeacher": "Select teacher...",
+      "description": "Description",
+      "descriptionPlaceholder": "e.g., monday and wednesday group",
       "dayOfWeek": "Day of Week",
       "startsAt": "Start Time",
       "endsAt": "End Time",
@@ -305,6 +310,8 @@
     },
     "validation": {
       "courseRequired": "Course is required",
+      "teacherRequired": "Teacher is required",
+      "descriptionRequired": "Description is required",
       "dayRequired": "Day of week is required",
       "startTimeRequired": "Start time is required",
       "endTimeRequired": "End time is required",
