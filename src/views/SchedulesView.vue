@@ -828,36 +828,37 @@ const isFirstOccurrenceOfGroup = (schedule: Schedule, index: number): boolean =>
 </script>
 
 <template>
-  <div class="flex flex-col gap-y-3 md:h-10 md:flex-row md:items-center">
-    <div class="text-base font-medium">{{ t('schedules.title') }}</div>
-    <div class="flex flex-col gap-x-3 gap-y-2 sm:flex-row md:ml-auto">
-      <Button variant="primary" @click="openCreateModal">
-        <Lucide icon="Plus" class="w-4 h-4 mr-2" />
-        {{ t('schedules.actions.new') }}
-      </Button>
+  <div class="w-full">
+    <div class="flex flex-col gap-y-3 md:h-10 md:flex-row md:items-center">
+      <div class="text-base font-medium">{{ t('schedules.title') }}</div>
+      <div class="flex flex-col gap-x-3 gap-y-2 sm:flex-row md:ml-auto">
+        <Button variant="primary" @click="openCreateModal">
+          <Lucide icon="Plus" class="w-4 h-4 mr-2" />
+          {{ t('schedules.actions.new') }}
+        </Button>
+      </div>
     </div>
-  </div>
 
-  <div class="box box--stacked flex flex-col mt-5">
+    <div class="box box--stacked flex flex-col mt-5 w-full">
     <!-- Filter Section -->
     <div class="p-5 border-b border-slate-200/60">
       <div class="flex flex-col gap-4 sm:flex-row sm:items-center">
-        <!-- Filter by Teacher -->
+          <!-- Filter by Course -->
+          <div class="flex-1">
+              <FormSelect v-model="filterCourseId">
+                  <option value="">{{ t('schedules.filters.allCourses') }}</option>
+                  <option v-for="course in allCourses" :key="course.id" :value="course.id">
+                      {{ course.name }}
+                  </option>
+              </FormSelect>
+          </div>
+
+          <!-- Filter by Teacher -->
         <div class="flex-1">
           <FormSelect v-model="filterTeacherId">
             <option value="">{{ t('schedules.filters.allTeachers') }}</option>
             <option v-for="teacher in allTeachers" :key="teacher.id" :value="teacher.id">
               {{ teacher.name }}
-            </option>
-          </FormSelect>
-        </div>
-
-        <!-- Filter by Course -->
-        <div class="flex-1">
-          <FormSelect v-model="filterCourseId">
-            <option value="">{{ t('schedules.filters.allCourses') }}</option>
-            <option v-for="course in allCourses" :key="course.id" :value="course.id">
-              {{ course.name }}
             </option>
           </FormSelect>
         </div>
@@ -1336,13 +1337,14 @@ const isFirstOccurrenceOfGroup = (schedule: Schedule, index: number): boolean =>
     </Dialog.Panel>
   </Dialog>
 
-  <!-- Toast Notification -->
-  <ToastNotification
-    :show="showToast"
-    :message="toastMessage"
-    :type="toastType"
-    @close="handleToastClose"
-  />
+    <!-- Toast Notification -->
+    <ToastNotification
+      :show="showToast"
+      :message="toastMessage"
+      :type="toastType"
+      @close="handleToastClose"
+    />
+  </div>
 </template>
 
 <style scoped>

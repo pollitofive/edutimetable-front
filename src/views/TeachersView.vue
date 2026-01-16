@@ -112,11 +112,13 @@ const filterEmail = ref('')
 let filterTimeout: ReturnType<typeof setTimeout> | null = null
 
 // Apollo Query
-const { result, loading, error, refetch } = useQuery(GET_TEACHERS, {
-  first: perPage,
-  page: currentPage,
+const { result, loading, error, refetch } = useQuery(GET_TEACHERS, () => ({
+  first: perPage.value,
+  page: currentPage.value,
   name: filterName.value ? `%${filterName.value}%` : undefined,
   email: filterEmail.value ? `%${filterEmail.value}%` : undefined
+}), {
+  fetchPolicy: 'cache-and-network'
 })
 
 // Apollo Mutations

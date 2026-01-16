@@ -182,10 +182,12 @@ const filterStudentId = ref('')
 const filterDayOfWeek = ref<string>('')
 
 // Apollo Query for availabilities
-const { result, loading, error, refetch } = useQuery(GET_STUDENT_AVAILABILITIES, {
-  first: perPage,
-  page: currentPage,
+const { result, loading, error, refetch } = useQuery(GET_STUDENT_AVAILABILITIES, () => ({
+  first: perPage.value,
+  page: currentPage.value,
   student_id: filterStudentId.value || undefined
+}), {
+  fetchPolicy: 'cache-and-network'
 })
 
 // Apollo Query for students

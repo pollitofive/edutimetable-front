@@ -118,13 +118,19 @@ const filterYear = ref('')
 let filterTimeout: ReturnType<typeof setTimeout> | null = null
 
 // Apollo Query for Courses
-const { result, loading, error, refetch } = useQuery(GET_COURSES, {
-  first: perPage,
-  page: currentPage,
-  name: filterName.value ? `%${filterName.value}%` : undefined,
-  level: filterLevel.value ? `%${filterLevel.value}%` : undefined,
-  year: filterYear.value ? parseInt(filterYear.value) : undefined
-})
+const { result, loading, error, refetch } = useQuery(
+  GET_COURSES,
+  () => ({
+    first: perPage.value,
+    page: currentPage.value,
+    name: filterName.value ? `%${filterName.value}%` : undefined,
+    level: filterLevel.value ? `%${filterLevel.value}%` : undefined,
+    year: filterYear.value ? parseInt(filterYear.value) : undefined
+  }),
+  {
+    fetchPolicy: 'cache-and-network'
+  }
+)
 
 // Apollo Mutations
 const { mutate: createCourse, loading: creating } = useMutation(CREATE_COURSE)

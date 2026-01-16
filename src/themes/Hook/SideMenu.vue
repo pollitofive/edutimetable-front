@@ -577,7 +577,7 @@ onMounted(() => {
         { 'xl:ml-[91px]': compactMenu.value },
       ]"
     >
-      <div class="container mt-[55px] z-10 relative">
+      <div class="mt-[55px] z-10 relative max-w-[1920px] mx-auto px-5">
         <RouterView />
       </div>
     </div>
