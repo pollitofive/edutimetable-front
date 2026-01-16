@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { gql } from '@apollo/client/core'
-import { useQuery, useMutation } from '@vue/apollo-composable'
+import { useQuery, useMutation, useLazyQuery } from '@vue/apollo-composable'
 import { ref, watch, computed } from 'vue'
 import Lucide from '@/components/Base/Lucide'
 import Button from '@/components/Base/Button'
@@ -22,19 +22,23 @@ interface Teacher {
 interface Course {
   id: string
   name: string
-  teacher: Teacher
 }
 
 interface Schedule {
   id: string
   course_id: string
+  teacher_id: string
   course: Course
+  teacher: Teacher
   day_of_week: number
   starts_at: string
   ends_at: string
+  description: string
+  group_id?: string
 }
 
 interface ScheduleSlot {
+  teacher_id: string
   day_of_week: number | string
   starts_at: string
   ends_at: string
@@ -42,10 +46,13 @@ interface ScheduleSlot {
 
 interface FormData {
   course_id: string
+  description: string
   schedules: ScheduleSlot[]
+  group_id?: string
 }
 
 interface SlotError {
+  teacher_id?: string
   day_of_week?: string
   starts_at?: string
   ends_at?: string
@@ -53,21 +60,24 @@ interface SlotError {
 
 // GraphQL Queries & Mutations
 const GET_SCHEDULES = gql`
-  query GetSchedules($first: Int!, $page: Int!, $course_id: ID, $day_of_week: Int) {
-    schedules(first: $first, page: $page, course_id: $course_id, day_of_week: $day_of_week) {
+  query GetSchedules($first: Int!, $page: Int!, $course_id: ID, $day_of_week: Int, $teacher_id: ID, $description: String, $group_id: String) {
+    schedules(first: $first, page: $page, course_id: $course_id, day_of_week: $day_of_week, teacher_id: $teacher_id, description: $description, group_id: $group_id) {
       data {
         id
         course_id
+        teacher_id
         day_of_week
         starts_at
         ends_at
+        description
+        group_id
         course {
           id
           name
-          teacher {
-            id
-            name
-          }
+        }
+        teacher {
+          id
+          name
         }
       }
       paginatorInfo {
@@ -88,10 +98,17 @@ const GET_ALL_COURSES = gql`
       data {
         id
         name
-        teacher {
-          id
-          name
-        }
+      }
+    }
+  }
+`
+
+const GET_ALL_TEACHERS = gql`
+  query GetAllTeachers {
+    teachers(first: 10000) {
+      data {
+        id
+        name
       }
     }
   }
@@ -102,16 +119,19 @@ const BULK_CREATE_SCHEDULES = gql`
     bulkCreateSchedules(input: $input) {
       id
       course_id
+      teacher_id
       day_of_week
       starts_at
       ends_at
+      description
+      group_id
       course {
         id
         name
-        teacher {
-          id
-          name
-        }
+      }
+      teacher {
+        id
+        name
       }
     }
   }
@@ -122,16 +142,19 @@ const BULK_UPDATE_SCHEDULES = gql`
     bulkUpdateSchedules(input: $input) {
       id
       course_id
+      teacher_id
       day_of_week
       starts_at
       ends_at
+      description
+      group_id
       course {
         id
         name
-        teacher {
-          id
-          name
-        }
+      }
+      teacher {
+        id
+        name
       }
     }
   }
@@ -142,16 +165,19 @@ const UPDATE_SCHEDULE = gql`
     updateSchedule(id: $id, input: $input) {
       id
       course_id
+      teacher_id
       day_of_week
       starts_at
       ends_at
+      description
+      group_id
       course {
         id
         name
-        teacher {
-          id
-          name
-        }
+      }
+      teacher {
+        id
+        name
       }
     }
   }
@@ -168,17 +194,19 @@ const DELETE_SCHEDULE = gql`
 // State
 const schedules = ref<Schedule[]>([])
 const allCourses = ref<Course[]>([])
+const allTeachers = ref<Teacher[]>([])
 const showModal = ref(false)
 const isEditMode = ref(false)
 const isSingleEditMode = ref(false)
 const editingScheduleId = ref<string | null>(null)
 const formData = ref<FormData>({
   course_id: '',
+  description: '',
   schedules: [
-    { day_of_week: '', starts_at: '', ends_at: '' }
+    { teacher_id: '', day_of_week: '', starts_at: '', ends_at: '' }
   ]
 })
-const formErrors = ref<{ course_id?: string; schedules?: SlotError[] }>({})
+const formErrors = ref<{ course_id?: string; description?: string; schedules?: SlotError[] }>({})
 const deleteConfirmModal = ref(false)
 const scheduleToDelete = ref<Schedule | null>(null)
 
@@ -203,13 +231,26 @@ const { result, loading, error, refetch } = useQuery(GET_SCHEDULES, () => ({
   first: perPage.value,
   page: currentPage.value,
   course_id: filterCourseId.value || undefined,
-  day_of_week: filterDayOfWeek.value ? Number(filterDayOfWeek.value) : undefined
+  day_of_week: filterDayOfWeek.value ? Number(filterDayOfWeek.value) : undefined,
+  teacher_id: filterTeacherId.value || undefined,
+  group_id: undefined // Explicitly set to undefined for main query
 }), {
   fetchPolicy: 'cache-and-network'
 })
 
 // Apollo Query for courses
 const { result: coursesResult, loading: coursesLoading } = useQuery(GET_ALL_COURSES)
+
+// Apollo Query for teachers
+const { result: teachersResult, loading: teachersLoading } = useQuery(GET_ALL_TEACHERS)
+
+// Apollo Lazy Query for fetching group schedules
+const { load: loadGroupSchedules, refetch: refetchGroupSchedules, result: groupSchedulesResult, loading: loadingGroupSchedules } = useLazyQuery(GET_SCHEDULES, {
+  fetchPolicy: 'network-only' // Always fetch fresh data from server
+})
+
+// Track whether the lazy query has been loaded at least once
+const groupSchedulesLoaded = ref(false)
 
 // Apollo Mutations
 const { mutate: bulkCreateSchedules, loading: creating } = useMutation(BULK_CREATE_SCHEDULES)
@@ -267,37 +308,26 @@ const dayOptions = computed(() => [
   { value: 6, label: t('schedules.days.saturday') }
 ])
 
-// Get all unique teachers from courses (sorted alphabetically)
-const allTeachers = computed(() => {
-  const teacherMap = new Map<string, Teacher>()
+// Sorted schedules computed property
+const sortedSchedules = computed(() => {
+  if (!schedules.value || schedules.value.length === 0) return []
 
-  allCourses.value.forEach(course => {
-    if (course.teacher && !teacherMap.has(course.teacher.id)) {
-      teacherMap.set(course.teacher.id, course.teacher)
-    }
+  return [...schedules.value].sort((a, b) => {
+    // 1. Sort by teacher name
+    const teacherCompare = (a.teacher?.name || '').localeCompare(b.teacher?.name || '')
+    if (teacherCompare !== 0) return teacherCompare
+
+    // 2. Sort by group_id (to group related schedules together)
+    const groupCompare = (a.group_id || '').localeCompare(b.group_id || '')
+    if (groupCompare !== 0) return groupCompare
+
+    // 3. Sort by day_of_week (0-6, Sunday to Saturday)
+    const dayCompare = (a.day_of_week || 0) - (b.day_of_week || 0)
+    if (dayCompare !== 0) return dayCompare
+
+    // 4. Sort by starts_at (time order)
+    return (a.starts_at || '').localeCompare(b.starts_at || '')
   })
-
-  return Array.from(teacherMap.values()).sort((a, b) =>
-    a.name.localeCompare(b.name)
-  )
-})
-
-// Get courses filtered by teacher (for display in course dropdown when teacher is selected)
-const filteredCoursesByTeacher = computed(() => {
-  if (!filterTeacherId.value) {
-    return allCourses.value
-  }
-  return allCourses.value.filter(course => course.teacher.id === filterTeacherId.value)
-})
-
-// Filter schedules based on selected teacher (client-side filtering)
-const filteredSchedules = computed(() => {
-  if (!filterTeacherId.value) {
-    return schedules.value
-  }
-  return schedules.value.filter(schedule =>
-    schedule.course?.teacher?.id === filterTeacherId.value
-  )
 })
 
 // Watch for query results
@@ -323,14 +353,33 @@ watch(coursesResult, (newValue) => {
   }
 }, { immediate: true })
 
-// Loading state for edit mode
-const loadingEditSchedules = ref(false)
+// Watch for teachers results
+watch(teachersResult, (newValue) => {
+  if (newValue?.teachers?.data) {
+    // Sort teachers alphabetically by name
+    allTeachers.value = [...newValue.teachers.data].sort((a, b) =>
+      a.name.localeCompare(b.name)
+    )
+  }
+}, { immediate: true })
 
 // Notification helper
 const notify = (message: string, type: 'success' | 'error' = 'success') => {
   toastMessage.value = message
   toastType.value = type
   showToast.value = true
+}
+
+// Time normalization helper
+// Converts time to "H:i" format (e.g., "10:00") by removing seconds if present
+const normalizeTime = (time: string): string => {
+  if (!time) return time
+  // Remove seconds if present (10:00:00 -> 10:00)
+  const parts = time.split(':')
+  if (parts.length >= 2) {
+    return `${parts[0]}:${parts[1]}`
+  }
+  return time
 }
 
 // Handle toast close
@@ -340,10 +389,14 @@ const handleToastClose = () => {
 
 // Slot management functions
 const addSlot = () => {
+  // Get the last slot to copy its values
+  const lastSlot = formData.value.schedules[formData.value.schedules.length - 1]
+
   formData.value.schedules.push({
-    day_of_week: '',
-    starts_at: '',
-    ends_at: ''
+    teacher_id: lastSlot?.teacher_id || '',
+    day_of_week: lastSlot?.day_of_week || '',
+    starts_at: lastSlot?.starts_at || '',
+    ends_at: lastSlot?.ends_at || ''
   })
 }
 
@@ -365,6 +418,10 @@ const validateForm = (): boolean => {
     formErrors.value.course_id = t('schedules.validation.courseRequired')
   }
 
+  if (!formData.value.description || !formData.value.description.trim()) {
+    formErrors.value.description = t('schedules.validation.descriptionRequired')
+  }
+
   if (formData.value.schedules.length === 0) {
     notify(t('schedules.validation.atLeastOneSlot'), 'error')
     return false
@@ -374,6 +431,11 @@ const validateForm = (): boolean => {
 
   formData.value.schedules.forEach((slot, index) => {
     const slotErrors: SlotError = {}
+
+    if (!slot.teacher_id || !slot.teacher_id.trim()) {
+      slotErrors.teacher_id = t('schedules.validation.teacherRequired')
+      hasErrors = true
+    }
 
     if (slot.day_of_week === '') {
       slotErrors.day_of_week = t('schedules.validation.dayRequired')
@@ -406,7 +468,7 @@ const validateForm = (): boolean => {
     }
   })
 
-  return !hasErrors && !formErrors.value.course_id
+  return !hasErrors && !formErrors.value.course_id && !formErrors.value.description
 }
 
 // Methods
@@ -415,9 +477,11 @@ const openCreateModal = () => {
   isSingleEditMode.value = false
   formData.value = {
     course_id: '',
+    description: '',
     schedules: [
-      { day_of_week: '', starts_at: '', ends_at: '' }
-    ]
+      { teacher_id: '', day_of_week: '', starts_at: '', ends_at: '' }
+    ],
+    group_id: undefined // Empty for CREATE
   }
   formErrors.value = {}
   showModal.value = true
@@ -429,16 +493,19 @@ const openSingleEditModal = (schedule: Schedule) => {
   isSingleEditMode.value = true
   editingScheduleId.value = schedule.id
 
-  // Set form data with single slot
+  // Set form data with single slot - load teacher_id per slot
   formData.value = {
     course_id: schedule.course_id,
+    description: schedule.description || '', // Load description from schedule
     schedules: [
       {
+        teacher_id: schedule.teacher_id,
         day_of_week: schedule.day_of_week,
         starts_at: schedule.starts_at,
         ends_at: schedule.ends_at
       }
-    ]
+    ],
+    group_id: schedule.group_id // Preserve group_id for UPDATE
   }
 
   formErrors.value = {}
@@ -449,46 +516,91 @@ const openEditModal = async (schedule: Schedule) => {
   isEditMode.value = true
   isSingleEditMode.value = false
   const courseId = schedule.course_id
-  filterCourseId.value = courseId
+  const groupId = schedule.group_id
 
   formData.value = {
     course_id: courseId,
-    schedules: []
+    description: '',
+    schedules: [],
+    group_id: undefined
   }
   formErrors.value = {}
   showModal.value = true
-  loadingEditSchedules.value = true
 
   try {
-    // Refetch with course filter and high limit to get all course's schedules
-    const refetchResult = await refetch({
+    // Build query variables - only filter by group_id if it exists
+    const queryVariables: any = {
       first: 1000,
-      page: 1,
-      course_id: courseId
-    })
+      page: 1
+    }
 
-    // Extract schedules from refetch result
-    if (refetchResult?.data?.schedules?.data) {
-      const courseSchedules = refetchResult.data.schedules.data
+    // If schedule has group_id, filter by it (more specific)
+    if (groupId) {
+      queryVariables.group_id = groupId
+    } else {
+      // Fallback for legacy schedules without group_id
+      // Filter by course_id and description to find related schedules
+      queryVariables.course_id = courseId
+      if (schedule.description) {
+        queryVariables.description = schedule.description
+      }
+    }
 
-      if (courseSchedules.length > 0) {
-        formData.value.schedules = courseSchedules.map((sched: any) => ({
+    console.log('Fetching schedules with variables:', queryVariables)
+
+    // Load group schedules using lazy query
+    // Use load() for first call, refetch() for subsequent calls
+    let queryResult
+    if (!groupSchedulesLoaded.value) {
+      queryResult = await loadGroupSchedules(null, queryVariables)
+      groupSchedulesLoaded.value = true
+    } else {
+      queryResult = await refetchGroupSchedules(queryVariables)
+    }
+
+    console.log('Query result:', queryResult)
+    console.log('Full query result structure:', JSON.stringify(queryResult, null, 2))
+
+    // Extract schedules from query result
+    // The data structure differs between load() and refetch()
+    // load() returns: { data: { schedules: { data: [...] } } }
+    // refetch() returns: ApolloQueryResult with nested data
+    const schedulesData = queryResult?.data?.schedules?.data || queryResult?.schedules?.data
+
+    console.log('Extracted schedulesData:', schedulesData)
+
+    if (schedulesData && Array.isArray(schedulesData)) {
+      const groupSchedules = schedulesData
+
+      console.log(`Found ${groupSchedules.length} schedules in group`)
+
+      if (groupSchedules.length > 0) {
+        // Load description and group_id from first schedule
+        formData.value.description = groupSchedules[0].description || ''
+        formData.value.group_id = groupSchedules[0].group_id // Store group_id for UPDATE
+
+        formData.value.schedules = groupSchedules.map((sched: any) => ({
+          teacher_id: sched.teacher_id,
           day_of_week: sched.day_of_week,
           starts_at: sched.starts_at,
           ends_at: sched.ends_at
         }))
       } else {
+        console.warn('No schedules found for this group')
         // If no schedules exist, start with one empty slot
-        formData.value.schedules = [{ day_of_week: '', starts_at: '', ends_at: '' }]
+        formData.value.schedules = [{ teacher_id: '', day_of_week: '', starts_at: '', ends_at: '' }]
       }
+    } else {
+      console.warn('No data returned from query or data is not an array')
+      console.warn('queryResult?.data?.schedules:', queryResult?.data?.schedules)
+      console.warn('queryResult?.schedules:', queryResult?.schedules)
+      formData.value.schedules = [{ teacher_id: '', day_of_week: '', starts_at: '', ends_at: '' }]
     }
   } catch (err: any) {
-    console.error('Error loading course schedules:', err)
+    console.error('Error loading group schedules:', err)
     notify(t('schedules.messages.loadError') || 'Error loading schedules', 'error')
     // Even on error, provide one empty slot
-    formData.value.schedules = [{ day_of_week: '', starts_at: '', ends_at: '' }]
-  } finally {
-    loadingEditSchedules.value = false
+    formData.value.schedules = [{ teacher_id: '', day_of_week: '', starts_at: '', ends_at: '' }]
   }
 }
 
@@ -499,9 +611,11 @@ const closeModal = () => {
   editingScheduleId.value = null
   formData.value = {
     course_id: '',
+    description: '',
     schedules: [
-      { day_of_week: '', starts_at: '', ends_at: '' }
-    ]
+      { teacher_id: '', day_of_week: '', starts_at: '', ends_at: '' }
+    ],
+    group_id: undefined
   }
   formErrors.value = {}
 }
@@ -524,9 +638,12 @@ const handleSave = async () => {
       const slot = formData.value.schedules[0]
       const input = {
         course_id: formData.value.course_id,
+        teacher_id: Number(slot.teacher_id),
         day_of_week: Number(slot.day_of_week),
-        starts_at: slot.starts_at,
-        ends_at: slot.ends_at
+        starts_at: normalizeTime(slot.starts_at),
+        ends_at: normalizeTime(slot.ends_at),
+        description: formData.value.description,
+        group_id: formData.value.group_id // Preserve group_id for single UPDATE
       }
 
       await updateSingleSchedule({
@@ -535,26 +652,31 @@ const handleSave = async () => {
       })
       notify(t('schedules.messages.updateSingleSuccess'), 'success')
     } else if (isEditMode.value) {
-      // Bulk update - replaces all schedules for the course
+      // Bulk update - replaces all schedules for the group
       const input = {
         course_id: formData.value.course_id,
+        description: formData.value.description,
+        group_id: formData.value.group_id, // Send group_id for bulk UPDATE
         schedules: formData.value.schedules.map(slot => ({
+          teacher_id: Number(slot.teacher_id), // Teacher from each slot
           day_of_week: Number(slot.day_of_week),
-          starts_at: slot.starts_at,
-          ends_at: slot.ends_at
+          starts_at: normalizeTime(slot.starts_at),
+          ends_at: normalizeTime(slot.ends_at)
         }))
       }
 
       await bulkUpdateSchedules({ input })
       notify(t('schedules.messages.updateSuccess'), 'success')
     } else {
-      // Bulk create - adds new schedules
+      // Bulk create - adds new schedules (NO group_id, backend generates it)
       const input = {
         course_id: formData.value.course_id,
+        description: formData.value.description,
         schedules: formData.value.schedules.map(slot => ({
+          teacher_id: Number(slot.teacher_id), // Teacher from each slot
           day_of_week: Number(slot.day_of_week),
-          starts_at: slot.starts_at,
-          ends_at: slot.ends_at
+          starts_at: normalizeTime(slot.starts_at),
+          ends_at: normalizeTime(slot.ends_at)
         }))
       }
 
@@ -624,7 +746,8 @@ const goToPage = (page: number) => {
       first: perPage.value,
       page,
       course_id: filterCourseId.value || undefined,
-      day_of_week: filterDayOfWeek.value ? Number(filterDayOfWeek.value) : undefined
+      day_of_week: filterDayOfWeek.value ? Number(filterDayOfWeek.value) : undefined,
+      teacher_id: filterTeacherId.value || undefined
     })
   }
 }
@@ -636,7 +759,8 @@ const changePerPage = (newPerPage: number) => {
     first: newPerPage,
     page: 1,
     course_id: filterCourseId.value || undefined,
-    day_of_week: filterDayOfWeek.value ? Number(filterDayOfWeek.value) : undefined
+    day_of_week: filterDayOfWeek.value ? Number(filterDayOfWeek.value) : undefined,
+    teacher_id: filterTeacherId.value || undefined
   })
 }
 
@@ -647,7 +771,8 @@ const applyFilters = () => {
     first: perPage.value,
     page: 1,
     course_id: filterCourseId.value || undefined,
-    day_of_week: filterDayOfWeek.value ? Number(filterDayOfWeek.value) : undefined
+    day_of_week: filterDayOfWeek.value ? Number(filterDayOfWeek.value) : undefined,
+    teacher_id: filterTeacherId.value || undefined
   })
 }
 
@@ -671,27 +796,33 @@ watch(filterDayOfWeek, () => {
   applyFilters()
 })
 
-// When teacher filter changes, clear course filter and apply
 watch(filterTeacherId, () => {
-  // If a teacher is selected, clear the course filter
-  // The course filter will automatically show only courses for that teacher
-  if (filterTeacherId.value) {
-    filterCourseId.value = ''
-  }
   applyFilters()
 })
 
-// Get course display name with teacher
+// Get course display name (without teacher since courses are independent)
 const getCourseDisplayName = (course: Course): string => {
-  return `${course.name} (${course.teacher.name})`
+  return course.name
 }
 
 /**
- * Check if this is the first occurrence of a course in the list
- * Used to show the "Manage" button only once per course
+ * Check if this is the first occurrence of a schedule group (by group_id) in the list
+ * Used to show the "Manage" button only once per group
+ * Falls back to description-based grouping for legacy schedules without group_id
  */
-const isFirstOccurrenceOfCourse = (courseId: string, index: number): boolean => {
-  const firstIndex = filteredSchedules.value.findIndex((s: Schedule) => s.course_id === courseId)
+const isFirstOccurrenceOfGroup = (schedule: Schedule, index: number): boolean => {
+  // If schedule has a group_id, use it for grouping
+  if (schedule.group_id) {
+    const firstIndex = sortedSchedules.value.findIndex((s: Schedule) =>
+      s.group_id === schedule.group_id
+    )
+    return index === firstIndex
+  }
+
+  // Fallback to legacy grouping by course_id + description for schedules without group_id
+  const firstIndex = sortedSchedules.value.findIndex((s: Schedule) =>
+    s.course_id === schedule.course_id && s.description === schedule.description
+  )
   return index === firstIndex
 }
 </script>
@@ -725,8 +856,8 @@ const isFirstOccurrenceOfCourse = (courseId: string, index: number): boolean => 
         <div class="flex-1">
           <FormSelect v-model="filterCourseId">
             <option value="">{{ t('schedules.filters.allCourses') }}</option>
-            <option v-for="course in filteredCoursesByTeacher" :key="course.id" :value="course.id">
-              {{ getCourseDisplayName(course) }}
+            <option v-for="course in allCourses" :key="course.id" :value="course.id">
+              {{ course.name }}
             </option>
           </FormSelect>
         </div>
@@ -777,7 +908,8 @@ const isFirstOccurrenceOfCourse = (courseId: string, index: number): boolean => 
           first: perPage,
           page: currentPage,
           course_id: filterCourseId || undefined,
-          day_of_week: filterDayOfWeek ? Number(filterDayOfWeek) : undefined
+          day_of_week: filterDayOfWeek ? Number(filterDayOfWeek) : undefined,
+          teacher_id: filterTeacherId || undefined
         })">{{ t('schedules.actions.retry') }}</Button>
       </div>
     </div>
@@ -805,13 +937,16 @@ const isFirstOccurrenceOfCourse = (courseId: string, index: number): boolean => 
             <Table.Td class="py-4 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">
               {{ t('schedules.columns.endsAt') }}
             </Table.Td>
+            <Table.Td class="py-4 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">
+              {{ t('schedules.columns.description') }}
+            </Table.Td>
             <Table.Td class="py-4 font-medium text-center bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">
               {{ t('schedules.columns.actions') }}
             </Table.Td>
           </Table.Tr>
         </Table.Thead>
         <Table.Tbody>
-          <Table.Tr v-if="filteredSchedules.length === 0">
+          <Table.Tr v-if="sortedSchedules.length === 0">
             <Table.Td colspan="7" class="py-10 text-center text-slate-500">
               <div class="flex flex-col items-center gap-3">
                 <Lucide icon="Inbox" class="w-10 h-10 text-slate-300" />
@@ -819,7 +954,7 @@ const isFirstOccurrenceOfCourse = (courseId: string, index: number): boolean => 
               </div>
             </Table.Td>
           </Table.Tr>
-          <Table.Tr v-for="(schedule, index) in filteredSchedules" :key="schedule.id" class="[&_td]:last:border-b-0">
+          <Table.Tr v-for="(schedule, index) in sortedSchedules" :key="schedule.id" class="[&_td]:last:border-b-0">
             <Table.Td class="py-4 border-dashed dark:bg-darkmode-600">
               <div class="text-xs text-slate-500">#{{ schedule.id }}</div>
             </Table.Td>
@@ -827,7 +962,7 @@ const isFirstOccurrenceOfCourse = (courseId: string, index: number): boolean => 
               <div class="font-medium">{{ schedule.course.name }}</div>
             </Table.Td>
             <Table.Td class="py-4 border-dashed dark:bg-darkmode-600">
-              <div class="text-slate-600">{{ schedule.course.teacher.name }}</div>
+              <div class="text-slate-600">{{ schedule.teacher.name }}</div>
             </Table.Td>
             <Table.Td class="py-4 border-dashed dark:bg-darkmode-600">
               <div class="px-2 py-1 text-xs font-medium rounded-md bg-primary/10 text-primary inline-block">
@@ -839,6 +974,9 @@ const isFirstOccurrenceOfCourse = (courseId: string, index: number): boolean => 
             </Table.Td>
             <Table.Td class="py-4 border-dashed dark:bg-darkmode-600">
               <div class="font-mono text-slate-600">{{ schedule.ends_at }}</div>
+            </Table.Td>
+            <Table.Td class="py-4 border-dashed dark:bg-darkmode-600">
+              <div class="font-mono text-slate-600">{{ schedule.description }}</div>
             </Table.Td>
             <Table.Td class="relative py-4 border-dashed dark:bg-darkmode-600">
               <div class="flex items-center justify-center gap-2">
@@ -861,7 +999,7 @@ const isFirstOccurrenceOfCourse = (courseId: string, index: number): boolean => 
                   {{ t('schedules.actions.delete') }}
                 </Button>
                 <Button
-                  v-if="isFirstOccurrenceOfCourse(schedule.course_id, index)"
+                  v-if="isFirstOccurrenceOfGroup(schedule, index)"
                   variant="outline-secondary"
                   size="sm"
                   @click="openEditModal(schedule)"
@@ -962,7 +1100,7 @@ const isFirstOccurrenceOfCourse = (courseId: string, index: number): boolean => 
   </div>
 
   <!-- Create/Edit Modal -->
-  <Dialog :open="showModal" @close="closeModal">
+  <Dialog :open="showModal" @close="closeModal" :staticBackdrop="true">
     <Dialog.Panel class="max-w-3xl sm:w-[540px]">
       <Dialog.Title>
         <h2 class="mr-auto text-base font-medium">
@@ -976,12 +1114,12 @@ const isFirstOccurrenceOfCourse = (courseId: string, index: number): boolean => 
           <FormSelect
             id="schedule-course"
             v-model="formData.course_id"
-            :disabled="isEditMode || isSingleEditMode || loadingEditSchedules"
+            :disabled="isEditMode || isSingleEditMode || loadingGroupSchedules"
             :class="{ 'border-danger': formErrors.course_id }"
           >
             <option value="">{{ t('schedules.form.selectCourse') }}</option>
             <option v-for="course in allCourses" :key="course.id" :value="course.id">
-              {{ getCourseDisplayName(course) }}
+              {{ course.name }}
             </option>
           </FormSelect>
           <div v-if="formErrors.course_id" class="mt-1 text-xs text-danger">
@@ -989,8 +1127,24 @@ const isFirstOccurrenceOfCourse = (courseId: string, index: number): boolean => 
           </div>
         </div>
 
+        <!-- Description -->
+        <div class="col-span-12">
+          <FormLabel htmlFor="schedule-description">{{ t('schedules.form.description') }} *</FormLabel>
+          <FormInput
+            id="schedule-description"
+            v-model="formData.description"
+            type="text"
+            :placeholder="t('schedules.form.descriptionPlaceholder')"
+            :disabled="loadingGroupSchedules"
+            :class="{ 'border-danger': formErrors.description }"
+          />
+          <div v-if="formErrors.description" class="mt-1 text-xs text-danger">
+            {{ formErrors.description }}
+          </div>
+        </div>
+
         <!-- Loading state for edit mode -->
-        <div v-if="loadingEditSchedules" class="col-span-12 flex items-center justify-center py-8">
+        <div v-if="loadingGroupSchedules" class="col-span-12 flex items-center justify-center py-8">
           <div class="flex flex-col items-center gap-3">
             <Lucide icon="Loader" class="w-6 h-6 animate-spin text-primary" />
             <div class="text-sm text-slate-500">{{ t('schedules.messages.loadingSchedules') }}</div>
@@ -998,45 +1152,62 @@ const isFirstOccurrenceOfCourse = (courseId: string, index: number): boolean => 
         </div>
 
         <!-- Schedule Slots -->
-        <div v-if="!loadingEditSchedules" class="col-span-12">
+        <div v-if="!loadingGroupSchedules" class="col-span-12">
+          <!-- Header with label only -->
           <div class="flex items-center justify-between mb-3">
             <FormLabel class="mb-0">{{ t('schedules.form.scheduleSlots') }}</FormLabel>
-            <Button
-              v-if="!isSingleEditMode"
-              type="button"
-              variant="outline-primary"
-              size="sm"
-              @click="addSlot"
-            >
-              <Lucide icon="Plus" class="w-4 h-4 mr-1" />
-              {{ t('schedules.actions.addSlot') }}
-            </Button>
           </div>
 
           <!-- Scrollable container for slots -->
-          <div class="max-h-[32rem] overflow-y-auto pr-2 space-y-4 scroll-smooth">
+          <div class="max-h-80 overflow-y-auto pr-2 space-y-3 scroll-smooth border border-slate-200/60 rounded-lg p-3 dark:border-darkmode-400">
             <div
               v-for="(slot, index) in formData.schedules"
               :key="index"
-              class="p-4 border border-slate-200 rounded-lg dark:border-darkmode-400"
+              class="p-4 border-2 border-slate-200 rounded-lg dark:border-darkmode-400 bg-white dark:bg-darkmode-800 shadow-sm"
             >
               <div class="flex items-center justify-between mb-3">
-                <div class="text-sm font-medium text-slate-600">
-                  {{ t('schedules.form.slot', { number: index + 1 }) }}
+                <div class="flex items-center gap-2">
+                  <div class="flex items-center justify-center w-7 h-7 rounded-full bg-primary/10 text-primary font-semibold text-sm">
+                    {{ index + 1 }}
+                  </div>
+                  <div class="text-sm font-medium text-slate-700 dark:text-slate-300">
+                    {{ t('schedules.form.slot', { number: index + 1 }) }}
+                  </div>
                 </div>
                 <Button
                   v-if="!isSingleEditMode && formData.schedules.length > 1"
                   type="button"
-                  variant="outline-danger"
+                  variant="soft-danger"
                   size="sm"
                   @click="removeSlot(index)"
+                  class="px-3"
                 >
-                  <Lucide icon="X" class="w-4 h-4 mr-1" />
+                  <Lucide icon="Trash2" class="w-3.5 h-3.5 mr-1.5" />
                   {{ t('schedules.actions.removeSlot') }}
                 </Button>
               </div>
 
               <div class="grid grid-cols-12 gap-3">
+                <!-- Teacher Selector -->
+                <div class="col-span-12">
+                  <FormLabel :htmlFor="`slot-teacher-${index}`">
+                    {{ t('schedules.form.teacher') }} *
+                  </FormLabel>
+                  <FormSelect
+                    :id="`slot-teacher-${index}`"
+                    v-model="slot.teacher_id"
+                    :class="{ 'border-danger': formErrors.schedules?.[index]?.teacher_id }"
+                  >
+                    <option value="">{{ t('schedules.form.selectTeacher') }}</option>
+                    <option v-for="teacher in allTeachers" :key="teacher.id" :value="teacher.id">
+                      {{ teacher.name }}
+                    </option>
+                  </FormSelect>
+                  <div v-if="formErrors.schedules?.[index]?.teacher_id" class="mt-1 text-xs text-danger">
+                    {{ formErrors.schedules[index].teacher_id }}
+                  </div>
+                </div>
+
                 <!-- Day of Week -->
                 <div class="col-span-12 sm:col-span-4">
                   <FormLabel :htmlFor="`slot-day-${index}`">{{ t('schedules.form.dayOfWeek') }} *</FormLabel>
@@ -1085,6 +1256,20 @@ const isFirstOccurrenceOfCourse = (courseId: string, index: number): boolean => 
               </div>
             </div>
           </div>
+
+          <!-- Add Slot button at the bottom -->
+          <div v-if="!isSingleEditMode" class="mt-3">
+            <Button
+              type="button"
+              variant="outline-primary"
+              size="sm"
+              @click="addSlot"
+              class="w-full"
+            >
+              <Lucide icon="Plus" class="w-4 h-4 mr-2" />
+              {{ t('schedules.actions.addSlot') }}
+            </Button>
+          </div>
         </div>
       </Dialog.Description>
       <Dialog.Footer class="text-right">
@@ -1092,8 +1277,8 @@ const isFirstOccurrenceOfCourse = (courseId: string, index: number): boolean => 
           type="button"
           variant="outline-secondary"
           @click="closeModal"
-          :disabled="isSubmitting || loadingEditSchedules"
-          class="w-20 mr-2"
+          :disabled="isSubmitting || loadingGroupSchedules"
+          class="min-w-28 mr-2"
         >
           {{ t('schedules.actions.cancel') }}
         </Button>
@@ -1101,8 +1286,8 @@ const isFirstOccurrenceOfCourse = (courseId: string, index: number): boolean => 
           type="button"
           variant="primary"
           @click="handleSave"
-          :disabled="isSubmitting || loadingEditSchedules"
-          class="w-32"
+          :disabled="isSubmitting || loadingGroupSchedules"
+          class="min-w-44"
         >
           <Lucide v-if="isSubmitting" icon="Loader" class="w-4 h-4 animate-spin" />
           <span v-else-if="isSingleEditMode">{{ t('schedules.actions.update') }}</span>
@@ -1114,7 +1299,7 @@ const isFirstOccurrenceOfCourse = (courseId: string, index: number): boolean => 
   </Dialog>
 
   <!-- Delete Confirmation Modal -->
-  <Dialog :open="deleteConfirmModal" @close="cancelDelete">
+  <Dialog :open="deleteConfirmModal" @close="cancelDelete" :staticBackdrop="true">
     <Dialog.Panel>
       <div class="p-5 text-center">
         <Lucide icon="AlertTriangle" class="w-16 h-16 mx-auto mt-3 text-danger" />
