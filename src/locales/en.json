@@ -6,6 +6,7 @@
     "students": "Students",
     "availabilities": "Availabilities",
     "schedules": "Schedules",
+    "enrollments": "Enrollments",
     "logout": "Log Out"
   },
   "teachers": {
@@ -346,6 +347,82 @@
       "allDays": "All Days",
       "filterByCourse": "Filter by Course",
       "filterByDay": "Filter by Day"
+    }
+  },
+  "studentEnrollments": {
+    "title": "Student Enrollments",
+    "columns": {
+      "id": "ID",
+      "student": "Student",
+      "course": "Course",
+      "teacher": "Teacher",
+      "schedule": "Schedule",
+      "status": "Status",
+      "notes": "Notes",
+      "actions": "Actions"
+    },
+    "days": {
+      "sunday": "Sunday",
+      "monday": "Monday",
+      "tuesday": "Tuesday",
+      "wednesday": "Wednesday",
+      "thursday": "Thursday",
+      "friday": "Friday",
+      "saturday": "Saturday"
+    },
+    "status": {
+      "active": "Active",
+      "completed": "Completed",
+      "dropped": "Dropped",
+      "pending": "Pending"
+    },
+    "actions": {
+      "new": "New Enrollment",
+      "edit": "Edit",
+      "delete": "Delete",
+      "update": "Update",
+      "create": "Create",
+      "cancel": "Cancel",
+      "retry": "Retry",
+      "clearFilters": "Clear Filters"
+    },
+    "filters": {
+      "allStudents": "All Students",
+      "allSchedules": "All Schedules",
+      "allStatuses": "All Statuses"
+    },
+    "form": {
+      "addTitle": "New Enrollment",
+      "editTitle": "Edit Enrollment",
+      "student": "Student",
+      "schedule": "Schedule",
+      "status": "Status",
+      "notes": "Notes",
+      "selectStudent": "Select student...",
+      "selectSchedule": "Select schedule...",
+      "notesPlaceholder": "Optional notes about this enrollment..."
+    },
+    "validation": {
+      "studentRequired": "Student is required",
+      "scheduleRequired": "Schedule is required",
+      "statusRequired": "Status is required"
+    },
+    "messages": {
+      "loading": "Loading enrollments...",
+      "error": "Error loading enrollments",
+      "noEnrollments": "No enrollments found. Create your first enrollment!",
+      "createSuccess": "Enrollment created successfully",
+      "updateSuccess": "Enrollment updated successfully",
+      "deleteSuccess": "Enrollment deleted successfully",
+      "deleteError": "Error deleting enrollment",
+      "generalError": "An error occurred"
+    },
+    "delete": {
+      "title": "Delete Enrollment",
+      "message": "Are you sure you want to delete the enrollment of {student} in {course}?",
+      "confirm": "Delete",
+      "cancel": "Cancel",
+      "cannotUndo": "This process cannot be undone."
     }
   }
 }

@@ -6,6 +6,7 @@
     "students": "Estudiantes",
     "availabilities": "Disponibilidades",
     "schedules": "Horarios",
+    "enrollments": "Inscripciones",
     "logout": "Cerrar sesión"
   },
   "teachers": {
@@ -346,6 +347,82 @@
       "allDays": "Todos los Días",
       "filterByCourse": "Filtrar por Curso",
       "filterByDay": "Filtrar por Día"
+    }
+  },
+  "studentEnrollments": {
+    "title": "Inscripciones de Estudiantes",
+    "columns": {
+      "id": "ID",
+      "student": "Estudiante",
+      "course": "Curso",
+      "teacher": "Profesor",
+      "schedule": "Horario",
+      "status": "Estado",
+      "notes": "Notas",
+      "actions": "Acciones"
+    },
+    "days": {
+      "sunday": "Domingo",
+      "monday": "Lunes",
+      "tuesday": "Martes",
+      "wednesday": "Miércoles",
+      "thursday": "Jueves",
+      "friday": "Viernes",
+      "saturday": "Sábado"
+    },
+    "status": {
+      "active": "Activo",
+      "completed": "Completado",
+      "dropped": "Retirado",
+      "pending": "Pendiente"
+    },
+    "actions": {
+      "new": "Nueva Inscripción",
+      "edit": "Editar",
+      "delete": "Eliminar",
+      "update": "Actualizar",
+      "create": "Crear",
+      "cancel": "Cancelar",
+      "retry": "Reintentar",
+      "clearFilters": "Limpiar Filtros"
+    },
+    "filters": {
+      "allStudents": "Todos los Estudiantes",
+      "allSchedules": "Todos los Horarios",
+      "allStatuses": "Todos los Estados"
+    },
+    "form": {
+      "addTitle": "Nueva Inscripción",
+      "editTitle": "Editar Inscripción",
+      "student": "Estudiante",
+      "schedule": "Horario",
+      "status": "Estado",
+      "notes": "Notas",
+      "selectStudent": "Seleccione estudiante...",
+      "selectSchedule": "Seleccione horario...",
+      "notesPlaceholder": "Notas opcionales sobre esta inscripción..."
+    },
+    "validation": {
+      "studentRequired": "El estudiante es obligatorio",
+      "scheduleRequired": "El horario es obligatorio",
+      "statusRequired": "El estado es obligatorio"
+    },
+    "messages": {
+      "loading": "Cargando inscripciones...",
+      "error": "Error al cargar inscripciones",
+      "noEnrollments": "No se encontraron inscripciones. ¡Crea tu primera inscripción!",
+      "createSuccess": "Inscripción creada exitosamente",
+      "updateSuccess": "Inscripción actualizada exitosamente",
+      "deleteSuccess": "Inscripción eliminada exitosamente",
+      "deleteError": "Error al eliminar inscripción",
+      "generalError": "Ocurrió un error"
+    },
+    "delete": {
+      "title": "Eliminar Inscripción",
+      "message": "¿Estás seguro de que deseas eliminar la inscripción de {student} en {course}?",
+      "confirm": "Eliminar",
+      "cancel": "Cancelar",
+      "cannotUndo": "Este proceso no se puede deshacer."
     }
   }
 }
