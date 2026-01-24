@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from "vue-router";
 import Layout from "@/themes";
 import { useAuthStore } from '@/stores/auth'
+import { useBusinessStore } from '@/stores/business'
 
 const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
@@ -63,8 +64,9 @@ const router = createRouter({
 });
 
 
-router.beforeEach((to) => {
+router.beforeEach(async (to) => {
     const auth = useAuthStore()
+    const business = useBusinessStore()
 
     // If the route requires authentication and the user is not authenticated
     if (to.meta.requiresAuth && !auth.isAuthenticated()) {
@@ -74,6 +76,15 @@ router.beforeEach((to) => {
     // If the user is authenticated but tries to access login, redirect to dashboard
     if (to.name === 'login' && auth.isAuthenticated()) {
         return '/teachers'
+    }
+
+    // Initialize business context for authenticated users
+    if (auth.isAuthenticated() && !business.isInitialized) {
+        try {
+            await business.initialize()
+        } catch (error) {
+            console.error('Error initializing business context:', error)
+        }
     }
 })
 

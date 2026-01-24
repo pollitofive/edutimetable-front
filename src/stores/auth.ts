@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import axios from 'axios'
+import { useBusinessStore } from './business'
 
 interface User {
     id: number
@@ -40,6 +41,10 @@ export const useAuthStore = defineStore('auth', {
 
             localStorage.setItem('token', this.token!)
             localStorage.setItem("user", JSON.stringify(this.user));
+
+            // Initialize business context after login
+            const businessStore = useBusinessStore()
+            await businessStore.initialize()
         },
         async logout() {
             try {
@@ -55,6 +60,11 @@ export const useAuthStore = defineStore('auth', {
                 this.token = null;
                 localStorage.removeItem("token");
                 localStorage.removeItem("user");
+
+                // Clear business context
+                const businessStore = useBusinessStore()
+                businessStore.clear()
+
                 window.location.href = "/login";
             }
         },

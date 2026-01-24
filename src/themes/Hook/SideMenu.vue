@@ -4,10 +4,8 @@ import "@/assets/css/themes/hook.css";
 import { useRoute, useRouter } from "vue-router";
 import Lucide from "@/components/Base/Lucide";
 import Breadcrumb from "@/components/Base/Breadcrumb";
-import { Menu } from "@/components/Base/Headless";
 import { useMenuStore } from "@/stores/menu";
 import { useCompactMenuStore } from "@/stores/compact-menu";
-import { useAuthStore } from "@/stores/auth";
 import {
   type ProvideForceActiveMenu,
   forceActiveMenu,
@@ -19,12 +17,9 @@ import {
   leave,
 } from "./side-menu";
 import { watch, reactive, ref, computed, onMounted, provide } from "vue";
-import users from "@/fakers/users";
 import SimpleBar from "simplebar";
 import QuickSearch from "@/components/QuickSearch";
-import SwitchAccount from "@/components/SwitchAccount";
-import NotificationsPanel from "@/components/NotificationsPanel";
-import ActivitiesPanel from "@/components/ActivitiesPanel";
+import BusinessSelector from "@/views/components/BusinessSelector.vue";
 
 const compactMenu = useCompactMenuStore();
 const setCompactMenu = (val: boolean) => {
@@ -33,21 +28,6 @@ const setCompactMenu = (val: boolean) => {
 const quickSearch = ref(false);
 const setQuickSearch = (value: boolean) => {
   quickSearch.value = value;
-};
-
-const switchAccount = ref(false);
-const setSwitchAccount = (value: boolean) => {
-  switchAccount.value = value;
-};
-
-const notificationsPanel = ref(false);
-const setNotificationsPanel = (value: boolean) => {
-  notificationsPanel.value = value;
-};
-
-const activitiesPanel = ref(false);
-const setActivitiesPanel = (value: boolean) => {
-  activitiesPanel.value = value;
 };
 
 const compactMenuOnHover = ref(false);
@@ -79,13 +59,6 @@ const toggleCompactMenu = (event: MouseEvent) => {
 const compactLayout = () => {
   if (window.innerWidth <= 1600) {
     setCompactMenu(true);
-  }
-};
-
-const requestFullscreen = () => {
-  const el = document.documentElement;
-  if (el.requestFullscreen) {
-    el.requestFullscreen();
   }
 };
 
@@ -359,7 +332,7 @@ onMounted(() => {
         <div
           class="absolute inset-x-0 h-full mx-5 box rounded-xl before:content-[''] before:z-[-1] before:inset-x-4 before:shadow-sm before:h-full before:bg-slate-50 before:border before:border-slate-200 before:absolute before:rounded-lg before:mx-auto before:top-0 before:mt-3 before:dark:bg-darkmode-600/70 before:dark:border-darkmode-500/60"
         >
-          <div class="flex items-center w-full h-full px-5">
+          <div class="flex items-center justify-between w-full h-full px-5">
             <div class="flex items-center gap-1 xl:hidden">
               <a
                 href=""
@@ -387,7 +360,7 @@ onMounted(() => {
               </a>
             </div>
             <!-- BEGIN: Breadcrumb -->
-            <Breadcrumb class="flex-1 hidden xl:block">
+            <Breadcrumb class="hidden xl:block">
               <Breadcrumb.Link class="dark:before:bg-chevron-white" to="/"
                 >App</Breadcrumb.Link
               >
@@ -403,9 +376,9 @@ onMounted(() => {
               </Breadcrumb.Link>
             </Breadcrumb>
             <!-- END: Breadcrumb -->
-            <!-- BEGIN: Search -->
+            <!-- BEGIN: Search (Centered) -->
             <div
-              class="relative justify-center flex-1 hidden xl:flex"
+              class="absolute left-1/2 transform -translate-x-1/2 hidden xl:block"
               @click="
                 () => {
                   quickSearch = true;
@@ -425,145 +398,11 @@ onMounted(() => {
               :setQuickSearch="setQuickSearch"
             />
             <!-- END: Search -->
-            <!-- BEGIN: Notification & User Menu -->
-            <div class="flex items-center flex-1">
-              <div class="flex items-center gap-1 ml-auto">
-                <a
-                  href=""
-                  class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-darkmode-400"
-                  @click="
-                    (e) => {
-                      e.preventDefault();
-                      activitiesPanel = true;
-                    }
-                  "
-                >
-                  <Lucide icon="LayoutGrid" class="w-[18px] h-[18px]" />
-                </a>
-                <a
-                  href=""
-                  class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-darkmode-400"
-                  @click="
-                    (e) => {
-                      e.preventDefault();
-                      requestFullscreen();
-                    }
-                  "
-                >
-                  <Lucide icon="Expand" class="w-[18px] h-[18px]" />
-                </a>
-                <a
-                  href=""
-                  class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-darkmode-400"
-                  @click="
-                    (e) => {
-                      e.preventDefault();
-                      notificationsPanel = true;
-                    }
-                  "
-                >
-                  <Lucide icon="Bell" class="w-[18px] h-[18px]" />
-                </a>
-              </div>
-              <Menu class="ml-5">
-                <Menu.Button
-                  class="overflow-hidden rounded-full w-[36px] h-[36px] border-[3px] border-slate-200/70 image-fit"
-                >
-                  <img
-                    alt="Tailwise - Admin Dashboard Template"
-                    :src="users.fakeUsers()[0].photo"
-                  />
-                </Menu.Button>
-                <Menu.Items class="w-56 mt-1">
-                  <Menu.Item
-                    @click="
-                      () => {
-                        switchAccount = true;
-                      }
-                    "
-                  >
-                    <Lucide icon="ToggleLeft" class="w-4 h-4 mr-2" />
-                    Switch Account
-                  </Menu.Item>
-                  <Menu.Divider />
-                  <Menu.Item
-                    @click="
-                      () => {
-                        router.push({
-                          name: 'settings',
-                          query: { page: 'connected-services' },
-                        });
-                      }
-                    "
-                  >
-                    <Lucide icon="Settings" class="w-4 h-4 mr-2" />
-                    Connected Services
-                  </Menu.Item>
-                  <Menu.Item
-                    @click="
-                      () => {
-                        router.push({
-                          name: 'settings',
-                          query: { page: 'email-settings' },
-                        });
-                      }
-                    "
-                  >
-                    <Lucide icon="Inbox" class="w-4 h-4 mr-2" />
-                    Email Settings
-                  </Menu.Item>
-                  <Menu.Item
-                    @click="
-                      () => {
-                        router.push({
-                          name: 'settings',
-                          query: { page: 'security' },
-                        });
-                      }
-                    "
-                  >
-                    <Lucide icon="Lock" class="w-4 h-4 mr-2" />
-                    Reset Password
-                  </Menu.Item>
-                  <Menu.Divider />
-                  <Menu.Item
-                    @click="
-                      () => {
-                        router.push({
-                          name: 'settings',
-                        });
-                      }
-                    "
-                  >
-                    <Lucide icon="Users" class="w-4 h-4 mr-2" />
-                    Profile Info
-                  </Menu.Item>
-                  <Menu.Item
-                    @click="
-                      () => {
-                        useAuthStore().logout();
-                      }
-                    "
-                  >
-                    <Lucide icon="Power" class="w-4 h-4 mr-2" />
-                    Logout
-                  </Menu.Item>
-                </Menu.Items>
-              </Menu>
+            <!-- BEGIN: Business Selector -->
+            <div class="ml-auto">
+              <BusinessSelector />
             </div>
-            <ActivitiesPanel
-              :activitiesPanel="activitiesPanel"
-              :setActivitiesPanel="setActivitiesPanel"
-            />
-            <NotificationsPanel
-              :notificationsPanel="notificationsPanel"
-              :setNotificationsPanel="setNotificationsPanel"
-            />
-            <SwitchAccount
-              :switchAccount="switchAccount"
-              :setSwitchAccount="setSwitchAccount"
-            />
-            <!-- END: Notification & User Menu -->
+            <!-- END: Business Selector -->
           </div>
         </div>
       </div>
