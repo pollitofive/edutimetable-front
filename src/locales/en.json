@@ -221,6 +221,7 @@
       "name": "Name",
       "email": "Email",
       "code": "Code",
+      "level": "Level",
       "actions": "Actions"
     },
     "actions": {
@@ -233,23 +234,33 @@
     },
     "filters": {
       "searchByName": "Search by name...",
-      "searchByEmail": "Search by email...",
-      "searchByCode": "Search by code..."
+      "searchByNameOrEmail": "Search by name or email...",
+      "searchByCode": "Code",
+      "searchByTrack": "Track",
+      "searchByLevel": "Level",
+      "selectTrackFirst": "Select a track first"
     },
     "form": {
       "nameLabel": "Name",
       "emailLabel": "Email",
       "codeLabel": "Student Code",
+      "trackLabel": "Track",
+      "levelLabel": "Level",
       "namePlaceholder": "Enter student name",
       "emailPlaceholder": "Enter student email",
       "codePlaceholder": "e.g., STU-12345",
+      "trackPlaceholder": "Select a track...",
+      "levelPlaceholder": "Select a level...",
+      "selectTrackFirst": "Select a track first",
       "required": "*"
     },
     "validation": {
       "nameRequired": "Name is required",
       "emailRequired": "Email is required",
       "emailInvalid": "Invalid email format",
-      "codeRequired": "Student code is required"
+      "codeRequired": "Student code is required",
+      "trackRequired": "Track is required",
+      "courseLevelRequired": "Course level is required"
     },
     "messages": {
       "loading": "Loading students...",

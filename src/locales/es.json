@@ -221,6 +221,7 @@
       "name": "Nombre",
       "email": "Correo Electrónico",
       "code": "Código",
+      "level": "Nivel",
       "actions": "Acciones"
     },
     "actions": {
@@ -233,23 +234,33 @@
     },
     "filters": {
       "searchByName": "Buscar por nombre...",
-      "searchByEmail": "Buscar por correo...",
-      "searchByCode": "Buscar por código..."
+      "searchByNameOrEmail": "Buscar por nombre o correo...",
+      "searchByCode": "Código",
+      "searchByTrack": "Pista",
+      "searchByLevel": "Nivel",
+      "selectTrackFirst": "Seleccione una pista primero"
     },
     "form": {
       "nameLabel": "Nombre",
       "emailLabel": "Correo Electrónico",
       "codeLabel": "Código de Estudiante",
+      "trackLabel": "Pista",
+      "levelLabel": "Nivel",
       "namePlaceholder": "Ingrese el nombre del estudiante",
       "emailPlaceholder": "Ingrese el correo del estudiante",
       "codePlaceholder": "ej. STU-12345",
+      "trackPlaceholder": "Seleccione una pista...",
+      "levelPlaceholder": "Seleccione un nivel...",
+      "selectTrackFirst": "Seleccione una pista primero",
       "required": "*"
     },
     "validation": {
       "nameRequired": "El nombre es obligatorio",
       "emailRequired": "El correo electrónico es obligatorio",
       "emailInvalid": "Formato de correo electrónico inválido",
-      "codeRequired": "El código de estudiante es obligatorio"
+      "codeRequired": "El código de estudiante es obligatorio",
+      "trackRequired": "La pista es obligatoria",
+      "courseLevelRequired": "El nivel de curso es obligatorio"
     },
     "messages": {
       "loading": "Cargando estudiantes...",
