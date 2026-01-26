@@ -23,6 +23,12 @@ const router = createRouter({
                     component: () => import("../pages/DashboardOverview1.vue"),
                 },
                 {
+                    path: "/course-levels",
+                    name: "course-levels",
+                    meta: { requiresAuth: true },
+                    component: () => import("../views/CourseLevelsView.vue"),
+                },
+                {
                     path: "/teachers",
                     name: "teachers",
                     meta: { requiresAuth: true },
