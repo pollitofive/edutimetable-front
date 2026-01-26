@@ -20,29 +20,62 @@ interface Teacher {
   email: string
 }
 
+interface CourseLevel {
+  id: string
+  track: string
+  name: string
+  slug: string
+  sort_order: number
+}
+
 interface Course {
   id: string
   name: string
   level: string | null
-  year: number | null
+  course_level_id: string
+  courseLevel?: CourseLevel
   teachers?: Teacher[]
 }
 
 interface FormData {
   name: string
-  level: string
-  year: number | null
+  course_level_id: string
+}
+
+interface FormState {
+  selectedTrack: string
 }
 
 // GraphQL Queries & Mutations
+const GET_COURSE_LEVELS = gql`
+  query GetCourseLevels {
+    courseLevels(first: 100, page: 1) {
+      data {
+        id
+        track
+        name
+        slug
+        sort_order
+      }
+    }
+  }
+`
+
 const GET_COURSES = gql`
-  query GetCourses($first: Int!, $page: Int!, $name: String, $level: String, $year: Int) {
-    courses(first: $first, page: $page, name: $name, level: $level, year: $year) {
+  query GetCourses($first: Int!, $page: Int!, $name: String, $course_level_id: ID, $track: String) {
+    courses(first: $first, page: $page, name: $name, course_level_id: $course_level_id, track: $track) {
       data {
         id
         name
         level
-        year
+        course_level_id
+        courseLevel {
+          id
+          track
+          name
+          slug
+          sort_order
+        }
         teachers {
           id
           name
@@ -66,8 +99,12 @@ const CREATE_COURSE = gql`
     createCourse(input: $input) {
       id
       name
-      level
-      year
+      course_level_id
+      courseLevel {
+        id
+        name
+        track
+      }
     }
   }
 `
@@ -77,8 +114,12 @@ const UPDATE_COURSE = gql`
     updateCourse(id: $id, input: $input) {
       id
       name
-      level
-      year
+      course_level_id
+      courseLevel {
+        id
+        name
+        track
+      }
     }
   }
 `
@@ -93,10 +134,12 @@ const DELETE_COURSE = gql`
 
 // State
 const courses = ref<Course[]>([])
+const courseLevels = ref<CourseLevel[]>([])
 const showModal = ref(false)
 const selectedCourse = ref<Course | null>(null)
-const formData = ref<FormData>({ name: '', level: '', year: null })
-const formErrors = ref<{ name?: string }>({})
+const formData = ref<FormData>({ name: '', course_level_id: '' })
+const formState = ref<FormState>({ selectedTrack: '' })
+const formErrors = ref<{ name?: string; course_level_id?: string }>({})
 const deleteConfirmModal = ref(false)
 const courseToDelete = ref<Course | null>(null)
 
@@ -113,9 +156,18 @@ const lastPage = ref(1)
 
 // Filter state
 const filterName = ref('')
-const filterLevel = ref('')
-const filterYear = ref('')
+const filterTrack = ref('')
+const filterCourseLevel = ref('')
 let filterTimeout: ReturnType<typeof setTimeout> | null = null
+
+// Apollo Query for Course Levels
+const { result: courseLevelsResult, loading: courseLevelsLoading } = useQuery(
+  GET_COURSE_LEVELS,
+  {},
+  {
+    fetchPolicy: 'cache-and-network'
+  }
+)
 
 // Apollo Query for Courses
 const { result, loading, error, refetch } = useQuery(
@@ -124,8 +176,8 @@ const { result, loading, error, refetch } = useQuery(
     first: perPage.value,
     page: currentPage.value,
     name: filterName.value ? `%${filterName.value}%` : undefined,
-    level: filterLevel.value ? `%${filterLevel.value}%` : undefined,
-    year: filterYear.value ? parseInt(filterYear.value) : undefined
+    course_level_id: filterCourseLevel.value || undefined,
+    track: filterTrack.value || undefined
   }),
   {
     fetchPolicy: 'cache-and-network'
@@ -141,6 +193,32 @@ const { mutate: deleteCourse, loading: deleting } = useMutation(DELETE_COURSE)
 const isSubmitting = computed(() => creating.value || updating.value)
 const modalTitle = computed(() => selectedCourse.value ? t('courses.editCourse') : t('courses.newCourse'))
 
+// Computed for available tracks (unique values from courseLevels)
+const availableTracks = computed(() => {
+  if (!courseLevels.value || courseLevels.value.length === 0) return []
+
+  const tracks = [...new Set(courseLevels.value.map(level => level.track))]
+  return tracks.sort()
+})
+
+// Computed for filtered levels based on selected track (for form)
+const filteredCourseLevels = computed(() => {
+  if (!formState.value.selectedTrack) return []
+
+  return courseLevels.value
+    .filter(level => level.track === formState.value.selectedTrack)
+    .sort((a, b) => a.sort_order - b.sort_order)
+})
+
+// Computed for filtered levels based on selected track (for filters)
+const filteredCourseLevelsForFilter = computed(() => {
+  if (!filterTrack.value) return []
+
+  return courseLevels.value
+    .filter(level => level.track === filterTrack.value)
+    .sort((a, b) => a.sort_order - b.sort_order)
+})
+
 // Pagination computed
 const startItem = computed(() => {
   return totalItems.value === 0 ? 0 : (currentPage.value - 1) * perPage.value + 1
@@ -154,6 +232,12 @@ const endItem = computed(() => {
 const totalPages = computed(() => lastPage.value)
 
 // Watch for query results
+watch(courseLevelsResult, (newValue) => {
+  if (newValue?.courseLevels?.data) {
+    courseLevels.value = newValue.courseLevels.data
+  }
+})
+
 watch(result, (newValue) => {
   if (newValue?.courses?.data) {
     courses.value = newValue.courses.data
@@ -186,13 +270,18 @@ const validateForm = (): boolean => {
     formErrors.value.name = t('courses.validation.nameRequired')
   }
 
+  if (!formData.value.course_level_id) {
+    formErrors.value.course_level_id = t('courses.validation.courseLevelRequired')
+  }
+
   return Object.keys(formErrors.value).length === 0
 }
 
 // Methods
 const openCreateModal = () => {
   selectedCourse.value = null
-  formData.value = { name: '', level: '', year: null }
+  formData.value = { name: '', course_level_id: '' }
+  formState.value = { selectedTrack: '' }
   formErrors.value = {}
   showModal.value = true
 }
@@ -202,8 +291,14 @@ const openEditModal = (course: Course) => {
 
   formData.value = {
     name: course.name,
-    level: course.level || '',
-    year: course.year
+    course_level_id: course.course_level_id || ''
+  }
+
+  // Pre-select the track based on the current course level
+  if (course.courseLevel) {
+    formState.value = { selectedTrack: course.courseLevel.track }
+  } else {
+    formState.value = { selectedTrack: '' }
   }
 
   formErrors.value = {}
@@ -213,8 +308,14 @@ const openEditModal = (course: Course) => {
 const closeModal = () => {
   showModal.value = false
   selectedCourse.value = null
-  formData.value = { name: '', level: '', year: null }
+  formData.value = { name: '', course_level_id: '' }
+  formState.value = { selectedTrack: '' }
   formErrors.value = {}
+}
+
+// Handle track change - reset level selection
+const handleTrackChange = () => {
+  formData.value.course_level_id = ''
 }
 
 const handleSave = async () => {
@@ -225,8 +326,7 @@ const handleSave = async () => {
   try {
     const input = {
       name: formData.value.name,
-      level: formData.value.level || null,
-      year: formData.value.year
+      course_level_id: formData.value.course_level_id
     }
 
     if (selectedCourse.value) {
@@ -285,8 +385,8 @@ const goToPage = (page: number) => {
       first: perPage.value,
       page,
       name: filterName.value.trim() ? `%${filterName.value.trim()}%` : undefined,
-      level: filterLevel.value.trim() ? `%${filterLevel.value.trim()}%` : undefined,
-      year: filterYear.value ? parseInt(filterYear.value) : undefined
+      course_level_id: filterCourseLevel.value || undefined,
+      track: filterTrack.value || undefined
     })
   }
 }
@@ -298,8 +398,8 @@ const changePerPage = (newPerPage: number) => {
     first: newPerPage,
     page: 1,
     name: filterName.value.trim() ? `%${filterName.value.trim()}%` : undefined,
-    level: filterLevel.value.trim() ? `%${filterLevel.value.trim()}%` : undefined,
-    year: filterYear.value ? parseInt(filterYear.value) : undefined
+    course_level_id: filterCourseLevel.value || undefined,
+    track: filterTrack.value || undefined
   })
 }
 
@@ -310,8 +410,8 @@ const applyFilters = () => {
     first: perPage.value,
     page: 1,
     name: filterName.value.trim() ? `%${filterName.value.trim()}%` : undefined,
-    level: filterLevel.value.trim() ? `%${filterLevel.value.trim()}%` : undefined,
-    year: filterYear.value ? parseInt(filterYear.value) : undefined
+    course_level_id: filterCourseLevel.value || undefined,
+    track: filterTrack.value || undefined
   })
 }
 
@@ -327,19 +427,24 @@ const debouncedFilter = () => {
 
 const clearFilters = () => {
   filterName.value = ''
-  filterLevel.value = ''
-  filterYear.value = ''
+  filterTrack.value = ''
+  filterCourseLevel.value = ''
   applyFilters()
 }
 
 const hasActiveFilters = computed(() => {
   return filterName.value.trim() !== '' ||
-         filterLevel.value.trim() !== '' ||
-         filterYear.value !== ''
+         filterTrack.value.trim() !== '' ||
+         filterCourseLevel.value.trim() !== ''
 })
 
+// Handle filter track change - reset level selection
+const handleFilterTrackChange = () => {
+  filterCourseLevel.value = ''
+}
+
 // Watch for filter changes
-watch([filterName, filterLevel, filterYear], () => {
+watch([filterName, filterTrack, filterCourseLevel], () => {
   debouncedFilter()
 })
 </script>
@@ -376,33 +481,46 @@ watch([filterName, filterLevel, filterYear], () => {
             </div>
           </div>
 
-          <!-- Filter by Level -->
+          <!-- Filter by Track -->
           <div class="flex-1">
             <div class="relative">
-              <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                <Lucide icon="Award" class="w-4 h-4 text-slate-400" />
+              <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none z-10">
+                <Lucide icon="Layers" class="w-4 h-4 text-slate-400" />
               </div>
-              <FormInput
-                v-model="filterLevel"
-                type="text"
-                :placeholder="t('courses.filters.searchByLevel')"
+              <FormSelect
+                v-model="filterTrack"
+                @change="handleFilterTrackChange"
                 class="pl-10"
-              />
+              >
+                <option value="">{{ t('courses.filters.searchByTrack') }}</option>
+                <option v-for="track in availableTracks" :key="track" :value="track">
+                  {{ track }}
+                </option>
+              </FormSelect>
             </div>
           </div>
 
-          <!-- Filter by Year -->
+          <!-- Filter by Course Level (filtered by track) -->
           <div class="flex-1">
             <div class="relative">
-              <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                <Lucide icon="Calendar" class="w-4 h-4 text-slate-400" />
+              <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none z-10">
+                <Lucide icon="Award" class="w-4 h-4 text-slate-400" />
               </div>
-              <FormInput
-                v-model="filterYear"
-                type="number"
-                :placeholder="t('courses.filters.searchByYear')"
+              <FormSelect
+                v-model="filterCourseLevel"
                 class="pl-10"
-              />
+                :disabled="!filterTrack"
+                :class="{
+                  'opacity-50 cursor-not-allowed': !filterTrack
+                }"
+              >
+                <option value="">
+                  {{ filterTrack ? t('courses.filters.searchByLevel') : t('courses.filters.selectTrackFirst') }}
+                </option>
+                <option v-for="level in filteredCourseLevelsForFilter" :key="level.id" :value="level.id">
+                  {{ level.name }}
+                </option>
+              </FormSelect>
             </div>
           </div>
         </div>
@@ -439,8 +557,8 @@ watch([filterName, filterLevel, filterYear], () => {
           first: perPage.value,
           page: currentPage.value,
           name: filterName.value.trim() ? `%${filterName.value.trim()}%` : undefined,
-          level: filterLevel.value.trim() ? `%${filterLevel.value.trim()}%` : undefined,
-          year: filterYear.value ? parseInt(filterYear.value) : undefined
+          course_level_id: filterCourseLevel.value || undefined,
+          track: filterTrack.value || undefined
         })">{{ t('courses.actions.retry') }}</Button>
       </div>
     </div>
@@ -459,9 +577,6 @@ watch([filterName, filterLevel, filterYear], () => {
               {{ t('courses.columns.level') }}
             </Table.Td>
             <Table.Td class="py-4 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">
-              {{ t('courses.columns.year') }}
-            </Table.Td>
-            <Table.Td class="py-4 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">
               {{ t('courses.columns.teacher') }}
             </Table.Td>
             <Table.Td class="py-4 font-medium text-center bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">
@@ -471,7 +586,7 @@ watch([filterName, filterLevel, filterYear], () => {
         </Table.Thead>
         <Table.Tbody>
           <Table.Tr v-if="courses.length === 0">
-            <Table.Td colspan="6" class="py-10 text-center text-slate-500">
+            <Table.Td colspan="5" class="py-10 text-center text-slate-500">
               <div class="flex flex-col items-center gap-3">
                 <Lucide icon="Inbox" class="w-10 h-10 text-slate-300" />
                 <div>{{ t('courses.messages.noCourses') }}</div>
@@ -486,11 +601,12 @@ watch([filterName, filterLevel, filterYear], () => {
               <div class="font-medium">{{ course.name }}</div>
             </Table.Td>
             <Table.Td class="py-4 border-dashed dark:bg-darkmode-600">
-              <div v-if="course.level" class="text-slate-600">{{ course.level }}</div>
-              <div v-else class="text-xs text-slate-400">-</div>
-            </Table.Td>
-            <Table.Td class="py-4 border-dashed dark:bg-darkmode-600">
-              <div v-if="course.year" class="text-slate-600">{{ course.year }}</div>
+              <div v-if="course.courseLevel" class="flex flex-col gap-1">
+                <div class="font-medium text-slate-700">{{ course.courseLevel.name }}</div>
+                <div class="px-2 py-0.5 text-xs font-semibold rounded-md bg-primary/10 text-primary inline-block w-fit">
+                  {{ course.courseLevel.track }}
+                </div>
+              </div>
               <div v-else class="text-xs text-slate-400">-</div>
             </Table.Td>
             <Table.Td class="py-4 border-dashed dark:bg-darkmode-600">
@@ -503,7 +619,7 @@ watch([filterName, filterLevel, filterYear], () => {
                   +{{ course.teachers.length - 2 }} more
                 </span>
               </div>
-              <div v-else class="text-xs text-slate-400">No teachers assigned</div>
+              <div v-else class="text-xs text-slate-400">{{ t('courses.messages.noTeachers') }}</div>
             </Table.Td>
             <Table.Td class="relative py-4 border-dashed dark:bg-darkmode-600">
               <div class="flex items-center justify-center gap-2">
@@ -536,7 +652,7 @@ watch([filterName, filterLevel, filterYear], () => {
     <div v-if="!loading && !error && totalItems > 0" class="flex flex-col items-center gap-4 p-5 border-t sm:flex-row border-slate-200/60">
       <!-- Items per page selector -->
       <div class="flex items-center gap-2">
-        <span class="text-sm text-slate-600">Show</span>
+        <span class="text-sm text-slate-600">{{ t('courses.pagination.show') }}</span>
         <select
           v-model.number="perPage"
           @change="changePerPage(perPage)"
@@ -547,12 +663,12 @@ watch([filterName, filterLevel, filterYear], () => {
           <option :value="50">50</option>
           <option :value="100">100</option>
         </select>
-        <span class="text-sm text-slate-600">entries</span>
+        <span class="text-sm text-slate-600">{{ t('courses.pagination.entries') }}</span>
       </div>
 
       <!-- Showing info -->
       <div class="text-sm text-slate-600 sm:ml-auto">
-        Showing {{ startItem }} to {{ endItem }} of {{ totalItems }} courses
+        {{ t('courses.pagination.showingInfo', { start: startItem, end: endItem, total: totalItems }) }}
       </div>
 
       <!-- Page navigation -->
@@ -635,28 +751,56 @@ watch([filterName, filterLevel, filterYear], () => {
             {{ formErrors.name }}
           </div>
         </div>
+        <!-- Track Selection -->
         <div class="col-span-12 sm:col-span-6">
-          <FormLabel htmlFor="course-level">{{ t('courses.form.levelLabel') }}</FormLabel>
-          <FormInput
-            id="course-level"
-            v-model="formData.level"
-            type="text"
-            :placeholder="t('courses.form.levelPlaceholder')"
-          />
+          <FormLabel htmlFor="course-track">
+            {{ t('courses.form.trackLabel') }} {{ t('courses.form.required') }}
+          </FormLabel>
+          <FormSelect
+            id="course-track"
+            v-model="formState.selectedTrack"
+            @change="handleTrackChange"
+            :class="{ 'border-danger': formErrors.course_level_id && !formState.selectedTrack }"
+          >
+            <option value="">{{ t('courses.form.trackPlaceholder') }}</option>
+            <option v-for="track in availableTracks" :key="track" :value="track">
+              {{ track }}
+            </option>
+          </FormSelect>
+          <div v-if="formErrors.course_level_id && !formState.selectedTrack" class="mt-1 text-xs text-danger">
+            {{ t('courses.validation.trackRequired') }}
+          </div>
         </div>
+
+        <!-- Level Selection (filtered by track) -->
         <div class="col-span-12 sm:col-span-6">
-          <FormLabel htmlFor="course-year">{{ t('courses.form.yearLabel') }}</FormLabel>
-          <FormInput
-            id="course-year"
-            v-model.number="formData.year"
-            type="number"
-            :placeholder="t('courses.form.yearPlaceholder')"
-          />
+          <FormLabel htmlFor="course-level">
+            {{ t('courses.form.levelLabel') }} {{ t('courses.form.required') }}
+          </FormLabel>
+          <FormSelect
+            id="course-level"
+            v-model="formData.course_level_id"
+            :disabled="!formState.selectedTrack"
+            :class="{
+              'border-danger': formErrors.course_level_id,
+              'opacity-50 cursor-not-allowed': !formState.selectedTrack
+            }"
+          >
+            <option value="">
+              {{ formState.selectedTrack ? t('courses.form.levelPlaceholder') : t('courses.form.selectTrackFirst') }}
+            </option>
+            <option v-for="level in filteredCourseLevels" :key="level.id" :value="level.id">
+              {{ level.name }}
+            </option>
+          </FormSelect>
+          <div v-if="formErrors.course_level_id" class="mt-1 text-xs text-danger">
+            {{ formErrors.course_level_id }}
+          </div>
         </div>
         <div class="col-span-12">
           <div class="p-3 bg-slate-50 dark:bg-darkmode-700 rounded-lg border border-slate-200 dark:border-darkmode-400">
             <p class="text-sm text-slate-600 dark:text-slate-400">
-              <strong>Note:</strong> Teachers are now assigned at the schedule level. After creating this course, you can assign teachers when creating schedules for it.
+              <strong>{{ t('courses.form.noteLabel') }}</strong> {{ t('courses.form.noteText') }}
             </p>
           </div>
         </div>

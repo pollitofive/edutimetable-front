@@ -5,7 +5,7 @@ import { ref, watch, computed } from 'vue'
 import Lucide from '@/components/Base/Lucide'
 import Button from '@/components/Base/Button'
 import { Dialog } from '@/components/Base/Headless'
-import { FormInput, FormLabel } from '@/components/Base/Form'
+import { FormInput, FormLabel, FormSelect } from '@/components/Base/Form'
 import Table from '@/components/Base/Table'
 import Pagination from '@/components/Base/Pagination'
 import ToastNotification from '@/views/components/ToastNotification.vue'
@@ -14,20 +14,49 @@ import { useI18n } from '@/composables/useI18n'
 // i18n setup
 const { t } = useI18n()
 
+interface CourseLevel {
+  id: string
+  track: string
+  name: string
+  slug: string
+  sort_order: number
+}
+
 interface Student {
   id: string
   name: string
   email: string
   code: string
+  course_level_id: string
+  courseLevel?: CourseLevel
 }
 
 interface FormData {
   name: string
   email: string
   code: string
+  course_level_id: string
+}
+
+interface FormState {
+  selectedTrack: string
 }
 
 // GraphQL Queries & Mutations
+const GET_COURSE_LEVELS = gql`
+  query GetCourseLevels {
+    courseLevels(first: 100, page: 1) {
+      data {
+        id
+        track
+        name
+        slug
+        sort_order
+      }
+    }
+  }
+`
+
 const GET_STUDENTS = gql`
   query GetStudents($first: Int!, $page: Int!, $name: String, $email: String, $code: String) {
     students(first: $first, page: $page, name: $name, email: $email, code: $code) {
@@ -36,6 +65,14 @@ const GET_STUDENTS = gql`
         name
         email
         code
+        course_level_id
+        courseLevel {
+          id
+          track
+          name
+          slug
+          sort_order
+        }
       }
       paginatorInfo {
         total
@@ -499,7 +536,7 @@ watch([filterName, filterEmail, filterCode], () => {
     <div v-if="!loading && !error && totalItems > 0" class="flex flex-col items-center gap-4 p-5 border-t sm:flex-row border-slate-200/60">
       <!-- Items per page selector -->
       <div class="flex items-center gap-2">
-        <span class="text-sm text-slate-600">Show</span>
+        <span class="text-sm text-slate-600">{{ t('students.pagination.show') }}</span>
         <select
           v-model.number="perPage"
           @change="changePerPage(perPage)"
@@ -510,12 +547,12 @@ watch([filterName, filterEmail, filterCode], () => {
           <option :value="50">50</option>
           <option :value="100">100</option>
         </select>
-        <span class="text-sm text-slate-600">entries</span>
+        <span class="text-sm text-slate-600">{{ t('students.pagination.entries') }}</span>
       </div>
 
       <!-- Showing info -->
       <div class="text-sm text-slate-600 sm:ml-auto">
-        Showing {{ startItem }} to {{ endItem }} of {{ totalItems }} students
+        {{ t('students.pagination.showingInfo', { start: startItem, end: endItem, total: totalItems }) }}
       </div>
 
       <!-- Page navigation -->

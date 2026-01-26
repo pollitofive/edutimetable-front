@@ -645,7 +645,7 @@ watch([filterTrack, filterName, filterSortOrder], () => {
     <div v-if="!loading && !error && totalItems > 0" class="flex flex-col items-center gap-4 p-5 border-t sm:flex-row border-slate-200/60">
       <!-- Items per page selector -->
       <div class="flex items-center gap-2">
-        <span class="text-sm text-slate-600">Show</span>
+        <span class="text-sm text-slate-600">{{ t('courseLevels.pagination.show') }}</span>
         <select
           v-model.number="perPage"
           @change="changePerPage(perPage)"
@@ -656,12 +656,12 @@ watch([filterTrack, filterName, filterSortOrder], () => {
           <option :value="50">50</option>
           <option :value="100">100</option>
         </select>
-        <span class="text-sm text-slate-600">entries</span>
+        <span class="text-sm text-slate-600">{{ t('courseLevels.pagination.entries') }}</span>
       </div>
 
       <!-- Showing info -->
       <div class="text-sm text-slate-600 sm:ml-auto">
-        Showing {{ startItem }} to {{ endItem }} of {{ totalItems }} course levels
+        {{ t('courseLevels.pagination.showingInfo', { start: startItem, end: endItem, total: totalItems }) }}
       </div>
 
       <!-- Page navigation -->
