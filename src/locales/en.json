@@ -457,7 +457,10 @@
       "allCourses": "All Courses",
       "allDays": "All Days",
       "filterByCourse": "Filter by Course",
-      "filterByDay": "Filter by Day"
+      "filterByDay": "Filter by Day",
+      "searchDescription": "Search by description or group...",
+      "startTime": "From",
+      "endTime": "To"
     },
     "pagination": {
       "show": "Show",

@@ -8,6 +8,7 @@ import { Dialog } from '@/components/Base/Headless'
 import { FormInput, FormLabel, FormSelect } from '@/components/Base/Form'
 import Table from '@/components/Base/Table'
 import Pagination from '@/components/Base/Pagination'
+import TomSelect from '@/components/Base/TomSelect'
 import ToastNotification from '@/views/components/ToastNotification.vue'
 import { useI18n } from '@/composables/useI18n'
 
@@ -60,8 +61,8 @@ interface SlotError {
 
 // GraphQL Queries & Mutations
 const GET_SCHEDULES = gql`
-  query GetSchedules($first: Int!, $page: Int!, $course_id: ID, $day_of_week: Int, $teacher_id: ID, $description: String, $group_id: String) {
-    schedules(first: $first, page: $page, course_id: $course_id, day_of_week: $day_of_week, teacher_id: $teacher_id, description: $description, group_id: $group_id) {
+  query GetSchedules($first: Int!, $page: Int!, $course_id: ID, $day_of_week: Int, $teacher_id: ID, $description: String, $group_id: String, $starts_at_from: String, $starts_at_to: String) {
+    schedules(first: $first, page: $page, course_id: $course_id, day_of_week: $day_of_week, teacher_id: $teacher_id, description: $description, group_id: $group_id, starts_at_from: $starts_at_from, starts_at_to: $starts_at_to) {
       data {
         id
         course_id
@@ -225,16 +226,25 @@ const lastPage = ref(1)
 const filterCourseId = ref('')
 const filterDayOfWeek = ref<string>('')
 const filterTeacherId = ref('')
+const filterDescription = ref('')
+const filterStartTime = ref('')
+const filterEndTime = ref('')
 
-// Apollo Query for schedules
-const { result, loading, error, refetch } = useQuery(GET_SCHEDULES, () => ({
+// Computed property for query variables
+const queryVariables = computed(() => ({
   first: perPage.value,
   page: currentPage.value,
   course_id: filterCourseId.value || undefined,
   day_of_week: filterDayOfWeek.value ? Number(filterDayOfWeek.value) : undefined,
   teacher_id: filterTeacherId.value || undefined,
-  group_id: undefined // Explicitly set to undefined for main query
-}), {
+  description: filterDescription.value ? `%${filterDescription.value}%` : undefined,
+  group_id: undefined, // Explicitly set to undefined for main query
+  starts_at_from: filterStartTime.value || undefined,
+  starts_at_to: filterEndTime.value || undefined
+}))
+
+// Apollo Query for schedules
+const { result, loading, error, refetch } = useQuery(GET_SCHEDULES, queryVariables, {
   fetchPolicy: 'cache-and-network'
 })
 
@@ -308,24 +318,29 @@ const dayOptions = computed(() => [
   { value: 6, label: t('schedules.days.saturday') }
 ])
 
-// Sorted schedules computed property
+// Sorted schedules computed property (server-side filtering only)
 const sortedSchedules = computed(() => {
   if (!schedules.value || schedules.value.length === 0) return []
 
+  // All filtering is now done server-side, so we only sort the results
   return [...schedules.value].sort((a, b) => {
-    // 1. Sort by teacher name
+    // 1. Sort by course name (for visual grouping)
+    const courseCompare = (a.course?.name || '').localeCompare(b.course?.name || '')
+    if (courseCompare !== 0) return courseCompare
+
+    // 2. Sort by teacher name
     const teacherCompare = (a.teacher?.name || '').localeCompare(b.teacher?.name || '')
     if (teacherCompare !== 0) return teacherCompare
 
-    // 2. Sort by group_id (to group related schedules together)
+    // 3. Sort by group_id (to group related schedules together)
     const groupCompare = (a.group_id || '').localeCompare(b.group_id || '')
     if (groupCompare !== 0) return groupCompare
 
-    // 3. Sort by day_of_week (0-6, Sunday to Saturday)
+    // 4. Sort by day_of_week (0-6, Sunday to Saturday)
     const dayCompare = (a.day_of_week || 0) - (b.day_of_week || 0)
     if (dayCompare !== 0) return dayCompare
 
-    // 4. Sort by starts_at (time order)
+    // 5. Sort by starts_at (time order)
     return (a.starts_at || '').localeCompare(b.starts_at || '')
   })
 })
@@ -742,62 +757,44 @@ const cancelDelete = () => {
 const goToPage = (page: number) => {
   if (page >= 1 && page <= lastPage.value) {
     currentPage.value = page
-    refetch({
-      first: perPage.value,
-      page,
-      course_id: filterCourseId.value || undefined,
-      day_of_week: filterDayOfWeek.value ? Number(filterDayOfWeek.value) : undefined,
-      teacher_id: filterTeacherId.value || undefined
-    })
+    // The refetch will use the reactive queryVariables computed property automatically
   }
 }
 
 const changePerPage = (newPerPage: number) => {
   perPage.value = newPerPage
   currentPage.value = 1
-  refetch({
-    first: newPerPage,
-    page: 1,
-    course_id: filterCourseId.value || undefined,
-    day_of_week: filterDayOfWeek.value ? Number(filterDayOfWeek.value) : undefined,
-    teacher_id: filterTeacherId.value || undefined
-  })
+  // The refetch will use the reactive queryVariables computed property automatically
 }
 
 // Filter methods
 const applyFilters = () => {
   currentPage.value = 1
-  refetch({
-    first: perPage.value,
-    page: 1,
-    course_id: filterCourseId.value || undefined,
-    day_of_week: filterDayOfWeek.value ? Number(filterDayOfWeek.value) : undefined,
-    teacher_id: filterTeacherId.value || undefined
-  })
+  // The refetch will use the reactive queryVariables computed property automatically
 }
 
 const clearFilters = () => {
   filterCourseId.value = ''
   filterDayOfWeek.value = ''
   filterTeacherId.value = ''
+  filterDescription.value = ''
+  filterStartTime.value = ''
+  filterEndTime.value = ''
   applyFilters()
 }
 
 const hasActiveFilters = computed(() => {
-  return filterCourseId.value !== '' || filterDayOfWeek.value !== '' || filterTeacherId.value !== ''
+  return filterCourseId.value !== '' ||
+         filterDayOfWeek.value !== '' ||
+         filterTeacherId.value !== '' ||
+         filterDescription.value !== '' ||
+         filterStartTime.value !== '' ||
+         filterEndTime.value !== ''
 })
 
-// Watch for filter changes
-watch(filterCourseId, () => {
-  applyFilters()
-})
-
-watch(filterDayOfWeek, () => {
-  applyFilters()
-})
-
-watch(filterTeacherId, () => {
-  applyFilters()
+// Watch for filter changes - reset to page 1 when filters change
+watch([filterCourseId, filterDayOfWeek, filterTeacherId, filterDescription, filterStartTime, filterEndTime], () => {
+  currentPage.value = 1
 })
 
 // Get course display name (without teacher since courses are independent)
@@ -825,6 +822,35 @@ const isFirstOccurrenceOfGroup = (schedule: Schedule, index: number): boolean =>
   )
   return index === firstIndex
 }
+
+/**
+ * Check if this is the first row of a course group
+ * Used to show course name only on the first row
+ */
+const isFirstInCourseGroup = (courseId: string, index: number): boolean => {
+  if (index === 0) return true
+  const previousCourseId = sortedSchedules.value[index - 1]?.course_id
+  return previousCourseId !== courseId
+}
+
+/**
+ * Check if the previous row belongs to a different course
+ * Used to add visual separator between course groups
+ */
+const isDifferentCourseFromPrevious = (courseId: string, index: number): boolean => {
+  if (index === 0) return true
+  const previousCourseId = sortedSchedules.value[index - 1]?.course_id
+  return previousCourseId !== courseId
+}
+
+/**
+ * Get the course group background class for alternating colors
+ */
+const getCourseGroupBackground = (courseId: string): string => {
+  const uniqueCourses = [...new Set(sortedSchedules.value.map((s: Schedule) => s.course_id))]
+  const courseIndex = uniqueCourses.indexOf(courseId)
+  return courseIndex % 2 === 0 ? 'bg-white dark:bg-darkmode-600' : 'bg-slate-50/50 dark:bg-darkmode-700'
+}
 </script>
 
 <template>
@@ -842,52 +868,101 @@ const isFirstOccurrenceOfGroup = (schedule: Schedule, index: number): boolean =>
     <div class="box box--stacked flex flex-col mt-5 w-full">
     <!-- Filter Section -->
     <div class="p-5 border-b border-slate-200/60">
-      <div class="flex flex-col gap-4 sm:flex-row sm:items-center">
-          <!-- Filter by Course -->
+      <div class="flex flex-col gap-4">
+        <!-- First Row: Course, Teacher, Day of Week -->
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-center">
+          <!-- Filter by Course (TomSelect) -->
           <div class="flex-1">
-              <FormSelect v-model="filterCourseId">
-                  <option value="">{{ t('schedules.filters.allCourses') }}</option>
-                  <option v-for="course in allCourses" :key="course.id" :value="course.id">
-                      {{ course.name }}
-                  </option>
-              </FormSelect>
+            <TomSelect
+              v-model="filterCourseId"
+              :options="{
+                placeholder: t('schedules.filters.allCourses'),
+                allowEmptyOption: true,
+                create: false
+              }"
+              class="w-full"
+            >
+              <option value="">{{ t('schedules.filters.allCourses') }}</option>
+              <option v-for="course in allCourses" :key="course.id" :value="course.id">
+                {{ course.name }}
+              </option>
+            </TomSelect>
           </div>
 
-          <!-- Filter by Teacher -->
-        <div class="flex-1">
-          <FormSelect v-model="filterTeacherId">
-            <option value="">{{ t('schedules.filters.allTeachers') }}</option>
-            <option v-for="teacher in allTeachers" :key="teacher.id" :value="teacher.id">
-              {{ teacher.name }}
-            </option>
-          </FormSelect>
+          <!-- Filter by Teacher (TomSelect) -->
+          <div class="flex-1">
+            <TomSelect
+              v-model="filterTeacherId"
+              :options="{
+                placeholder: t('schedules.filters.allTeachers'),
+                allowEmptyOption: true,
+                create: false
+              }"
+              class="w-full"
+            >
+              <option value="">{{ t('schedules.filters.allTeachers') }}</option>
+              <option v-for="teacher in allTeachers" :key="teacher.id" :value="teacher.id">
+                {{ teacher.name }}
+              </option>
+            </TomSelect>
+          </div>
+
+          <!-- Filter by Day of Week -->
+          <div class="flex-1">
+            <FormSelect v-model="filterDayOfWeek">
+              <option value="">{{ t('schedules.filters.allDays') }}</option>
+              <option value="0">{{ t('schedules.days.sunday') }}</option>
+              <option value="1">{{ t('schedules.days.monday') }}</option>
+              <option value="2">{{ t('schedules.days.tuesday') }}</option>
+              <option value="3">{{ t('schedules.days.wednesday') }}</option>
+              <option value="4">{{ t('schedules.days.thursday') }}</option>
+              <option value="5">{{ t('schedules.days.friday') }}</option>
+              <option value="6">{{ t('schedules.days.saturday') }}</option>
+            </FormSelect>
+          </div>
         </div>
 
-        <!-- Filter by Day of Week -->
-        <div class="flex-1">
-          <FormSelect v-model="filterDayOfWeek">
-            <option value="">{{ t('schedules.filters.allDays') }}</option>
-            <option value="0">{{ t('schedules.days.sunday') }}</option>
-            <option value="1">{{ t('schedules.days.monday') }}</option>
-            <option value="2">{{ t('schedules.days.tuesday') }}</option>
-            <option value="3">{{ t('schedules.days.wednesday') }}</option>
-            <option value="4">{{ t('schedules.days.thursday') }}</option>
-            <option value="5">{{ t('schedules.days.friday') }}</option>
-            <option value="6">{{ t('schedules.days.saturday') }}</option>
-          </FormSelect>
-        </div>
+        <!-- Second Row: Description, Time Range, Clear Button -->
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-center">
+          <!-- Filter by Description -->
+          <div class="flex-1">
+            <FormInput
+              v-model="filterDescription"
+              type="text"
+              :placeholder="t('schedules.filters.searchDescription')"
+            />
+          </div>
 
-        <!-- Clear Filters Button -->
-        <div>
-          <Button
-            v-if="hasActiveFilters"
-            variant="outline-secondary"
-            @click="clearFilters"
-            class="w-full sm:w-auto"
-          >
-            <Lucide icon="X" class="w-4 h-4 mr-2" />
-            {{ t('schedules.actions.clearFilters') }}
-          </Button>
+          <!-- Filter by Start Time -->
+          <div class="flex-1 sm:flex-[0.5]">
+            <FormInput
+              v-model="filterStartTime"
+              type="time"
+              :placeholder="t('schedules.filters.startTime')"
+            />
+          </div>
+
+          <!-- Filter by End Time -->
+          <div class="flex-1 sm:flex-[0.5]">
+            <FormInput
+              v-model="filterEndTime"
+              type="time"
+              :placeholder="t('schedules.filters.endTime')"
+            />
+          </div>
+
+          <!-- Clear Filters Button -->
+          <div>
+            <Button
+              v-if="hasActiveFilters"
+              variant="outline-secondary"
+              @click="clearFilters"
+              class="w-full sm:w-auto"
+            >
+              <Lucide icon="X" class="w-4 h-4 mr-2" />
+              {{ t('schedules.actions.clearFilters') }}
+            </Button>
+          </div>
         </div>
       </div>
     </div>
@@ -905,13 +980,7 @@ const isFirstOccurrenceOfGroup = (schedule: Schedule, index: number): boolean =>
       <div class="flex flex-col items-center gap-3">
         <Lucide icon="AlertCircle" class="w-8 h-8 text-danger" />
         <div class="text-sm text-slate-500">{{ t('schedules.messages.error') }}</div>
-        <Button variant="outline-primary" @click="() => refetch({
-          first: perPage,
-          page: currentPage,
-          course_id: filterCourseId || undefined,
-          day_of_week: filterDayOfWeek ? Number(filterDayOfWeek) : undefined,
-          teacher_id: filterTeacherId || undefined
-        })">{{ t('schedules.actions.retry') }}</Button>
+        <Button variant="outline-primary" @click="() => refetch()">{{ t('schedules.actions.retry') }}</Button>
       </div>
     </div>
 
@@ -955,31 +1024,87 @@ const isFirstOccurrenceOfGroup = (schedule: Schedule, index: number): boolean =>
               </div>
             </Table.Td>
           </Table.Tr>
-          <Table.Tr v-for="(schedule, index) in sortedSchedules" :key="schedule.id" class="[&_td]:last:border-b-0">
-            <Table.Td class="py-4 border-dashed dark:bg-darkmode-600">
+          <Table.Tr
+            v-for="(schedule, index) in sortedSchedules"
+            :key="schedule.id"
+            :class="[
+              '[&_td]:last:border-b-0',
+              getCourseGroupBackground(schedule.course_id),
+              isDifferentCourseFromPrevious(schedule.course_id, index) ? 'border-t-2 border-t-slate-300 dark:border-t-slate-600' : ''
+            ]"
+          >
+            <Table.Td
+              :class="[
+                'py-4 border-dashed transition-colors',
+                getCourseGroupBackground(schedule.course_id)
+              ]"
+            >
               <div class="text-xs text-slate-500">#{{ schedule.id }}</div>
             </Table.Td>
-            <Table.Td class="py-4 border-dashed dark:bg-darkmode-600">
-              <div class="font-medium">{{ schedule.course.name }}</div>
+            <Table.Td
+              :class="[
+                'py-4 border-dashed transition-colors',
+                getCourseGroupBackground(schedule.course_id)
+              ]"
+            >
+              <div
+                v-if="isFirstInCourseGroup(schedule.course_id, index)"
+                class="font-medium text-slate-700 dark:text-slate-200"
+              >
+                {{ schedule.course.name }}
+              </div>
+              <div v-else class="text-slate-400 dark:text-slate-500 text-sm">
+                &mdash;
+              </div>
             </Table.Td>
-            <Table.Td class="py-4 border-dashed dark:bg-darkmode-600">
-              <div class="text-slate-600">{{ schedule.teacher.name }}</div>
+            <Table.Td
+              :class="[
+                'py-4 border-dashed transition-colors',
+                getCourseGroupBackground(schedule.course_id)
+              ]"
+            >
+              <div class="text-slate-600 dark:text-slate-300">{{ schedule.teacher.name }}</div>
             </Table.Td>
-            <Table.Td class="py-4 border-dashed dark:bg-darkmode-600">
+            <Table.Td
+              :class="[
+                'py-4 border-dashed transition-colors',
+                getCourseGroupBackground(schedule.course_id)
+              ]"
+            >
               <div class="px-2 py-1 text-xs font-medium rounded-md bg-primary/10 text-primary inline-block">
                 {{ getDayName(schedule.day_of_week) }}
               </div>
             </Table.Td>
-            <Table.Td class="py-4 border-dashed dark:bg-darkmode-600">
-              <div class="font-mono text-slate-600">{{ schedule.starts_at }}</div>
+            <Table.Td
+              :class="[
+                'py-4 border-dashed transition-colors',
+                getCourseGroupBackground(schedule.course_id)
+              ]"
+            >
+              <div class="font-mono text-slate-600 dark:text-slate-300">{{ schedule.starts_at }}</div>
             </Table.Td>
-            <Table.Td class="py-4 border-dashed dark:bg-darkmode-600">
-              <div class="font-mono text-slate-600">{{ schedule.ends_at }}</div>
+            <Table.Td
+              :class="[
+                'py-4 border-dashed transition-colors',
+                getCourseGroupBackground(schedule.course_id)
+              ]"
+            >
+              <div class="font-mono text-slate-600 dark:text-slate-300">{{ schedule.ends_at }}</div>
             </Table.Td>
-            <Table.Td class="py-4 border-dashed dark:bg-darkmode-600">
-              <div class="font-mono text-slate-600">{{ schedule.description }}</div>
+            <Table.Td
+              :class="[
+                'py-4 border-dashed transition-colors',
+                getCourseGroupBackground(schedule.course_id)
+              ]"
+            >
+              <div class="font-mono text-slate-600 dark:text-slate-300">{{ schedule.description }}</div>
             </Table.Td>
-            <Table.Td class="relative py-4 border-dashed dark:bg-darkmode-600">
+            <Table.Td
+              :class="[
+                'relative py-4 border-dashed transition-colors',
+                getCourseGroupBackground(schedule.course_id)
+              ]"
+            >
               <div class="flex items-center justify-center gap-2">
                 <Button
                   variant="outline-primary"

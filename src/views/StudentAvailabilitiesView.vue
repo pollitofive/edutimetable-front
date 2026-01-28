@@ -1004,39 +1004,36 @@ const getStudentGroupBackground = (studentId: string): string => {
 
         <!-- Availability Slots -->
         <div v-if="!loadingEditAvailabilities" class="col-span-12">
+          <!-- Header with label only -->
           <div class="flex items-center justify-between mb-3">
             <FormLabel class="mb-0">{{ t('studentAvailabilities.form.availabilitySlots') }}</FormLabel>
-            <Button
-              v-if="!isSingleEditMode"
-              type="button"
-              variant="outline-primary"
-              size="sm"
-              @click="addSlot"
-            >
-              <Lucide icon="Plus" class="w-4 h-4 mr-1" />
-              {{ t('studentAvailabilities.actions.addSlot') }}
-            </Button>
           </div>
 
           <!-- Scrollable container for slots -->
-          <div class="max-h-[32rem] overflow-y-auto pr-2 space-y-4 scroll-smooth">
+          <div class="max-h-80 overflow-y-auto pr-2 space-y-3 scroll-smooth border border-slate-200/60 rounded-lg p-3 dark:border-darkmode-400">
             <div
               v-for="(slot, index) in formData.availabilities"
               :key="index"
-              class="p-4 border border-slate-200 rounded-lg dark:border-darkmode-400"
+              class="p-4 border-2 border-slate-200 rounded-lg dark:border-darkmode-400 bg-white dark:bg-darkmode-800 shadow-sm"
             >
               <div class="flex items-center justify-between mb-3">
-                <div class="text-sm font-medium text-slate-600">
-                  {{ t('studentAvailabilities.form.slot', { number: index + 1 }) }}
+                <div class="flex items-center gap-2">
+                  <div class="flex items-center justify-center w-7 h-7 rounded-full bg-primary/10 text-primary font-semibold text-sm">
+                    {{ index + 1 }}
+                  </div>
+                  <div class="text-sm font-medium text-slate-700 dark:text-slate-300">
+                    {{ t('studentAvailabilities.form.slot', { number: index + 1 }) }}
+                  </div>
                 </div>
                 <Button
                   v-if="!isSingleEditMode && formData.availabilities.length > 1"
                   type="button"
-                  variant="outline-danger"
+                  variant="soft-danger"
                   size="sm"
                   @click="removeSlot(index)"
+                  class="px-3"
                 >
-                  <Lucide icon="X" class="w-4 h-4 mr-1" />
+                  <Lucide icon="Trash2" class="w-3.5 h-3.5 mr-1.5" />
                   {{ t('studentAvailabilities.actions.removeSlot') }}
                 </Button>
               </div>
@@ -1089,6 +1086,20 @@ const getStudentGroupBackground = (studentId: string): string => {
                 </div>
               </div>
             </div>
+          </div>
+
+          <!-- Add Slot button at the bottom -->
+          <div v-if="!isSingleEditMode" class="mt-3">
+            <Button
+              type="button"
+              variant="outline-primary"
+              size="sm"
+              @click="addSlot"
+              class="w-full"
+            >
+              <Lucide icon="Plus" class="w-4 h-4 mr-2" />
+              {{ t('studentAvailabilities.actions.addSlot') }}
+            </Button>
           </div>
         </div>
       </Dialog.Description>
