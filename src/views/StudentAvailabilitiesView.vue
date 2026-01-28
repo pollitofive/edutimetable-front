@@ -8,6 +8,7 @@ import { Dialog } from '@/components/Base/Headless'
 import { FormInput, FormLabel, FormSelect } from '@/components/Base/Form'
 import Table from '@/components/Base/Table'
 import Pagination from '@/components/Base/Pagination'
+import TomSelect from '@/components/Base/TomSelect'
 import ToastNotification from '@/views/components/ToastNotification.vue'
 import { useI18n } from '@/composables/useI18n'
 
@@ -230,26 +231,26 @@ const totalPages = computed(() => lastPage.value)
 // Day of week helper
 const getDayName = (day: number): string => {
   const days = [
-    t('studentAvailabilities.days.monday'),
-    t('studentAvailabilities.days.tuesday'),
-    t('studentAvailabilities.days.wednesday'),
-    t('studentAvailabilities.days.thursday'),
-    t('studentAvailabilities.days.friday'),
-    t('studentAvailabilities.days.saturday'),
-    t('studentAvailabilities.days.sunday')
+    t('studentAvailabilities.days.sunday'),    // 0
+    t('studentAvailabilities.days.monday'),    // 1
+    t('studentAvailabilities.days.tuesday'),   // 2
+    t('studentAvailabilities.days.wednesday'), // 3
+    t('studentAvailabilities.days.thursday'),  // 4
+    t('studentAvailabilities.days.friday'),    // 5
+    t('studentAvailabilities.days.saturday')   // 6
   ]
   return days[day] || ''
 }
 
 // Day options for form
 const dayOptions = computed(() => [
-  { value: 0, label: t('studentAvailabilities.days.monday') },
-  { value: 1, label: t('studentAvailabilities.days.tuesday') },
-  { value: 2, label: t('studentAvailabilities.days.wednesday') },
-  { value: 3, label: t('studentAvailabilities.days.thursday') },
-  { value: 4, label: t('studentAvailabilities.days.friday') },
-  { value: 5, label: t('studentAvailabilities.days.saturday') },
-  { value: 6, label: t('studentAvailabilities.days.sunday') }
+  { value: 0, label: t('studentAvailabilities.days.sunday') },
+  { value: 1, label: t('studentAvailabilities.days.monday') },
+  { value: 2, label: t('studentAvailabilities.days.tuesday') },
+  { value: 3, label: t('studentAvailabilities.days.wednesday') },
+  { value: 4, label: t('studentAvailabilities.days.thursday') },
+  { value: 5, label: t('studentAvailabilities.days.friday') },
+  { value: 6, label: t('studentAvailabilities.days.saturday') }
 ])
 
 // Watch for query results
@@ -292,11 +293,26 @@ const handleToastClose = () => {
 
 // Slot management functions
 const addSlot = () => {
-  formData.value.availabilities.push({
-    day_of_week: '',
-    start_time: '',
-    end_time: ''
-  })
+  // Si hay al menos un horario existente, copiar del último
+  const lastSlot = formData.value.availabilities.length > 0
+    ? formData.value.availabilities[formData.value.availabilities.length - 1]
+    : null
+
+  if (lastSlot) {
+    // Copiar valores del último horario
+    formData.value.availabilities.push({
+      day_of_week: lastSlot.day_of_week,
+      start_time: lastSlot.start_time,
+      end_time: lastSlot.end_time
+    })
+  } else {
+    // Si no hay horarios previos, usar valores por defecto
+    formData.value.availabilities.push({
+      day_of_week: '',
+      start_time: '',
+      end_time: ''
+    })
+  }
 }
 
 const removeSlot = (index: number) => {
@@ -629,6 +645,27 @@ const isFirstOccurrenceOfStudent = (studentId: string, index: number): boolean =
   const firstIndex = availabilitiesData.findIndex((a: StudentAvailability) => a.student_id === studentId)
   return index === firstIndex
 }
+
+/**
+ * Check if the previous row belongs to a different student
+ * Used to add visual separator between student groups
+ */
+const isDifferentStudentFromPrevious = (studentId: string, index: number): boolean => {
+  if (index === 0) return true
+  const availabilitiesData = result.value?.studentAvailabilities?.data || []
+  const previousStudentId = availabilitiesData[index - 1]?.student_id
+  return previousStudentId !== studentId
+}
+
+/**
+ * Get the student group background class for alternating colors
+ */
+const getStudentGroupBackground = (studentId: string): string => {
+  const availabilitiesData = result.value?.studentAvailabilities?.data || []
+  const uniqueStudents = [...new Set(availabilitiesData.map((a: StudentAvailability) => a.student_id))]
+  const studentIndex = uniqueStudents.indexOf(studentId)
+  return studentIndex % 2 === 0 ? 'bg-white dark:bg-darkmode-600' : 'bg-slate-50/50 dark:bg-darkmode-700'
+}
 </script>
 
 <template>
@@ -648,25 +685,33 @@ const isFirstOccurrenceOfStudent = (studentId: string, index: number): boolean =
       <div class="flex flex-col gap-4 sm:flex-row sm:items-center">
         <!-- Filter by Student -->
         <div class="flex-1">
-          <FormSelect v-model="filterStudentId">
+          <TomSelect
+            v-model="filterStudentId"
+            :options="{
+              placeholder: t('studentAvailabilities.filters.allStudents'),
+              maxOptions: null,
+              maxItems: 1
+            }"
+            class="w-full"
+          >
             <option value="">{{ t('studentAvailabilities.filters.allStudents') }}</option>
             <option v-for="student in allStudents" :key="student.id" :value="student.id">
               {{ student.name }}
             </option>
-          </FormSelect>
+          </TomSelect>
         </div>
 
         <!-- Filter by Day of Week -->
         <div class="flex-1">
           <FormSelect v-model="filterDayOfWeek">
             <option value="">{{ t('studentAvailabilities.filters.allDays') }}</option>
-            <option value="0">{{ t('studentAvailabilities.days.monday') }}</option>
-            <option value="1">{{ t('studentAvailabilities.days.tuesday') }}</option>
-            <option value="2">{{ t('studentAvailabilities.days.wednesday') }}</option>
-            <option value="3">{{ t('studentAvailabilities.days.thursday') }}</option>
-            <option value="4">{{ t('studentAvailabilities.days.friday') }}</option>
-            <option value="5">{{ t('studentAvailabilities.days.saturday') }}</option>
-            <option value="6">{{ t('studentAvailabilities.days.sunday') }}</option>
+            <option value="0">{{ t('studentAvailabilities.days.sunday') }}</option>
+            <option value="1">{{ t('studentAvailabilities.days.monday') }}</option>
+            <option value="2">{{ t('studentAvailabilities.days.tuesday') }}</option>
+            <option value="3">{{ t('studentAvailabilities.days.wednesday') }}</option>
+            <option value="4">{{ t('studentAvailabilities.days.thursday') }}</option>
+            <option value="5">{{ t('studentAvailabilities.days.friday') }}</option>
+            <option value="6">{{ t('studentAvailabilities.days.saturday') }}</option>
           </FormSelect>
         </div>
 
@@ -738,22 +783,63 @@ const isFirstOccurrenceOfStudent = (studentId: string, index: number): boolean =
               </div>
             </Table.Td>
           </Table.Tr>
-          <Table.Tr v-for="(availability, index) in availabilities" :key="availability.id" class="[&_td]:last:border-b-0">
-            <Table.Td class="py-4 border-dashed dark:bg-darkmode-600">
-              <div class="font-medium">{{ availability.student.name }}</div>
+          <Table.Tr
+            v-for="(availability, index) in availabilities"
+            :key="availability.id"
+            :class="[
+              '[&_td]:last:border-b-0',
+              getStudentGroupBackground(availability.student_id),
+              isDifferentStudentFromPrevious(availability.student_id, index) ? 'border-t-2 border-t-slate-300 dark:border-t-slate-600' : ''
+            ]"
+          >
+            <Table.Td
+              :class="[
+                'py-4 border-dashed transition-colors',
+                getStudentGroupBackground(availability.student_id)
+              ]"
+            >
+              <div
+                v-if="isFirstOccurrenceOfStudent(availability.student_id, index)"
+                class="font-medium text-slate-700 dark:text-slate-200"
+              >
+                {{ availability.student.name }}
+              </div>
+              <div v-else class="text-slate-400 dark:text-slate-500 text-sm">
+                &mdash;
+              </div>
             </Table.Td>
-            <Table.Td class="py-4 border-dashed dark:bg-darkmode-600">
+            <Table.Td
+              :class="[
+                'py-4 border-dashed transition-colors',
+                getStudentGroupBackground(availability.student_id)
+              ]"
+            >
               <div class="px-2 py-1 text-xs font-medium rounded-md bg-primary/10 text-primary inline-block">
                 {{ getDayName(availability.day_of_week) }}
               </div>
             </Table.Td>
-            <Table.Td class="py-4 border-dashed dark:bg-darkmode-600">
-              <div class="font-mono text-slate-600">{{ availability.start_time }}</div>
+            <Table.Td
+              :class="[
+                'py-4 border-dashed transition-colors',
+                getStudentGroupBackground(availability.student_id)
+              ]"
+            >
+              <div class="font-mono text-slate-600 dark:text-slate-300">{{ availability.start_time }}</div>
             </Table.Td>
-            <Table.Td class="py-4 border-dashed dark:bg-darkmode-600">
-              <div class="font-mono text-slate-600">{{ availability.end_time }}</div>
+            <Table.Td
+              :class="[
+                'py-4 border-dashed transition-colors',
+                getStudentGroupBackground(availability.student_id)
+              ]"
+            >
+              <div class="font-mono text-slate-600 dark:text-slate-300">{{ availability.end_time }}</div>
             </Table.Td>
-            <Table.Td class="relative py-4 border-dashed dark:bg-darkmode-600">
+            <Table.Td
+              :class="[
+                'relative py-4 border-dashed transition-colors',
+                getStudentGroupBackground(availability.student_id)
+              ]"
+            >
               <div class="flex items-center justify-center gap-2">
                 <Button
                   variant="outline-primary"
@@ -875,7 +961,7 @@ const isFirstOccurrenceOfStudent = (studentId: string, index: number): boolean =
   </div>
 
   <!-- Create/Edit Modal -->
-  <Dialog :open="showModal" @close="closeModal">
+  <Dialog :open="showModal" @close="closeModal" :staticBackdrop="true">
     <Dialog.Panel class="max-w-3xl sm:w-[540px]">
       <Dialog.Title>
         <h2 class="mr-auto text-base font-medium">
@@ -886,17 +972,23 @@ const isFirstOccurrenceOfStudent = (studentId: string, index: number): boolean =
         <!-- Student Selection -->
         <div class="col-span-12">
           <FormLabel htmlFor="availability-student">{{ t('studentAvailabilities.form.student') }} *</FormLabel>
-          <FormSelect
+          <TomSelect
             id="availability-student"
             v-model="formData.student_id"
             :disabled="isEditMode || isSingleEditMode || loadingEditAvailabilities"
+            :options="{
+              placeholder: t('studentAvailabilities.form.selectStudent'),
+              maxOptions: null,
+              maxItems: 1
+            }"
             :class="{ 'border-danger': formErrors.student_id }"
+            class="w-full"
           >
             <option value="">{{ t('studentAvailabilities.form.selectStudent') }}</option>
             <option v-for="student in allStudents" :key="student.id" :value="student.id">
               {{ student.name }}
             </option>
-          </FormSelect>
+          </TomSelect>
           <div v-if="formErrors.student_id" class="mt-1 text-xs text-danger">
             {{ formErrors.student_id }}
           </div>
@@ -1006,7 +1098,7 @@ const isFirstOccurrenceOfStudent = (studentId: string, index: number): boolean =
           variant="outline-secondary"
           @click="closeModal"
           :disabled="isSubmitting || loadingEditAvailabilities"
-          class="w-20 mr-2"
+          class="min-w-28 mr-2"
         >
           {{ t('studentAvailabilities.actions.cancel') }}
         </Button>
@@ -1015,7 +1107,7 @@ const isFirstOccurrenceOfStudent = (studentId: string, index: number): boolean =
           variant="primary"
           @click="handleSave"
           :disabled="isSubmitting || loadingEditAvailabilities"
-          class="w-32"
+          class="min-w-44"
         >
           <Lucide v-if="isSubmitting" icon="Loader" class="w-4 h-4 animate-spin" />
           <span v-else-if="isSingleEditMode">{{ t('studentAvailabilities.actions.update') }}</span>
@@ -1027,7 +1119,7 @@ const isFirstOccurrenceOfStudent = (studentId: string, index: number): boolean =
   </Dialog>
 
   <!-- Delete Confirmation Modal -->
-  <Dialog :open="deleteConfirmModal" @close="cancelDelete">
+  <Dialog :open="deleteConfirmModal" @close="cancelDelete" :staticBackdrop="true">
     <Dialog.Panel>
       <div class="p-5 text-center">
         <Lucide icon="AlertTriangle" class="w-16 h-16 mx-auto mt-3 text-danger" />
