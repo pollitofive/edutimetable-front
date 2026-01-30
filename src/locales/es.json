@@ -8,7 +8,8 @@
     "availabilities": "Disponibilidades",
     "schedules": "Horarios",
     "enrollments": "Inscripciones",
-    "logout": "Cerrar sesión"
+    "logout": "Cerrar sesión",
+    "session": "Sesión"
   },
   "courseLevels": {
     "title": "Gestión de Niveles de Curso",

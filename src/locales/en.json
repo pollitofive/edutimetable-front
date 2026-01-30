@@ -8,7 +8,8 @@
     "availabilities": "Availabilities",
     "schedules": "Schedules",
     "enrollments": "Enrollments",
-    "logout": "Log Out"
+    "logout": "Log Out",
+    "session": "Session"
   },
   "courseLevels": {
     "title": "Course Level Management",

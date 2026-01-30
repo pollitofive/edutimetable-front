@@ -74,22 +74,8 @@ export const useMenuStore = defineStore("menu", {
                     pageName: "student-enrollments",
                     title: t('menu.enrollments'),
                 },
-                {
-                    icon: "PercentSquare",
-                    pageName: "accounts",
-                    title: t('menu.accounts'),
-                },
-                {
-                    icon: "Building",
-                    pageName: "shops",
-                    title: t('menu.shops'),
-                },
-                {
-                    icon: "SigmaSquare",
-                    pageName: "transactions",
-                    title: t('menu.transfers'),
-                },
                 t('menu.session'),
+                /*
                 {
                     icon: "SquareUser",
                     pageName: "my-data",
@@ -99,7 +85,7 @@ export const useMenuStore = defineStore("menu", {
                     icon: "FlipVertical",
                     pageName: "change-password",
                     title: t('menu.changePassword'),
-                },
+                },*/
                 {
                     icon: "FlipHorizontal",
                     title: t('menu.logout'),

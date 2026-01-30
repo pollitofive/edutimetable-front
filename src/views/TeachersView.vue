@@ -21,8 +21,10 @@ interface Teacher {
   courses?: Array<{
     id: string
     name: string
-    level: string
-    year: number
+    courseLevel?: {
+      name: string
+      track: string
+    }
   }>
 }
 
@@ -42,8 +44,10 @@ const GET_TEACHERS = gql`
         courses {
           id
           name
-          level
-          year
+          courseLevel {
+            name
+            track
+          }
         }
       }
       paginatorInfo {
