@@ -27,7 +27,6 @@ interface Student {
   name: string
   email: string
   phone?: string
-  code: string
   course_level_id: string
   courseLevel?: CourseLevel
 }
@@ -36,7 +35,6 @@ interface FormData {
   name: string
   email: string
   phone: string
-  code: string
   course_level_id: string
 }
 
@@ -60,14 +58,13 @@ const GET_COURSE_LEVELS = gql`
 `
 
 const GET_STUDENTS = gql`
-  query GetStudents($first: Int!, $page: Int!, $search: String, $code: String, $course_level_id: ID, $track: String) {
-    students(first: $first, page: $page, search: $search, code: $code, course_level_id: $course_level_id, track: $track) {
+  query GetStudents($first: Int!, $page: Int!, $search: String, $course_level_id: ID, $track: String) {
+    students(first: $first, page: $page, search: $search, course_level_id: $course_level_id, track: $track) {
       data {
         id
         name
         email
         phone
-        code
         course_level_id
         courseLevel {
           id
@@ -96,7 +93,6 @@ const CREATE_STUDENT = gql`
       name
       email
       phone
-      code
       course_level_id
       courseLevel {
         id
@@ -114,7 +110,6 @@ const UPDATE_STUDENT = gql`
       name
       email
       phone
-      code
       course_level_id
       courseLevel {
         id
@@ -138,9 +133,9 @@ const students = ref<Student[]>([])
 const courseLevels = ref<CourseLevel[]>([])
 const showModal = ref(false)
 const selectedStudent = ref<Student | null>(null)
-const formData = ref<FormData>({ name: '', email: '', phone: '', code: '', course_level_id: '' })
+const formData = ref<FormData>({ name: '', email: '', phone: '', course_level_id: '' })
 const formState = ref<FormState>({ selectedTrack: '' })
-const formErrors = ref<{ name?: string; email?: string; phone?: string; code?: string; course_level_id?: string }>({})
+const formErrors = ref<{ name?: string; email?: string; phone?: string; course_level_id?: string }>({})
 const deleteConfirmModal = ref(false)
 const studentToDelete = ref<Student | null>(null)
 
@@ -157,7 +152,6 @@ const lastPage = ref(1)
 
 // Filter state
 const filterSearch = ref('')
-const filterCode = ref('')
 const filterTrack = ref('')
 const filterCourseLevel = ref('')
 let filterTimeout: ReturnType<typeof setTimeout> | null = null
@@ -178,7 +172,6 @@ const { result, loading, error, refetch } = useQuery(
     first: perPage.value,
     page: currentPage.value,
     search: filterSearch.value ? `%${filterSearch.value}%` : undefined,
-    code: filterCode.value ? `%${filterCode.value}%` : undefined,
     course_level_id: filterCourseLevel.value || undefined,
     track: filterTrack.value || undefined
   }),
@@ -279,10 +272,6 @@ const validateForm = (): boolean => {
     formErrors.value.email = t('students.validation.emailInvalid')
   }
 
-  if (!formData.value.code.trim()) {
-    formErrors.value.code = t('students.validation.codeRequired')
-  }
-
   if (!formData.value.course_level_id) {
     formErrors.value.course_level_id = t('students.validation.courseLevelRequired')
   }
@@ -293,7 +282,7 @@ const validateForm = (): boolean => {
 // Methods
 const openCreateModal = () => {
   selectedStudent.value = null
-  formData.value = { name: '', email: '', phone: '', code: '', course_level_id: '' }
+  formData.value = { name: '', email: '', phone: '', course_level_id: '' }
   formState.value = { selectedTrack: '' }
   formErrors.value = {}
   showModal.value = true
@@ -306,7 +295,6 @@ const openEditModal = (student: Student) => {
     name: student.name,
     email: student.email,
     phone: student.phone || '',
-    code: student.code,
     course_level_id: student.course_level_id || ''
   }
 
@@ -324,7 +312,7 @@ const openEditModal = (student: Student) => {
 const closeModal = () => {
   showModal.value = false
   selectedStudent.value = null
-  formData.value = { name: '', email: '', phone: '', code: '', course_level_id: '' }
+  formData.value = { name: '', email: '', phone: '', course_level_id: '' }
   formState.value = { selectedTrack: '' }
   formErrors.value = {}
 }
@@ -344,7 +332,6 @@ const handleSave = async () => {
       name: formData.value.name,
       email: formData.value.email,
       phone: formData.value.phone || null,
-      code: formData.value.code,
       course_level_id: formData.value.course_level_id
     }
 
@@ -404,7 +391,6 @@ const goToPage = (page: number) => {
       first: perPage.value,
       page,
       search: filterSearch.value.trim() ? `%${filterSearch.value.trim()}%` : undefined,
-      code: filterCode.value.trim() ? `%${filterCode.value.trim()}%` : undefined,
       course_level_id: filterCourseLevel.value || undefined,
       track: filterTrack.value || undefined
     })
@@ -418,7 +404,6 @@ const changePerPage = (newPerPage: number) => {
     first: newPerPage,
     page: 1,
     search: filterSearch.value.trim() ? `%${filterSearch.value.trim()}%` : undefined,
-    code: filterCode.value.trim() ? `%${filterCode.value.trim()}%` : undefined,
     course_level_id: filterCourseLevel.value || undefined,
     track: filterTrack.value || undefined
   })
@@ -431,7 +416,6 @@ const applyFilters = () => {
     first: perPage.value,
     page: 1,
     search: filterSearch.value.trim() ? `%${filterSearch.value.trim()}%` : undefined,
-    code: filterCode.value.trim() ? `%${filterCode.value.trim()}%` : undefined,
     course_level_id: filterCourseLevel.value || undefined,
     track: filterTrack.value || undefined
   })
@@ -449,7 +433,6 @@ const debouncedFilter = () => {
 
 const clearFilters = () => {
   filterSearch.value = ''
-  filterCode.value = ''
   filterTrack.value = ''
   filterCourseLevel.value = ''
   applyFilters()
@@ -457,7 +440,6 @@ const clearFilters = () => {
 
 const hasActiveFilters = computed(() => {
   return filterSearch.value.trim() !== '' ||
-         filterCode.value.trim() !== '' ||
          filterTrack.value.trim() !== '' ||
          filterCourseLevel.value.trim() !== ''
 })
@@ -468,7 +450,7 @@ const handleFilterTrackChange = () => {
 }
 
 // Watch for filter changes
-watch([filterSearch, filterCode, filterTrack, filterCourseLevel], () => {
+watch([filterSearch, filterTrack, filterCourseLevel], () => {
   debouncedFilter()
 })
 </script>
@@ -498,21 +480,6 @@ watch([filterSearch, filterCode, filterTrack, filterCourseLevel], () => {
               v-model="filterSearch"
               type="text"
               :placeholder="t('students.filters.searchByNameOrEmail')"
-              class="pl-10"
-            />
-          </div>
-        </div>
-
-        <!-- Code (fixed width) -->
-        <div class="w-full lg:w-[140px]">
-          <div class="relative">
-            <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-              <Lucide icon="Hash" class="w-4 h-4 text-slate-400" />
-            </div>
-            <FormInput
-              v-model="filterCode"
-              type="text"
-              :placeholder="t('students.filters.searchByCode')"
               class="pl-10"
             />
           </div>
@@ -591,7 +558,6 @@ watch([filterSearch, filterCode, filterTrack, filterCourseLevel], () => {
           first: perPage.value,
           page: currentPage.value,
           search: filterSearch.value.trim() ? `%${filterSearch.value.trim()}%` : undefined,
-          code: filterCode.value.trim() ? `%${filterCode.value.trim()}%` : undefined,
           course_level_id: filterCourseLevel.value || undefined,
           track: filterTrack.value || undefined
         })">{{ t('students.actions.retry') }}</Button>
@@ -613,9 +579,6 @@ watch([filterSearch, filterCode, filterTrack, filterCourseLevel], () => {
               {{ t('students.columns.email') }}
             </Table.Td>
             <Table.Td class="py-4 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">
-              {{ t('students.columns.code') }}
-            </Table.Td>
-            <Table.Td class="py-4 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">
               {{ t('students.columns.level') }}
             </Table.Td>
             <Table.Td class="py-4 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">
@@ -628,7 +591,7 @@ watch([filterSearch, filterCode, filterTrack, filterCourseLevel], () => {
         </Table.Thead>
         <Table.Tbody>
           <Table.Tr v-if="students.length === 0">
-            <Table.Td colspan="7" class="py-10 text-center text-slate-500">
+            <Table.Td colspan="6" class="py-10 text-center text-slate-500">
               <div class="flex flex-col items-center gap-3">
                 <Lucide icon="Inbox" class="w-10 h-10 text-slate-300" />
                 <div>{{ t('students.messages.noStudents') }}</div>
@@ -644,11 +607,6 @@ watch([filterSearch, filterCode, filterTrack, filterCourseLevel], () => {
             </Table.Td>
             <Table.Td class="py-4 border-dashed dark:bg-darkmode-600">
               <div class="text-slate-500">{{ student.email }}</div>
-            </Table.Td>
-            <Table.Td class="py-4 border-dashed dark:bg-darkmode-600">
-              <div class="px-2 py-1 text-xs font-mono rounded-md bg-slate-100 text-slate-600 inline-block">
-                {{ student.code }}
-              </div>
             </Table.Td>
             <Table.Td class="py-4 border-dashed dark:bg-darkmode-600">
               <div v-if="student.courseLevel" class="flex flex-col gap-1">
@@ -823,19 +781,6 @@ watch([filterSearch, filterCode, filterTrack, filterCourseLevel], () => {
             type="tel"
             :placeholder="t('students.form.phonePlaceholder')"
           />
-        </div>
-        <div class="col-span-12">
-          <FormLabel htmlFor="student-code">{{ t('students.form.codeLabel') }} {{ t('students.form.required') }}</FormLabel>
-          <FormInput
-            id="student-code"
-            v-model="formData.code"
-            type="text"
-            :placeholder="t('students.form.codePlaceholder')"
-            :class="{ 'border-danger': formErrors.code }"
-          />
-          <div v-if="formErrors.code" class="mt-1 text-xs text-danger">
-            {{ formErrors.code }}
-          </div>
         </div>
         <!-- Track Selection -->
         <div class="col-span-12 sm:col-span-6">

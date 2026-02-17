@@ -228,7 +228,6 @@
       "id": "ID",
       "name": "Name",
       "email": "Email",
-      "code": "Code",
       "level": "Level",
       "phone": "Phone",
       "actions": "Actions"
@@ -244,7 +243,6 @@
     "filters": {
       "searchByName": "Search by name...",
       "searchByNameOrEmail": "Search by name or email...",
-      "searchByCode": "Code",
       "searchByTrack": "Track",
       "searchByLevel": "Level",
       "selectTrackFirst": "Select a track first"
@@ -253,13 +251,11 @@
       "nameLabel": "Name",
       "emailLabel": "Email",
       "phoneLabel": "Phone",
-      "codeLabel": "Student Code",
       "trackLabel": "Track",
       "levelLabel": "Level",
       "namePlaceholder": "Enter student name",
       "emailPlaceholder": "Enter student email",
       "phonePlaceholder": "e.g., +1234567890",
-      "codePlaceholder": "e.g., STU-12345",
       "trackPlaceholder": "Select a track...",
       "levelPlaceholder": "Select a level...",
       "selectTrackFirst": "Select a track first",
@@ -269,7 +265,6 @@
       "nameRequired": "Name is required",
       "emailRequired": "Email is required",
       "emailInvalid": "Invalid email format",
-      "codeRequired": "Student code is required",
       "trackRequired": "Track is required",
       "courseLevelRequired": "Course level is required"
     },
@@ -388,6 +383,7 @@
       "startsAt": "Start Time",
       "endsAt": "End Time",
       "description": "Description",
+      "capacity": "Capacity",
       "actions": "Actions"
     },
     "days": {
@@ -423,6 +419,8 @@
       "selectTeacher": "Select teacher...",
       "description": "Description",
       "descriptionPlaceholder": "e.g., monday and wednesday group",
+      "capacity": "Capacity",
+      "capacityPlaceholder": "e.g., 5",
       "dayOfWeek": "Day of Week",
       "startsAt": "Start Time",
       "endsAt": "End Time",

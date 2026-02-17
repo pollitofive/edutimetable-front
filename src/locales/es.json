@@ -228,7 +228,6 @@
       "id": "ID",
       "name": "Nombre",
       "email": "Correo Electrónico",
-      "code": "Código",
       "level": "Nivel",
       "phone": "Teléfono",
       "actions": "Acciones"
@@ -244,7 +243,6 @@
     "filters": {
       "searchByName": "Buscar por nombre...",
       "searchByNameOrEmail": "Buscar por nombre o correo...",
-      "searchByCode": "Código",
       "searchByTrack": "Pista",
       "searchByLevel": "Nivel",
       "selectTrackFirst": "Seleccione una pista primero"
@@ -253,13 +251,11 @@
       "nameLabel": "Nombre",
       "emailLabel": "Correo Electrónico",
       "phoneLabel": "Teléfono",
-      "codeLabel": "Código de Estudiante",
       "trackLabel": "Pista",
       "levelLabel": "Nivel",
       "namePlaceholder": "Ingrese el nombre del estudiante",
       "emailPlaceholder": "Ingrese el correo del estudiante",
       "phonePlaceholder": "ej. +1234567890",
-      "codePlaceholder": "ej. STU-12345",
       "trackPlaceholder": "Seleccione una pista...",
       "levelPlaceholder": "Seleccione un nivel...",
       "selectTrackFirst": "Seleccione una pista primero",
@@ -269,7 +265,6 @@
       "nameRequired": "El nombre es obligatorio",
       "emailRequired": "El correo electrónico es obligatorio",
       "emailInvalid": "Formato de correo electrónico inválido",
-      "codeRequired": "El código de estudiante es obligatorio",
       "trackRequired": "La pista es obligatoria",
       "courseLevelRequired": "El nivel de curso es obligatorio"
     },
@@ -388,6 +383,7 @@
       "startsAt": "Hora de Inicio",
       "endsAt": "Hora de Fin",
       "description": "Descripción",
+      "capacity": "Capacidad",
       "actions": "Acciones"
     },
     "days": {
@@ -423,6 +419,8 @@
       "selectTeacher": "Seleccione profesor...",
       "description": "Descripción",
       "descriptionPlaceholder": "ej. grupo de lunes y miércoles",
+      "capacity": "Capacidad",
+      "capacityPlaceholder": "ej. 5",
       "dayOfWeek": "Día de la Semana",
       "startsAt": "Hora de Inicio",
       "endsAt": "Hora de Fin",
