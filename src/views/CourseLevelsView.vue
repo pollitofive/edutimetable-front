@@ -5,7 +5,7 @@ import { ref, watch, computed } from 'vue'
 import Lucide from '@/components/Base/Lucide'
 import Button from '@/components/Base/Button'
 import { Dialog } from '@/components/Base/Headless'
-import { FormInput, FormLabel, FormSelect } from '@/components/Base/Form'
+import { FormInput, FormLabel, FormSelect, FormTextarea } from '@/components/Base/Form'
 import Table from '@/components/Base/Table'
 import Pagination from '@/components/Base/Pagination'
 import ToastNotification from '@/views/components/ToastNotification.vue'
@@ -21,6 +21,7 @@ interface CourseLevel {
   slug: string
   sort_order: number
   next_level_id: string | null
+  texts: string | null
   nextLevel?: {
     id: string
     name: string
@@ -33,6 +34,7 @@ interface FormData {
   slug: string
   sort_order: number | null
   next_level_id: string | null
+  texts: string | null
 }
 
 interface SlugEditState {
@@ -55,6 +57,7 @@ const GET_COURSE_LEVELS = gql`
         slug
         sort_order
         next_level_id
+        texts
         nextLevel {
           id
           name
@@ -81,6 +84,7 @@ const CREATE_COURSE_LEVEL = gql`
       slug
       sort_order
       next_level_id
+      texts
     }
   }
 `
@@ -94,6 +98,7 @@ const UPDATE_COURSE_LEVEL = gql`
       slug
       sort_order
       next_level_id
+      texts
     }
   }
 `
@@ -110,7 +115,7 @@ const DELETE_COURSE_LEVEL = gql`
 const courseLevels = ref<CourseLevel[]>([])
 const showModal = ref(false)
 const selectedCourseLevel = ref<CourseLevel | null>(null)
-const formData = ref<FormData>({ track: '', name: '', slug: '', sort_order: null, next_level_id: null })
+const formData = ref<FormData>({ track: '', name: '', slug: '', sort_order: null, next_level_id: null, texts: null })
 const formErrors = ref<{ track?: string; name?: string; slug?: string; sort_order?: string }>({})
 const deleteConfirmModal = ref(false)
 const levelToDelete = ref<CourseLevel | null>(null)
@@ -259,7 +264,7 @@ watch(() => formData.value.name, (newName) => {
 // Methods
 const openCreateModal = () => {
   selectedCourseLevel.value = null
-  formData.value = { track: '', name: '', slug: '', sort_order: null, next_level_id: null }
+  formData.value = { track: '', name: '', slug: '', sort_order: null, next_level_id: null, texts: null }
   formErrors.value = {}
   slugEditState.value.isEditable = false // Reset slug edit state
   trackState.value = { isCustom: false, customValue: '' } // Reset track state
@@ -273,7 +278,8 @@ const openEditModal = (level: CourseLevel) => {
     name: level.name,
     slug: level.slug,
     sort_order: level.sort_order,
-    next_level_id: level.next_level_id
+    next_level_id: level.next_level_id,
+    texts: level.texts ?? null
   }
   formErrors.value = {}
   slugEditState.value.isEditable = false // Reset slug edit state
@@ -292,7 +298,7 @@ const openEditModal = (level: CourseLevel) => {
 const closeModal = () => {
   showModal.value = false
   selectedCourseLevel.value = null
-  formData.value = { track: '', name: '', slug: '', sort_order: null, next_level_id: null }
+  formData.value = { track: '', name: '', slug: '', sort_order: null, next_level_id: null, texts: null }
   formErrors.value = {}
   slugEditState.value.isEditable = false // Reset slug edit state
   trackState.value = { isCustom: false, customValue: '' } // Reset track state
@@ -333,7 +339,8 @@ const handleSave = async () => {
       name: formData.value.name.trim(),
       slug: formData.value.slug.trim(),
       sort_order: Number(formData.value.sort_order),
-      next_level_id: formData.value.next_level_id || null
+      next_level_id: formData.value.next_level_id || null,
+      texts: formData.value.texts ? formData.value.texts.trim() : null
     }
 
     if (selectedCourseLevel.value) {
@@ -576,6 +583,9 @@ watch([filterTrack, filterName, filterSortOrder], () => {
             <Table.Td class="py-4 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">
               {{ t('courseLevels.columns.nextLevel') }}
             </Table.Td>
+            <Table.Td class="py-4 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">
+              {{ t('courseLevels.columns.texts') }}
+            </Table.Td>
             <Table.Td class="py-4 font-medium text-center bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">
               {{ t('courseLevels.columns.actions') }}
             </Table.Td>
@@ -583,7 +593,7 @@ watch([filterTrack, filterName, filterSortOrder], () => {
         </Table.Thead>
         <Table.Tbody>
           <Table.Tr v-if="courseLevels.length === 0">
-            <Table.Td colspan="7" class="py-10 text-center text-slate-500">
+            <Table.Td colspan="8" class="py-10 text-center text-slate-500">
               <div class="flex flex-col items-center gap-3">
                 <Lucide icon="Inbox" class="w-10 h-10 text-slate-300" />
                 <div>{{ t('courseLevels.messages.noLevels') }}</div>
@@ -612,6 +622,16 @@ watch([filterTrack, filterName, filterSortOrder], () => {
             </Table.Td>
             <Table.Td class="py-4 border-dashed dark:bg-darkmode-600">
               <div v-if="level.nextLevel" class="text-slate-600">{{ level.nextLevel.name }}</div>
+              <div v-else class="text-xs text-slate-400">-</div>
+            </Table.Td>
+            <Table.Td class="py-4 border-dashed dark:bg-darkmode-600 max-w-xs">
+              <div
+                v-if="level.texts"
+                class="text-sm text-slate-600 truncate max-w-[200px]"
+                :title="level.texts"
+              >
+                {{ level.texts }}
+              </div>
               <div v-else class="text-xs text-slate-400">-</div>
             </Table.Td>
             <Table.Td class="relative py-4 border-dashed dark:bg-darkmode-600">
@@ -831,6 +851,18 @@ watch([filterTrack, filterName, filterSortOrder], () => {
               {{ level.name }} ({{ level.track }})
             </option>
           </FormSelect>
+        </div>
+        <div class="col-span-12">
+          <FormLabel htmlFor="level-texts">{{ t('courseLevels.form.textsLabel') }}</FormLabel>
+          <FormTextarea
+            id="level-texts"
+            v-model="formData.texts"
+            :placeholder="t('courseLevels.form.textsPlaceholder')"
+            rows="4"
+          />
+          <div class="mt-1 text-xs text-slate-500">
+            {{ t('courseLevels.form.textsHint') }}
+          </div>
         </div>
       </Dialog.Description>
       <Dialog.Footer class="text-right">

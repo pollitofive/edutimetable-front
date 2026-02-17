@@ -26,6 +26,7 @@ interface Student {
   id: string
   name: string
   email: string
+  phone?: string
   code: string
   course_level_id: string
   courseLevel?: CourseLevel
@@ -34,6 +35,7 @@ interface Student {
 interface FormData {
   name: string
   email: string
+  phone: string
   code: string
   course_level_id: string
 }
@@ -64,6 +66,7 @@ const GET_STUDENTS = gql`
         id
         name
         email
+        phone
         code
         course_level_id
         courseLevel {
@@ -92,6 +95,7 @@ const CREATE_STUDENT = gql`
       id
       name
       email
+      phone
       code
       course_level_id
       courseLevel {
@@ -109,6 +113,7 @@ const UPDATE_STUDENT = gql`
       id
       name
       email
+      phone
       code
       course_level_id
       courseLevel {
@@ -133,9 +138,9 @@ const students = ref<Student[]>([])
 const courseLevels = ref<CourseLevel[]>([])
 const showModal = ref(false)
 const selectedStudent = ref<Student | null>(null)
-const formData = ref<FormData>({ name: '', email: '', code: '', course_level_id: '' })
+const formData = ref<FormData>({ name: '', email: '', phone: '', code: '', course_level_id: '' })
 const formState = ref<FormState>({ selectedTrack: '' })
-const formErrors = ref<{ name?: string; email?: string; code?: string; course_level_id?: string }>({})
+const formErrors = ref<{ name?: string; email?: string; phone?: string; code?: string; course_level_id?: string }>({})
 const deleteConfirmModal = ref(false)
 const studentToDelete = ref<Student | null>(null)
 
@@ -288,7 +293,7 @@ const validateForm = (): boolean => {
 // Methods
 const openCreateModal = () => {
   selectedStudent.value = null
-  formData.value = { name: '', email: '', code: '', course_level_id: '' }
+  formData.value = { name: '', email: '', phone: '', code: '', course_level_id: '' }
   formState.value = { selectedTrack: '' }
   formErrors.value = {}
   showModal.value = true
@@ -300,6 +305,7 @@ const openEditModal = (student: Student) => {
   formData.value = {
     name: student.name,
     email: student.email,
+    phone: student.phone || '',
     code: student.code,
     course_level_id: student.course_level_id || ''
   }
@@ -318,7 +324,7 @@ const openEditModal = (student: Student) => {
 const closeModal = () => {
   showModal.value = false
   selectedStudent.value = null
-  formData.value = { name: '', email: '', code: '', course_level_id: '' }
+  formData.value = { name: '', email: '', phone: '', code: '', course_level_id: '' }
   formState.value = { selectedTrack: '' }
   formErrors.value = {}
 }
@@ -337,6 +343,7 @@ const handleSave = async () => {
     const input = {
       name: formData.value.name,
       email: formData.value.email,
+      phone: formData.value.phone || null,
       code: formData.value.code,
       course_level_id: formData.value.course_level_id
     }
@@ -611,6 +618,9 @@ watch([filterSearch, filterCode, filterTrack, filterCourseLevel], () => {
             <Table.Td class="py-4 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">
               {{ t('students.columns.level') }}
             </Table.Td>
+            <Table.Td class="py-4 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">
+              {{ t('students.columns.phone') }}
+            </Table.Td>
             <Table.Td class="py-4 font-medium text-center bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">
               {{ t('students.columns.actions') }}
             </Table.Td>
@@ -618,7 +628,7 @@ watch([filterSearch, filterCode, filterTrack, filterCourseLevel], () => {
         </Table.Thead>
         <Table.Tbody>
           <Table.Tr v-if="students.length === 0">
-            <Table.Td colspan="6" class="py-10 text-center text-slate-500">
+            <Table.Td colspan="7" class="py-10 text-center text-slate-500">
               <div class="flex flex-col items-center gap-3">
                 <Lucide icon="Inbox" class="w-10 h-10 text-slate-300" />
                 <div>{{ t('students.messages.noStudents') }}</div>
@@ -647,6 +657,19 @@ watch([filterSearch, filterCode, filterTrack, filterCourseLevel], () => {
                   {{ student.courseLevel.track }}
                 </div>
               </div>
+              <div v-else class="text-xs text-slate-400">-</div>
+            </Table.Td>
+            <Table.Td class="py-4 border-dashed dark:bg-darkmode-600">
+              <a
+                v-if="student.phone"
+                :href="`https://wa.me/${student.phone.replace(/\D/g, '')}`"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="flex items-center gap-1 text-success hover:underline whitespace-nowrap"
+              >
+                <Lucide icon="MessageCircle" class="w-3.5 h-3.5 shrink-0" />
+                {{ student.phone }}
+              </a>
               <div v-else class="text-xs text-slate-400">-</div>
             </Table.Td>
             <Table.Td class="relative py-4 border-dashed dark:bg-darkmode-600">
@@ -791,6 +814,15 @@ watch([filterSearch, filterCode, filterTrack, filterCourseLevel], () => {
           <div v-if="formErrors.email" class="mt-1 text-xs text-danger">
             {{ formErrors.email }}
           </div>
+        </div>
+        <div class="col-span-12">
+          <FormLabel htmlFor="student-phone">{{ t('students.form.phoneLabel') }}</FormLabel>
+          <FormInput
+            id="student-phone"
+            v-model="formData.phone"
+            type="tel"
+            :placeholder="t('students.form.phonePlaceholder')"
+          />
         </div>
         <div class="col-span-12">
           <FormLabel htmlFor="student-code">{{ t('students.form.codeLabel') }} {{ t('students.form.required') }}</FormLabel>

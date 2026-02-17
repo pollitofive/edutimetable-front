@@ -18,6 +18,7 @@ interface Teacher {
   id: string
   name: string
   email: string
+  phone?: string
   courses?: Array<{
     id: string
     name: string
@@ -31,6 +32,7 @@ interface Teacher {
 interface FormData {
   name: string
   email: string
+  phone: string
 }
 
 // GraphQL Queries & Mutations
@@ -41,6 +43,7 @@ const GET_TEACHERS = gql`
         id
         name
         email
+        phone
         courses {
           id
           name
@@ -68,6 +71,7 @@ const CREATE_TEACHER = gql`
       id
       name
       email
+      phone
     }
   }
 `
@@ -78,6 +82,7 @@ const UPDATE_TEACHER = gql`
       id
       name
       email
+      phone
     }
   }
 `
@@ -94,8 +99,8 @@ const DELETE_TEACHER = gql`
 const teachers = ref<Teacher[]>([])
 const showModal = ref(false)
 const selectedTeacher = ref<Teacher | null>(null)
-const formData = ref<FormData>({ name: '', email: '' })
-const formErrors = ref<{ name?: string; email?: string }>({})
+const formData = ref<FormData>({ name: '', email: '', phone: '' })
+const formErrors = ref<{ name?: string; email?: string; phone?: string }>({})
 const deleteConfirmModal = ref(false)
 const teacherToDelete = ref<Teacher | null>(null)
 
@@ -191,14 +196,14 @@ const validateForm = (): boolean => {
 // Methods
 const openCreateModal = () => {
   selectedTeacher.value = null
-  formData.value = { name: '', email: '' }
+  formData.value = { name: '', email: '', phone: '' }
   formErrors.value = {}
   showModal.value = true
 }
 
 const openEditModal = (teacher: Teacher) => {
   selectedTeacher.value = teacher
-  formData.value = { name: teacher.name, email: teacher.email }
+  formData.value = { name: teacher.name, email: teacher.email, phone: teacher.phone || '' }
   formErrors.value = {}
   showModal.value = true
 }
@@ -206,7 +211,7 @@ const openEditModal = (teacher: Teacher) => {
 const closeModal = () => {
   showModal.value = false
   selectedTeacher.value = null
-  formData.value = { name: '', email: '' }
+  formData.value = { name: '', email: '', phone: '' }
   formErrors.value = {}
 }
 
@@ -216,16 +221,22 @@ const handleSave = async () => {
   }
 
   try {
+    const input = {
+      name: formData.value.name,
+      email: formData.value.email,
+      phone: formData.value.phone || null
+    }
+
     if (selectedTeacher.value) {
       // Update
       await updateTeacher({
         id: selectedTeacher.value.id,
-        input: formData.value
+        input
       })
       notify(t('teachers.messages.updateSuccess'), 'success')
     } else {
       // Create
-      await createTeacher({ input: formData.value })
+      await createTeacher({ input })
       notify(t('teachers.messages.createSuccess'), 'success')
     }
 
@@ -417,6 +428,9 @@ watch([filterName, filterEmail], () => {
             <Table.Td class="py-4 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">
               {{ t('teachers.columns.courses') }}
             </Table.Td>
+            <Table.Td class="py-4 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">
+              {{ t('teachers.columns.phone') }}
+            </Table.Td>
             <Table.Td class="py-4 font-medium text-center bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">
               {{ t('teachers.columns.actions') }}
             </Table.Td>
@@ -424,7 +438,7 @@ watch([filterName, filterEmail], () => {
         </Table.Thead>
         <Table.Tbody>
           <Table.Tr v-if="teachers.length === 0">
-            <Table.Td colspan="5" class="py-10 text-center text-slate-500">
+            <Table.Td colspan="6" class="py-10 text-center text-slate-500">
               <div class="flex flex-col items-center gap-3">
                 <Lucide icon="Inbox" class="w-10 h-10 text-slate-300" />
                 <div>{{ t('teachers.messages.noTeachers') }}</div>
@@ -458,6 +472,19 @@ watch([filterName, filterEmail], () => {
                 </span>
               </div>
               <div v-else class="text-xs text-slate-400">{{ t('teachers.messages.noCourses') }}</div>
+            </Table.Td>
+            <Table.Td class="py-4 border-dashed dark:bg-darkmode-600">
+              <a
+                v-if="teacher.phone"
+                :href="`https://wa.me/${teacher.phone.replace(/\D/g, '')}`"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="flex items-center gap-1 text-success hover:underline whitespace-nowrap"
+              >
+                <Lucide icon="MessageCircle" class="w-3.5 h-3.5 shrink-0" />
+                {{ teacher.phone }}
+              </a>
+              <div v-else class="text-xs text-slate-400">-</div>
             </Table.Td>
             <Table.Td class="relative py-4 border-dashed dark:bg-darkmode-600">
               <div class="flex items-center justify-center gap-2">
@@ -601,6 +628,15 @@ watch([filterName, filterEmail], () => {
           <div v-if="formErrors.email" class="mt-1 text-xs text-danger">
             {{ formErrors.email }}
           </div>
+        </div>
+        <div class="col-span-12">
+          <FormLabel htmlFor="teacher-phone">{{ t('teachers.form.phoneLabel') }}</FormLabel>
+          <FormInput
+            id="teacher-phone"
+            v-model="formData.phone"
+            type="tel"
+            :placeholder="t('teachers.form.phonePlaceholder')"
+          />
         </div>
       </Dialog.Description>
       <Dialog.Footer class="text-right">
