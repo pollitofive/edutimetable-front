@@ -36,6 +36,7 @@ interface Schedule {
   ends_at: string
   description: string
   group_id?: string
+  capacity: number
 }
 
 interface ScheduleSlot {
@@ -48,6 +49,7 @@ interface ScheduleSlot {
 interface FormData {
   course_id: string
   description: string
+  capacity: number
   schedules: ScheduleSlot[]
   group_id?: string
 }
@@ -72,6 +74,7 @@ const GET_SCHEDULES = gql`
         ends_at
         description
         group_id
+        capacity
         course {
           id
           name
@@ -126,6 +129,7 @@ const BULK_CREATE_SCHEDULES = gql`
       ends_at
       description
       group_id
+      capacity
       course {
         id
         name
@@ -149,6 +153,7 @@ const BULK_UPDATE_SCHEDULES = gql`
       ends_at
       description
       group_id
+      capacity
       course {
         id
         name
@@ -172,6 +177,7 @@ const UPDATE_SCHEDULE = gql`
       ends_at
       description
       group_id
+      capacity
       course {
         id
         name
@@ -203,6 +209,7 @@ const editingScheduleId = ref<string | null>(null)
 const formData = ref<FormData>({
   course_id: '',
   description: '',
+  capacity: 5,
   schedules: [
     { teacher_id: '', day_of_week: '', starts_at: '', ends_at: '' }
   ]
@@ -493,6 +500,7 @@ const openCreateModal = () => {
   formData.value = {
     course_id: '',
     description: '',
+    capacity: 5,
     schedules: [
       { teacher_id: '', day_of_week: '', starts_at: '', ends_at: '' }
     ],
@@ -512,6 +520,7 @@ const openSingleEditModal = (schedule: Schedule) => {
   formData.value = {
     course_id: schedule.course_id,
     description: schedule.description || '', // Load description from schedule
+    capacity: schedule.capacity ?? 5,
     schedules: [
       {
         teacher_id: schedule.teacher_id,
@@ -536,6 +545,7 @@ const openEditModal = async (schedule: Schedule) => {
   formData.value = {
     course_id: courseId,
     description: '',
+    capacity: 5,
     schedules: [],
     group_id: undefined
   }
@@ -590,8 +600,9 @@ const openEditModal = async (schedule: Schedule) => {
       console.log(`Found ${groupSchedules.length} schedules in group`)
 
       if (groupSchedules.length > 0) {
-        // Load description and group_id from first schedule
+        // Load description, capacity and group_id from first schedule
         formData.value.description = groupSchedules[0].description || ''
+        formData.value.capacity = groupSchedules[0].capacity ?? 5
         formData.value.group_id = groupSchedules[0].group_id // Store group_id for UPDATE
 
         formData.value.schedules = groupSchedules.map((sched: any) => ({
@@ -627,6 +638,7 @@ const closeModal = () => {
   formData.value = {
     course_id: '',
     description: '',
+    capacity: 5,
     schedules: [
       { teacher_id: '', day_of_week: '', starts_at: '', ends_at: '' }
     ],
@@ -658,6 +670,7 @@ const handleSave = async () => {
         starts_at: normalizeTime(slot.starts_at),
         ends_at: normalizeTime(slot.ends_at),
         description: formData.value.description,
+        capacity: Number(formData.value.capacity),
         group_id: formData.value.group_id // Preserve group_id for single UPDATE
       }
 
@@ -671,6 +684,7 @@ const handleSave = async () => {
       const input = {
         course_id: formData.value.course_id,
         description: formData.value.description,
+        capacity: Number(formData.value.capacity),
         group_id: formData.value.group_id, // Send group_id for bulk UPDATE
         schedules: formData.value.schedules.map(slot => ({
           teacher_id: Number(slot.teacher_id), // Teacher from each slot
@@ -687,6 +701,7 @@ const handleSave = async () => {
       const input = {
         course_id: formData.value.course_id,
         description: formData.value.description,
+        capacity: Number(formData.value.capacity),
         schedules: formData.value.schedules.map(slot => ({
           teacher_id: Number(slot.teacher_id), // Teacher from each slot
           day_of_week: Number(slot.day_of_week),
@@ -1010,6 +1025,9 @@ const getCourseGroupBackground = (courseId: string): string => {
             <Table.Td class="py-4 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">
               {{ t('schedules.columns.description') }}
             </Table.Td>
+            <Table.Td class="py-4 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">
+              {{ t('schedules.columns.capacity') }}
+            </Table.Td>
             <Table.Td class="py-4 font-medium text-center bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">
               {{ t('schedules.columns.actions') }}
             </Table.Td>
@@ -1017,7 +1035,7 @@ const getCourseGroupBackground = (courseId: string): string => {
         </Table.Thead>
         <Table.Tbody>
           <Table.Tr v-if="sortedSchedules.length === 0">
-            <Table.Td colspan="7" class="py-10 text-center text-slate-500">
+            <Table.Td colspan="8" class="py-10 text-center text-slate-500">
               <div class="flex flex-col items-center gap-3">
                 <Lucide icon="Inbox" class="w-10 h-10 text-slate-300" />
                 <div>{{ t('schedules.empty') }}</div>
@@ -1098,6 +1116,14 @@ const getCourseGroupBackground = (courseId: string): string => {
               ]"
             >
               <div class="font-mono text-slate-600 dark:text-slate-300">{{ schedule.description }}</div>
+            </Table.Td>
+            <Table.Td
+              :class="[
+                'py-4 border-dashed transition-colors',
+                getCourseGroupBackground(schedule.course_id)
+              ]"
+            >
+              <div class="text-slate-600 dark:text-slate-300">{{ schedule.capacity }}</div>
             </Table.Td>
             <Table.Td
               :class="[
@@ -1267,6 +1293,19 @@ const getCourseGroupBackground = (courseId: string): string => {
           <div v-if="formErrors.description" class="mt-1 text-xs text-danger">
             {{ formErrors.description }}
           </div>
+        </div>
+
+        <!-- Capacity -->
+        <div class="col-span-12">
+          <FormLabel htmlFor="schedule-capacity">{{ t('schedules.form.capacity') }} *</FormLabel>
+          <FormInput
+            id="schedule-capacity"
+            v-model.number="formData.capacity"
+            type="number"
+            min="1"
+            :placeholder="t('schedules.form.capacityPlaceholder')"
+            :disabled="loadingGroupSchedules"
+          />
         </div>
 
         <!-- Loading state for edit mode -->
