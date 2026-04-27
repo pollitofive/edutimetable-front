@@ -32,3 +32,6 @@ coverage
 
 /documentation
 /dist
+
+# Local AI dev tools
+.clauderules
