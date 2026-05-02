@@ -16,7 +16,7 @@ const { isLoading } = useLoading();
   >
     <div
       v-if="isLoading"
-      class="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm"
     >
       <div class="flex flex-col items-center gap-4">
         <LoadingIcon icon="spinning-circles" class="w-16 h-16" />

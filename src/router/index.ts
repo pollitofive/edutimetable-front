@@ -62,7 +62,7 @@ const router = createRouter({
                     path: "/student-enrollments",
                     name: "student-enrollments",
                     meta: { requiresAuth: true },
-                    component: () => import("../views/StudentEnrollmentsView.vue"),
+                    component: () => import("../views/EnrollmentsView.vue"),
                 }
             ],
         }

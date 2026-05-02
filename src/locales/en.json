@@ -477,6 +477,43 @@
       "showingInfo": "Showing {start} to {end} of {total} schedules"
     }
   },
+  "enrollments": {
+    "title": "Enrollments",
+    "subtitle": "Weekly schedule view and enrolled students",
+    "enrollStudent": "Enroll Student",
+    "enrollStudentInSchedule": "Enroll Student in This Schedule",
+    "enrolledStudents": "Enrolled Students",
+    "availableSpots": "{n} spots available",
+    "of": "of",
+    "noStudentsEnrolled": "No students enrolled yet",
+    "searchStudentPlaceholder": "Search student by name or email...",
+    "step1Title": "Step 1 - Student selected",
+    "step2Title": "Step 2 - Choose schedule",
+    "compatibleSchedules": "Compatible Schedules",
+    "compatibleSchedulesSubtitle": "Based on level and student availability",
+    "changeStudent": "← Change student",
+    "declaredAvailability": "Declared availability:",
+    "compatible": "Compatible",
+    "notAvailable": "No availability",
+    "full": "Full",
+    "alreadyEnrolled": "Already enrolled",
+    "confirmEnrollment": "Confirm Enrollment",
+    "enrollSuccess": "Student enrolled successfully",
+    "enrollError": "Error enrolling student",
+    "noResults": "No students found",
+    "resultsCount": "{n} students found",
+    "available": "Available",
+    "noAvailability": "No availability",
+    "cancel": "Cancel",
+    "add": "+ Add",
+    "selectScheduleFirst": "Select a student to see compatible schedules",
+    "filters": {
+      "allCourses": "All Courses",
+      "allLanguages": "All Languages",
+      "allTeachers": "All Teachers",
+      "allDays": "All Days"
+    }
+  },
   "studentEnrollments": {
     "title": "Student Enrollments",
     "columns": {

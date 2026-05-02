@@ -477,6 +477,43 @@
       "showingInfo": "Mostrando {start} a {end} de {total} horarios"
     }
   },
+  "enrollments": {
+    "title": "Inscripciones",
+    "subtitle": "Vista semanal de horarios y alumnos inscriptos",
+    "enrollStudent": "Inscribir Alumno",
+    "enrollStudentInSchedule": "Inscribir Alumno a este Horario",
+    "enrolledStudents": "Alumnos Inscriptos",
+    "availableSpots": "{n} lugares disponibles",
+    "of": "de",
+    "noStudentsEnrolled": "No hay alumnos inscriptos aún",
+    "searchStudentPlaceholder": "Buscar alumno por nombre o email...",
+    "step1Title": "Paso 1 - Alumno seleccionado",
+    "step2Title": "Paso 2 - Elegir horario",
+    "compatibleSchedules": "Horarios compatibles",
+    "compatibleSchedulesSubtitle": "Basado en nivel y disponibilidad del alumno",
+    "changeStudent": "← Cambiar alumno",
+    "declaredAvailability": "Disponibilidad declarada:",
+    "compatible": "Compatible",
+    "notAvailable": "Sin disp.",
+    "full": "Completo",
+    "alreadyEnrolled": "Ya inscripto",
+    "confirmEnrollment": "Confirmar Inscripción",
+    "enrollSuccess": "Alumno inscripto exitosamente",
+    "enrollError": "Error al inscribir alumno",
+    "noResults": "No se encontraron alumnos",
+    "resultsCount": "{n} alumnos encontrados",
+    "available": "Disponible",
+    "noAvailability": "Sin disponibilidad",
+    "cancel": "Cancelar",
+    "add": "+ Agregar",
+    "selectScheduleFirst": "Seleccioná un alumno para ver horarios compatibles",
+    "filters": {
+      "allCourses": "Todos los Cursos",
+      "allLanguages": "Todos los Idiomas",
+      "allTeachers": "Todos los Profesores",
+      "allDays": "Todos los Días"
+    }
+  },
   "studentEnrollments": {
     "title": "Inscripciones de Estudiantes",
     "columns": {
