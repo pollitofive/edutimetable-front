@@ -3,6 +3,7 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useToast } from '@/composables/useToast'
+import { useLoading } from '@/composables/useLoading'
 import { FormCheck, FormInput, FormLabel } from "@/components/Base/Form";
 import Button from "@/components/Base/Button";
 import Alert from "@/components/Base/Alert";
@@ -12,6 +13,7 @@ import ThemeSwitcher from "@/components/ThemeSwitcher";
 const router = useRouter()
 const authStore = useAuthStore()
 const { showError, showSuccess } = useToast()
+const { show: showLoading, hide: hideLoading } = useLoading()
 
 // Form state
 const email = ref('admin@example.com')
@@ -58,6 +60,7 @@ const handleLogin = async () => {
   }
 
   isLoading.value = true
+  showLoading()
 
   try {
     await authStore.login(email.value, password.value)
@@ -69,6 +72,7 @@ const handleLogin = async () => {
     showError(errorMessage)
   } finally {
     isLoading.value = false
+    hideLoading()
   }
 }
 

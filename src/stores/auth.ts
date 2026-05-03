@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import axios from 'axios'
 import { useBusinessStore } from './business'
+import { useLoading } from '@/composables/useLoading'
 
 interface User {
     id: number
@@ -47,6 +48,8 @@ export const useAuthStore = defineStore('auth', {
             await businessStore.initialize()
         },
         async logout() {
+            const { show: showLoading, hide: hideLoading } = useLoading()
+            showLoading()
             try {
                 await axios.post(`${import.meta.env.VITE_API_URL}/logout`, {}, {
                     headers: {

@@ -11,9 +11,11 @@ import Pagination from '@/components/Base/Pagination'
 import TomSelect from '@/components/Base/TomSelect'
 import ToastNotification from '@/views/components/ToastNotification.vue'
 import { useI18n } from '@/composables/useI18n'
+import { useLoading } from '@/composables/useLoading'
 
 // i18n setup
 const { t } = useI18n()
+const { show: showLoading, hide: hideLoading } = useLoading()
 
 interface Student {
   id: string
@@ -205,6 +207,12 @@ const { mutate: deleteAvailability, loading: deleting } = useMutation(DELETE_STU
 
 // Computed
 const isSubmitting = computed(() => creating.value || updating.value || updatingSingle.value)
+
+watch(
+  () => loading.value || creating.value || updating.value || updatingSingle.value || deleting.value || loadingEditAvailabilities.value,
+  (isActive) => isActive ? showLoading() : hideLoading(),
+  { immediate: true }
+)
 const modalTitle = computed(() => {
   if (isSingleEditMode.value) {
     return t('studentAvailabilities.form.editSingleTitle')
@@ -730,16 +738,8 @@ const getStudentGroupBackground = (studentId: string): string => {
       </div>
     </div>
 
-    <!-- Loading State -->
-    <div v-if="loading" class="flex items-center justify-center p-10">
-      <div class="flex flex-col items-center gap-3">
-        <Lucide icon="Loader" class="w-8 h-8 animate-spin text-primary" />
-        <div class="text-sm text-slate-500">{{ t('studentAvailabilities.messages.loading') }}</div>
-      </div>
-    </div>
-
     <!-- Error State -->
-    <div v-else-if="error" class="flex items-center justify-center p-10">
+    <div v-if="error" class="flex items-center justify-center p-10">
       <div class="flex flex-col items-center gap-3">
         <Lucide icon="AlertCircle" class="w-8 h-8 text-danger" />
         <div class="text-sm text-slate-500">{{ t('studentAvailabilities.messages.error') }}</div>
