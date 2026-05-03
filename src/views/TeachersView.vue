@@ -11,10 +11,13 @@ import Pagination from '@/components/Base/Pagination'
 import ToastNotification from '@/views/components/ToastNotification.vue'
 import { useI18n } from '@/composables/useI18n'
 import { useLoading } from '@/composables/useLoading'
+import { useRoute, useRouter } from 'vue-router'
 
 // i18n setup
 const { t } = useI18n()
 const { show: showLoading, hide: hideLoading } = useLoading()
+const route = useRoute()
+const router = useRouter()
 
 interface Teacher {
   id: string
@@ -112,14 +115,14 @@ const toastMessage = ref('')
 const toastType = ref<'success' | 'error' | 'info' | 'warning'>('success')
 
 // Pagination state
-const currentPage = ref(1)
+const currentPage = ref(Number(route.query.page) || 1)
 const perPage = ref(10)
 const totalItems = ref(0)
 const lastPage = ref(1)
 
 // Filter state
-const filterName = ref('')
-const filterEmail = ref('')
+const filterName = ref((route.query.name as string) || '')
+const filterEmail = ref((route.query.email as string) || '')
 let filterTimeout: ReturnType<typeof setTimeout> | null = null
 
 // Apollo Query
@@ -144,6 +147,17 @@ watch(
   () => loading.value || creating.value || updating.value || deleting.value,
   (isActive) => isActive ? showLoading() : hideLoading(),
   { immediate: true }
+)
+
+watch(
+  () => ({ name: filterName.value, email: filterEmail.value, page: currentPage.value }),
+  (v) => {
+    const q: Record<string, string> = {}
+    if (v.name) q.name = v.name
+    if (v.email) q.email = v.email
+    if (v.page > 1) q.page = String(v.page)
+    router.replace({ query: q })
+  }
 )
 const modalTitle = computed(() => selectedTeacher.value ? t('teachers.editTeacher') : t('teachers.newTeacher'))
 

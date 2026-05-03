@@ -12,10 +12,13 @@ import TomSelect from '@/components/Base/TomSelect'
 import ToastNotification from '@/views/components/ToastNotification.vue'
 import { useI18n } from '@/composables/useI18n'
 import { useLoading } from '@/composables/useLoading'
+import { useRoute, useRouter } from 'vue-router'
 
 // i18n setup
 const { t } = useI18n()
 const { show: showLoading, hide: hideLoading } = useLoading()
+const route = useRoute()
+const router = useRouter()
 
 interface Student {
   id: string
@@ -175,14 +178,14 @@ const toastMessage = ref('')
 const toastType = ref<'success' | 'error' | 'info' | 'warning'>('success')
 
 // Pagination state
-const currentPage = ref(1)
+const currentPage = ref(Number(route.query.page) || 1)
 const perPage = ref(10)
 const totalItems = ref(0)
 const lastPage = ref(1)
 
 // Filter state
-const filterStudentId = ref('')
-const filterDayOfWeek = ref<string>('')
+const filterStudentId = ref((route.query.student as string) || '')
+const filterDayOfWeek = ref<string>((route.query.day as string) || '')
 
 // Apollo Query for availabilities
 const { result, loading, error, refetch } = useQuery(GET_STUDENT_AVAILABILITIES, () => ({
@@ -212,6 +215,17 @@ watch(
   () => loading.value || creating.value || updating.value || updatingSingle.value || deleting.value || loadingEditAvailabilities.value,
   (isActive) => isActive ? showLoading() : hideLoading(),
   { immediate: true }
+)
+
+watch(
+  () => ({ student: filterStudentId.value, day: filterDayOfWeek.value, page: currentPage.value }),
+  (v) => {
+    const q: Record<string, string> = {}
+    if (v.student) q.student = v.student
+    if (v.day) q.day = v.day
+    if (v.page > 1) q.page = String(v.page)
+    router.replace({ query: q })
+  }
 )
 const modalTitle = computed(() => {
   if (isSingleEditMode.value) {

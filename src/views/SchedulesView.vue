@@ -12,10 +12,13 @@ import TomSelect from '@/components/Base/TomSelect'
 import ToastNotification from '@/views/components/ToastNotification.vue'
 import { useI18n } from '@/composables/useI18n'
 import { useLoading } from '@/composables/useLoading'
+import { useRoute, useRouter } from 'vue-router'
 
 // i18n setup
 const { t } = useI18n()
 const { show: showLoading, hide: hideLoading } = useLoading()
+const route = useRoute()
+const router = useRouter()
 
 interface Teacher {
   id: string
@@ -226,18 +229,18 @@ const toastMessage = ref('')
 const toastType = ref<'success' | 'error' | 'info' | 'warning'>('success')
 
 // Pagination state
-const currentPage = ref(1)
+const currentPage = ref(Number(route.query.page) || 1)
 const perPage = ref(10)
 const totalItems = ref(0)
 const lastPage = ref(1)
 
 // Filter state
-const filterCourseId = ref('')
-const filterDayOfWeek = ref<string>('')
-const filterTeacherId = ref('')
-const filterDescription = ref('')
-const filterStartTime = ref('')
-const filterEndTime = ref('')
+const filterCourseId = ref((route.query.course as string) || '')
+const filterDayOfWeek = ref<string>((route.query.day as string) || '')
+const filterTeacherId = ref((route.query.teacher as string) || '')
+const filterDescription = ref((route.query.description as string) || '')
+const filterStartTime = ref((route.query.from as string) || '')
+const filterEndTime = ref((route.query.to as string) || '')
 
 // Computed property for query variables
 const queryVariables = computed(() => ({
@@ -284,6 +287,25 @@ watch(
   () => loading.value || creating.value || updating.value || updatingSingle.value || deleting.value || loadingGroupSchedules.value,
   (isActive) => isActive ? showLoading() : hideLoading(),
   { immediate: true }
+)
+
+watch(
+  () => ({
+    course: filterCourseId.value, day: filterDayOfWeek.value, teacher: filterTeacherId.value,
+    description: filterDescription.value, from: filterStartTime.value, to: filterEndTime.value,
+    page: currentPage.value,
+  }),
+  (v) => {
+    const q: Record<string, string> = {}
+    if (v.course) q.course = v.course
+    if (v.day) q.day = v.day
+    if (v.teacher) q.teacher = v.teacher
+    if (v.description) q.description = v.description
+    if (v.from) q.from = v.from
+    if (v.to) q.to = v.to
+    if (v.page > 1) q.page = String(v.page)
+    router.replace({ query: q })
+  }
 )
 const modalTitle = computed(() => {
   if (isSingleEditMode.value) {

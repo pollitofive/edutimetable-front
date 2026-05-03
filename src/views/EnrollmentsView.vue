@@ -15,9 +15,15 @@ import FullEnrollModal from '@/views/components/enrollments/FullEnrollModal.vue'
 import { enrollmentService, type ScheduleData, type ScheduleFilters } from '@/services/enrollmentService'
 import { useI18n } from '@/composables/useI18n'
 import { useLoading } from '@/composables/useLoading'
+import { useRoute, useRouter } from 'vue-router'
 
 const { t, locale } = useI18n()
 const { show: showLoading, hide: hideLoading } = useLoading()
+const route = useRoute()
+const router = useRouter()
+
+const toArr = (v: string | string[] | undefined): string[] =>
+  v === undefined ? [] : Array.isArray(v) ? v : [v]
 
 // ─── State ────────────────────────────────────────────────────────────────────
 
@@ -32,10 +38,10 @@ const toastMessage = ref('')
 const toastType = ref<'success' | 'error'>('success')
 
 const filters = reactive<ScheduleFilters>({
-  course_ids: [],
-  tracks: [],
-  teacher_ids: [],
-  days_of_week: [],
+  course_ids: toArr(route.query.courses as string | string[]),
+  tracks: toArr(route.query.tracks as string | string[]),
+  teacher_ids: toArr(route.query.teachers as string | string[]),
+  days_of_week: toArr(route.query.days as string | string[]),
 })
 
 // ─── Filter options — always from unfiltered allSchedules so TomSelect stays stable ───
@@ -217,6 +223,19 @@ function applyFilters() {
   if (filterTimeout.value) clearTimeout(filterTimeout.value)
   filterTimeout.value = setTimeout(loadSchedules, 1000)
 }
+
+watch(
+  () => ({ ...filters }),
+  (v) => {
+    const q: Record<string, string | string[]> = {}
+    if (v.course_ids.length) q.courses = v.course_ids
+    if (v.tracks.length) q.tracks = v.tracks
+    if (v.teacher_ids.length) q.teachers = v.teacher_ids
+    if (v.days_of_week.length) q.days = v.days_of_week
+    router.replace({ query: q })
+  },
+  { deep: true }
+)
 
 // ─── Enrollment actions ────────────────────────────────────────────────────────
 

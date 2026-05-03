@@ -11,10 +11,13 @@ import Pagination from '@/components/Base/Pagination'
 import ToastNotification from '@/views/components/ToastNotification.vue'
 import { useI18n } from '@/composables/useI18n'
 import { useLoading } from '@/composables/useLoading'
+import { useRoute, useRouter } from 'vue-router'
 
 // i18n setup
 const { t } = useI18n()
 const { show: showLoading, hide: hideLoading } = useLoading()
+const route = useRoute()
+const router = useRouter()
 
 interface Teacher {
   id: string
@@ -151,15 +154,15 @@ const toastMessage = ref('')
 const toastType = ref<'success' | 'error' | 'info' | 'warning'>('success')
 
 // Pagination state
-const currentPage = ref(1)
+const currentPage = ref(Number(route.query.page) || 1)
 const perPage = ref(10)
 const totalItems = ref(0)
 const lastPage = ref(1)
 
 // Filter state
-const filterName = ref('')
-const filterTrack = ref('')
-const filterCourseLevel = ref('')
+const filterName = ref((route.query.name as string) || '')
+const filterTrack = ref((route.query.track as string) || '')
+const filterCourseLevel = ref((route.query.level as string) || '')
 let filterTimeout: ReturnType<typeof setTimeout> | null = null
 
 // Apollo Query for Course Levels
@@ -198,6 +201,18 @@ watch(
   () => loading.value || creating.value || updating.value || deleting.value,
   (isActive) => isActive ? showLoading() : hideLoading(),
   { immediate: true }
+)
+
+watch(
+  () => ({ name: filterName.value, track: filterTrack.value, level: filterCourseLevel.value, page: currentPage.value }),
+  (v) => {
+    const q: Record<string, string> = {}
+    if (v.name) q.name = v.name
+    if (v.track) q.track = v.track
+    if (v.level) q.level = v.level
+    if (v.page > 1) q.page = String(v.page)
+    router.replace({ query: q })
+  }
 )
 const modalTitle = computed(() => selectedCourse.value ? t('courses.editCourse') : t('courses.newCourse'))
 
