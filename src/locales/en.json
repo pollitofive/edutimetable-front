@@ -1,4 +1,26 @@
 {
+  "login": {
+    "title": "Sign In",
+    "email": "Email",
+    "password": "Password",
+    "rememberMe": "Remember me",
+    "forgotPassword": "Forgot Password?",
+    "signIn": "Sign In",
+    "signingIn": "Signing In...",
+    "successMessage": "Welcome back! You have signed in successfully.",
+    "errorInvalidCredentials": "Invalid credentials. Please try again.",
+    "validation": {
+      "emailRequired": "Email is required.",
+      "emailInvalid": "Please enter a valid email address.",
+      "passwordRequired": "Password is required.",
+      "passwordMinLength": "Password must be at least 6 characters."
+    },
+    "hero": {
+      "title": "Educational Timetable Management",
+      "description": "Organize courses, teachers, and students simply and efficiently. Manage enrollments and availabilities from one place.",
+      "tagline": "Everything your institution needs, in one system."
+    }
+  },
   "menu": {
     "dashboard": "Dashboard",
     "courseLevels": "Course Levels",

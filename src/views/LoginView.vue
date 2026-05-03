@@ -4,9 +4,9 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useToast } from '@/composables/useToast'
 import { useLoading } from '@/composables/useLoading'
+import { useI18n } from '@/composables/useI18n'
 import { FormCheck, FormInput, FormLabel } from "@/components/Base/Form";
 import Button from "@/components/Base/Button";
-import Alert from "@/components/Base/Alert";
 import Lucide from "@/components/Base/Lucide";
 import ThemeSwitcher from "@/components/ThemeSwitcher";
 
@@ -14,6 +14,7 @@ const router = useRouter()
 const authStore = useAuthStore()
 const { showError, showSuccess } = useToast()
 const { show: showLoading, hide: hideLoading } = useLoading()
+const { t } = useI18n()
 
 // Form state
 const email = ref('admin@example.com')
@@ -32,21 +33,19 @@ const validateForm = (): boolean => {
   errors.value = { email: '', password: '' }
   let isValid = true
 
-  // Email validation
   if (!email.value) {
-    errors.value.email = 'Email is required'
+    errors.value.email = t('login.validation.emailRequired')
     isValid = false
   } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value)) {
-    errors.value.email = 'Please enter a valid email address'
+    errors.value.email = t('login.validation.emailInvalid')
     isValid = false
   }
 
-  // Password validation
   if (!password.value) {
-    errors.value.password = 'Password is required'
+    errors.value.password = t('login.validation.passwordRequired')
     isValid = false
   } else if (password.value.length < 6) {
-    errors.value.password = 'Password must be at least 6 characters'
+    errors.value.password = t('login.validation.passwordMinLength')
     isValid = false
   }
 
@@ -64,11 +63,11 @@ const handleLogin = async () => {
 
   try {
     await authStore.login(email.value, password.value)
-    showSuccess('Login successful! Welcome back.')
+    showSuccess(t('login.successMessage'))
     router.push('/teachers')
   } catch (error: any) {
     console.error('Login error:', error)
-    const errorMessage = error.response?.data?.message || 'Invalid credentials. Please try again.'
+    const errorMessage = error.response?.data?.message || t('login.errorInvalidCredentials')
     showError(errorMessage)
   } finally {
     isLoading.value = false
@@ -117,39 +116,9 @@ const handleKeyPress = (event: KeyboardEvent) => {
           </div>
         </div>
         <div class="mt-10">
-          <div class="text-2xl font-medium">Sign In</div>
-          <div class="mt-2.5 text-slate-600 dark:text-slate-400">
-            Don't have an account?
-            <a class="font-medium text-primary" href=""> Sign Up </a>
-          </div>
-          <Alert
-            variant="outline-primary"
-            class="flex items-center px-4 py-3 my-7 bg-primary/5 border-primary/20 rounded-[0.6rem] leading-[1.7]"
-            v-slot="{ dismiss }"
-          >
-            <div class="">
-              <Lucide
-                icon="Lightbulb"
-                class="stroke-[0.8] w-7 h-7 mr-2 fill-primary/10"
-              />
-            </div>
-            <div class="ml-1 mr-8">
-              Welcome to <span class="font-medium">Tailwise</span>
-              demo! Simply click
-              <span class="font-medium">Sign In</span> to explore and access our
-              documentation.
-            </div>
-            <Alert.DismissButton
-              type="button"
-              class="btn-close text-primary"
-              @click="dismiss"
-              aria-label="Close"
-            >
-              <Lucide icon="X" class="w-5 h-5" />
-            </Alert.DismissButton>
-          </Alert>
+          <div class="text-2xl font-medium">{{ t('login.title') }}</div>
           <div class="mt-6">
-            <FormLabel>Email*</FormLabel>
+            <FormLabel>{{ t('login.email') }}*</FormLabel>
             <FormInput
               v-model="email"
               type="email"
@@ -163,7 +132,7 @@ const handleKeyPress = (event: KeyboardEvent) => {
               {{ errors.email }}
             </div>
 
-            <FormLabel class="mt-4">Password*</FormLabel>
+            <FormLabel class="mt-4">{{ t('login.password') }}*</FormLabel>
             <FormInput
               v-model="password"
               type="password"
@@ -187,10 +156,10 @@ const handleKeyPress = (event: KeyboardEvent) => {
                   :disabled="isLoading"
                 />
                 <label class="cursor-pointer select-none" htmlFor="remember-me">
-                  Remember me
+                  {{ t('login.rememberMe') }}
                 </label>
               </div>
-              <a href="#" class="hover:text-primary">Forgot Password?</a>
+              <a href="#" class="hover:text-primary">{{ t('login.forgotPassword') }}</a>
             </div>
 
             <div class="mt-5 text-center xl:mt-8 xl:text-left">
@@ -202,7 +171,7 @@ const handleKeyPress = (event: KeyboardEvent) => {
                 :disabled="isLoading"
               >
                 <Lucide v-if="isLoading" icon="Loader" class="w-4 h-4 mr-2 animate-spin" />
-                {{ isLoading ? 'Signing In...' : 'Sign In' }}
+                {{ isLoading ? t('login.signingIn') : t('login.signIn') }}
               </Button>
             </div>
           </div>
@@ -233,17 +202,14 @@ const handleKeyPress = (event: KeyboardEvent) => {
         <div
           class="leading-[1.4] text-[2.6rem] xl:text-5xl font-medium xl:leading-[1.2] text-white"
         >
-          Embrace Excellence <br />
-          in Dashboard Development
+          {{ t('login.hero.title') }}
         </div>
         <div class="mt-5 text-base leading-relaxed xl:text-lg text-white/70">
-          Unlock the potential of Tailwise, where developers craft meticulously
-          structured, visually stunning dashboards with feature-rich modules.
-          Join us today to shape the future of your application development.
+          {{ t('login.hero.description') }}
         </div>
         <div class="mt-10">
           <div class="text-base leading-relaxed text-white/70">
-            Start managing your educational timetables with ease and efficiency.
+            {{ t('login.hero.tagline') }}
           </div>
         </div>
       </div>

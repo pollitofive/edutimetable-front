@@ -1,4 +1,26 @@
 {
+  "login": {
+    "title": "Iniciar sesión",
+    "email": "Correo electrónico",
+    "password": "Contraseña",
+    "rememberMe": "Recordarme",
+    "forgotPassword": "¿Olvidaste tu contraseña?",
+    "signIn": "Iniciar sesión",
+    "signingIn": "Ingresando...",
+    "successMessage": "¡Bienvenido! Sesión iniciada correctamente.",
+    "errorInvalidCredentials": "Credenciales incorrectas. Intentá de nuevo.",
+    "validation": {
+      "emailRequired": "El correo electrónico es obligatorio.",
+      "emailInvalid": "Ingresá un correo electrónico válido.",
+      "passwordRequired": "La contraseña es obligatoria.",
+      "passwordMinLength": "La contraseña debe tener al menos 6 caracteres."
+    },
+    "hero": {
+      "title": "Gestión de Horarios Educativos",
+      "description": "Organizá cursos, profesores y alumnos de forma simple y eficiente. Llevá el control de inscripciones y disponibilidades desde un solo lugar.",
+      "tagline": "Todo lo que tu instituto necesita, en un solo sistema."
+    }
+  },
   "menu": {
     "dashboard": "Dashboard",
     "courseLevels": "Niveles de Curso",
