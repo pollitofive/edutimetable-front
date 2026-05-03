@@ -48,7 +48,7 @@ export const useAuthStore = defineStore('auth', {
             await businessStore.initialize()
         },
         async logout() {
-            const { show: showLoading, hide: hideLoading } = useLoading()
+            const { show: showLoading } = useLoading()
             showLoading()
             try {
                 await axios.post(`${import.meta.env.VITE_API_URL}/logout`, {}, {
@@ -73,9 +73,6 @@ export const useAuthStore = defineStore('auth', {
         },
         isAuthenticated(): boolean {
             return !!this.token
-        },
-        getDataUser(): User {
-            return JSON.parse(<string>localStorage.getItem("user")) || null
         }
     }
 })

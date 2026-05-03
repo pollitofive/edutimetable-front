@@ -9,7 +9,7 @@ const router = createRouter({
         {
             path: "/login",
             name: "login",
-            component: () => import("../views/LoginView.vue"),
+            component: () => import("../views/login/index.vue"),
         },
         {
             path: "/",
@@ -26,43 +26,43 @@ const router = createRouter({
                     path: "/course-levels",
                     name: "course-levels",
                     meta: { requiresAuth: true },
-                    component: () => import("../views/CourseLevelsView.vue"),
+                    component: () => import("../views/course-levels/index.vue"),
                 },
                 {
                     path: "/teachers",
                     name: "teachers",
                     meta: { requiresAuth: true },
-                    component: () => import("../views/TeachersView.vue"),
+                    component: () => import("../views/teachers/index.vue"),
                 },
                 {
                     path: "/courses",
                     name: "courses",
                     meta: { requiresAuth: true },
-                    component: () => import("../views/CoursesView.vue"),
+                    component: () => import("../views/courses/index.vue"),
                 },
                 {
                     path: "/students",
                     name: "students",
                     meta: { requiresAuth: true },
-                    component: () => import("../views/StudentsView.vue"),
+                    component: () => import("../views/students/index.vue"),
                 },
                 {
                     path: "/student-availabilities",
                     name: "student-availabilities",
                     meta: { requiresAuth: true },
-                    component: () => import("../views/StudentAvailabilitiesView.vue"),
+                    component: () => import("../views/student-availabilities/index.vue"),
                 },
                 {
                     path: "/schedules",
                     name: "schedules",
                     meta: { requiresAuth: true },
-                    component: () => import("../views/SchedulesView.vue"),
+                    component: () => import("../views/schedules/index.vue"),
                 },
                 {
                     path: "/student-enrollments",
                     name: "student-enrollments",
                     meta: { requiresAuth: true },
-                    component: () => import("../views/EnrollmentsView.vue"),
+                    component: () => import("../views/enrollments/index.vue"),
                 }
             ],
         }
