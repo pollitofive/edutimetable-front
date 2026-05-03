@@ -4,7 +4,8 @@ import FullCalendar from '@fullcalendar/vue3'
 import timeGridPlugin from '@fullcalendar/timegrid'
 import interactionPlugin from '@fullcalendar/interaction'
 import { type CalendarOptions, type EventInput } from '@fullcalendar/core'
-import { ref, reactive, computed, onMounted } from 'vue'
+import esLocale from '@fullcalendar/core/locales/es'
+import { ref, reactive, computed, onMounted, watch } from 'vue'
 import Lucide from '@/components/Base/Lucide'
 import Button from '@/components/Base/Button'
 import TomSelect from '@/components/Base/TomSelect'
@@ -15,7 +16,7 @@ import { enrollmentService, type ScheduleData, type ScheduleFilters } from '@/se
 import { useI18n } from '@/composables/useI18n'
 import { useLoading } from '@/composables/useLoading'
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const { show: showLoading, hide: hideLoading } = useLoading()
 
 // ─── State ────────────────────────────────────────────────────────────────────
@@ -138,6 +139,7 @@ const calendarOptions = reactive<CalendarOptions>({
   initialView: 'timeGridWeek',
   initialDate: getMonday(),
   firstDay: 1,
+  locale: locale.value === 'es' ? esLocale : 'en',
   headerToolbar: false,
   hiddenDays: [0],
   allDaySlot: false,
@@ -203,8 +205,15 @@ async function loadSchedules() {
 
 const filterTimeout = ref<ReturnType<typeof setTimeout> | null>(null)
 
+function computeHiddenDays(): number[] {
+  if (!filters.days_of_week.length) return [0]
+  const selected = filters.days_of_week.map(Number)
+  return [0, 1, 2, 3, 4, 5, 6].filter(d => !selected.includes(d))
+}
+
 function applyFilters() {
   selectedSchedule.value = null
+  calendarOptions.hiddenDays = computeHiddenDays()
   if (filterTimeout.value) clearTimeout(filterTimeout.value)
   filterTimeout.value = setTimeout(loadSchedules, 1000)
 }
@@ -233,6 +242,10 @@ async function onEnrolled() {
 }
 
 // ─── Lifecycle ────────────────────────────────────────────────────────────────
+
+watch(locale, (newLocale) => {
+  calendarOptions.locale = newLocale === 'es' ? esLocale : 'en'
+})
 
 onMounted(async () => {
   showLoading()
