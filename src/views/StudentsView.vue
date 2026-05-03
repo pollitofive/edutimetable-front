@@ -585,9 +585,6 @@ watch([filterSearch, filterTrack, filterCourseLevel], () => {
         <Table.Thead>
           <Table.Tr>
             <Table.Td class="py-4 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">
-              {{ t('students.columns.id') }}
-            </Table.Td>
-            <Table.Td class="py-4 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">
               {{ t('students.columns.name') }}
             </Table.Td>
             <Table.Td class="py-4 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">
@@ -614,9 +611,6 @@ watch([filterSearch, filterTrack, filterCourseLevel], () => {
             </Table.Td>
           </Table.Tr>
           <Table.Tr v-for="student in students" :key="student.id" class="[&_td]:last:border-b-0">
-            <Table.Td class="py-4 border-dashed dark:bg-darkmode-600">
-              {{ student.id }}
-            </Table.Td>
             <Table.Td class="py-4 border-dashed dark:bg-darkmode-600">
               <div class="font-medium">{{ student.name }}</div>
             </Table.Td>

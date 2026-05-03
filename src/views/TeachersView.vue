@@ -431,9 +431,6 @@ watch([filterName, filterEmail], () => {
         <Table.Thead>
           <Table.Tr>
             <Table.Td class="py-4 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">
-              {{ t('teachers.columns.id') }}
-            </Table.Td>
-            <Table.Td class="py-4 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">
               {{ t('teachers.columns.name') }}
             </Table.Td>
             <Table.Td class="py-4 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">
@@ -460,9 +457,6 @@ watch([filterName, filterEmail], () => {
             </Table.Td>
           </Table.Tr>
           <Table.Tr v-for="teacher in teachers" :key="teacher.id" class="[&_td]:last:border-b-0">
-            <Table.Td class="py-4 border-dashed dark:bg-darkmode-600">
-              {{ teacher.id }}
-            </Table.Td>
             <Table.Td class="py-4 border-dashed dark:bg-darkmode-600">
               <div class="font-medium">{{ teacher.name }}</div>
             </Table.Td>

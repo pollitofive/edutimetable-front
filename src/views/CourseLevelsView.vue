@@ -581,9 +581,6 @@ watch([filterTrack, filterName, filterSortOrder], () => {
         <Table.Thead>
           <Table.Tr>
             <Table.Td class="py-4 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">
-              {{ t('courseLevels.columns.id') }}
-            </Table.Td>
-            <Table.Td class="py-4 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">
               {{ t('courseLevels.columns.track') }}
             </Table.Td>
             <Table.Td class="py-4 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">
@@ -616,9 +613,6 @@ watch([filterTrack, filterName, filterSortOrder], () => {
             </Table.Td>
           </Table.Tr>
           <Table.Tr v-for="level in courseLevels" :key="level.id" class="[&_td]:last:border-b-0">
-            <Table.Td class="py-4 border-dashed dark:bg-darkmode-600">
-              {{ level.id }}
-            </Table.Td>
             <Table.Td class="py-4 border-dashed dark:bg-darkmode-600">
               <div class="px-2 py-1 text-xs font-semibold rounded-md bg-primary/10 text-primary inline-block">
                 {{ level.track }}

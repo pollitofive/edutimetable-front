@@ -1027,9 +1027,6 @@ const getCourseGroupBackground = (courseId: string): string => {
         <Table.Thead>
           <Table.Tr>
             <Table.Td class="py-4 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">
-              {{ t('schedules.columns.id') }}
-            </Table.Td>
-            <Table.Td class="py-4 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">
               {{ t('schedules.columns.course') }}
             </Table.Td>
             <Table.Td class="py-4 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">
@@ -1073,14 +1070,6 @@ const getCourseGroupBackground = (courseId: string): string => {
               isDifferentCourseFromPrevious(schedule.course_id, index) ? 'border-t-2 border-t-slate-300 dark:border-t-slate-600' : ''
             ]"
           >
-            <Table.Td
-              :class="[
-                'py-4 border-dashed transition-colors',
-                getCourseGroupBackground(schedule.course_id)
-              ]"
-            >
-              <div class="text-xs text-slate-500">#{{ schedule.id }}</div>
-            </Table.Td>
             <Table.Td
               :class="[
                 'py-4 border-dashed transition-colors',

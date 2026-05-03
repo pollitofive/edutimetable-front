@@ -840,9 +840,6 @@ const getScheduleDisplay = (schedule: Schedule): string => {
           <Table.Thead>
             <Table.Tr>
               <Table.Td class="py-4 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">
-                {{ t('studentEnrollments.columns.id') }}
-              </Table.Td>
-              <Table.Td class="py-4 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">
                 {{ t('studentEnrollments.columns.student') }}
               </Table.Td>
               <Table.Td class="py-4 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">
@@ -875,9 +872,6 @@ const getScheduleDisplay = (schedule: Schedule): string => {
               </Table.Td>
             </Table.Tr>
             <Table.Tr v-for="enrollment in enrollments" :key="enrollment.id" class="[&_td]:last:border-b-0">
-              <Table.Td class="py-4 border-dashed dark:bg-darkmode-600">
-                <div class="text-xs text-slate-500">#{{ enrollment.id }}</div>
-              </Table.Td>
               <Table.Td class="py-4 border-dashed dark:bg-darkmode-600">
                 <div class="font-medium">{{ enrollment.student.name }}</div>
                 <div class="text-xs text-slate-500">{{ enrollment.student.code }}</div>

@@ -583,9 +583,6 @@ watch([filterName, filterTrack, filterCourseLevel], () => {
         <Table.Thead>
           <Table.Tr>
             <Table.Td class="py-4 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">
-              {{ t('courses.columns.id') }}
-            </Table.Td>
-            <Table.Td class="py-4 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">
               {{ t('courses.columns.name') }}
             </Table.Td>
             <Table.Td class="py-4 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">
@@ -609,9 +606,6 @@ watch([filterName, filterTrack, filterCourseLevel], () => {
             </Table.Td>
           </Table.Tr>
           <Table.Tr v-for="course in courses" :key="course.id" class="[&_td]:last:border-b-0">
-            <Table.Td class="py-4 border-dashed dark:bg-darkmode-600">
-              {{ course.id }}
-            </Table.Td>
             <Table.Td class="py-4 border-dashed dark:bg-darkmode-600">
               <div class="font-medium">{{ course.name }}</div>
             </Table.Td>
