@@ -184,7 +184,7 @@ const {
   </div>
 
   <!-- Create/Edit Modal -->
-  <Dialog :open="showModal" @close="closeModal" size="lg">
+  <Dialog :open="showModal" @close="closeModal" size="xl">
     <Dialog.Panel>
       <Dialog.Title>
         <h2 class="mr-auto text-base font-medium">{{ modalTitle }}</h2>
