@@ -23,6 +23,7 @@
   },
   "menu": {
     "dashboard": "Dashboard",
+    "tracks": "Pistas",
     "courseLevels": "Niveles de Curso",
     "teachers": "Profesores",
     "courses": "Cursos",
@@ -108,6 +109,55 @@
       "show": "Mostrar",
       "entries": "entradas",
       "showingInfo": "Mostrando {start} a {end} de {total} niveles de curso"
+    }
+  },
+  "tracks": {
+    "title": "Gestión de Pistas",
+    "newTrack": "Nueva Pista",
+    "editTrack": "Editar Pista",
+    "deleteTrack": "Eliminar Pista",
+    "columns": {
+      "name": "Nombre",
+      "actions": "Acciones"
+    },
+    "actions": {
+      "edit": "Editar",
+      "delete": "Eliminar",
+      "save": "Guardar",
+      "cancel": "Cancelar",
+      "retry": "Reintentar",
+      "clearFilters": "Limpiar Filtros"
+    },
+    "filters": {
+      "searchByName": "Buscar por nombre..."
+    },
+    "form": {
+      "nameLabel": "Nombre de la Pista",
+      "namePlaceholder": "ej. Inglés, Portugués",
+      "required": "*"
+    },
+    "validation": {
+      "nameRequired": "El nombre es obligatorio"
+    },
+    "messages": {
+      "loading": "Cargando pistas...",
+      "error": "Error al cargar pistas",
+      "noTracks": "No se encontraron pistas. ¡Crea tu primera pista!",
+      "createSuccess": "Pista creada exitosamente",
+      "updateSuccess": "Pista actualizada exitosamente",
+      "deleteSuccess": "Pista eliminada exitosamente",
+      "deleteError": "Error al eliminar pista",
+      "generalError": "Ocurrió un error"
+    },
+    "delete": {
+      "confirmTitle": "¿Estás seguro?",
+      "confirmMessage": "¿Realmente deseas eliminar esta pista?",
+      "cannotUndo": "Este proceso no se puede deshacer."
+    },
+    "pagination": {
+      "show": "Mostrar",
+      "entries": "entradas",
+      "showingInfo": "Mostrando {start} a {end} de {total} pistas"
     }
   },
   "teachers": {

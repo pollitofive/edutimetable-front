@@ -2,7 +2,7 @@ import http from '@/api/http'
 
 export interface CourseLevel {
   id: number
-  track: string
+  track: { id: number; name: string }
   name: string
 }
 
@@ -33,7 +33,7 @@ export interface ScheduleData {
       id: number
       name: string
       email: string
-      course_level: { name: string; track: string } | null
+      course_level: { name: string; track: { id: number; name: string } } | null
     }
     status: string
   }>
@@ -45,7 +45,7 @@ export interface EligibleStudent {
   email: string
   already_enrolled: boolean
   is_available: boolean
-  course_level: { name: string; track: string } | null
+  course_level: { name: string; track: { id: number; name: string } } | null
 }
 
 export interface StudentData {
@@ -53,7 +53,7 @@ export interface StudentData {
   name: string
   email: string
   phone: string | null
-  course_level: { name: string; track: string } | null
+  course_level: { name: string; track: { id: number; name: string } } | null
 }
 
 export interface ScheduleGroup {
@@ -85,7 +85,7 @@ export interface CompatibleSchedulesResponse {
 
 export interface ScheduleFilters {
   course_ids?: string[]
-  tracks?: string[]
+  track_ids?: string[]
   teacher_ids?: string[]
   days_of_week?: string[]
 }
@@ -94,7 +94,7 @@ export const enrollmentService = {
   async getSchedules(filters: ScheduleFilters = {}): Promise<ScheduleData[]> {
     const params: Record<string, unknown> = {}
     if (filters.course_ids?.length) params.course_ids = filters.course_ids
-    if (filters.tracks?.length) params.tracks = filters.tracks
+    if (filters.track_ids?.length) params.track_ids = filters.track_ids
     if (filters.teacher_ids?.length) params.teacher_ids = filters.teacher_ids
     if (filters.days_of_week?.length) params.days_of_week = filters.days_of_week
     const res = await http.get('/enrollments/schedules', { params })

@@ -38,8 +38,8 @@ const {
       <TomSelect v-model="filters.course_ids" :options="{ placeholder: t('enrollments.filters.allCourses'), create: false, onDelete: () => true }" class="flex-1" multiple @update:modelValue="applyFilters">
         <option v-for="course in uniqueCourses" :key="course.id" :value="String(course.id)">{{ course.name }}</option>
       </TomSelect>
-      <TomSelect v-model="filters.tracks" :options="{ placeholder: t('enrollments.filters.allLanguages'), create: false, onDelete: () => true }" class="flex-1" multiple @update:modelValue="applyFilters">
-        <option v-for="track in uniqueTracks" :key="track" :value="track">{{ track }}</option>
+      <TomSelect v-model="filters.track_ids" :options="{ placeholder: t('enrollments.filters.allLanguages'), create: false, onDelete: () => true }" class="flex-1" multiple @update:modelValue="applyFilters">
+        <option v-for="track in uniqueTracks" :key="track.id" :value="track.id">{{ track.name }}</option>
       </TomSelect>
       <TomSelect v-model="filters.teacher_ids" :options="{ placeholder: t('enrollments.filters.allTeachers'), create: false, onDelete: () => true }" class="flex-1" multiple @update:modelValue="applyFilters">
         <option v-for="teacher in uniqueTeachers" :key="teacher.id" :value="String(teacher.id)">{{ teacher.name }}</option>
@@ -66,9 +66,9 @@ const {
 
       <!-- Schedule detail -->
       <template v-if="selectedSchedule">
-        <div class="px-5 py-4 text-white" :style="{ backgroundColor: getTrackColor(selectedSchedule.course.course_level.track) }">
+        <div class="px-5 py-4 text-white" :style="{ backgroundColor: getTrackColor(selectedSchedule.course.course_level.track.id) }">
           <div class="flex items-center justify-between">
-            <h3 class="font-semibold text-sm leading-tight">{{ selectedSchedule.course.course_level.track }} - {{ selectedSchedule.course.course_level.name }}</h3>
+            <h3 class="font-semibold text-sm leading-tight">{{ selectedSchedule.course.course_level.track.name }} - {{ selectedSchedule.course.course_level.name }}</h3>
             <span class="text-xs bg-white/20 rounded-full px-2 py-0.5 font-medium">{{ selectedSchedule.enrolled_count }}/{{ selectedSchedule.capacity }}</span>
           </div>
         </div>

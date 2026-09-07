@@ -133,7 +133,7 @@ watch(() => selectedStudent.value, () => { selectedGroupId.value = null })
               <div class="mt-3 space-y-1.5 text-sm text-slate-600">
                 <div v-if="selectedStudent.student.course_level" class="flex items-center gap-2">
                   <Lucide icon="GraduationCap" class="w-4 h-4 text-slate-400 flex-shrink-0" />
-                  {{ selectedStudent.student.course_level.track }} - {{ selectedStudent.student.course_level.name }}
+                  {{ selectedStudent.student.course_level.track.name }} - {{ selectedStudent.student.course_level.name }}
                 </div>
                 <div v-if="selectedStudent.student.phone" class="flex items-center gap-2">
                   <Lucide icon="Phone" class="w-4 h-4 text-slate-400 flex-shrink-0" />

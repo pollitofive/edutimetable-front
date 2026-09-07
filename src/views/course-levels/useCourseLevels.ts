@@ -4,10 +4,11 @@ import { ref, watch, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from '@/composables/useI18n'
 import { useLoading } from '@/composables/useLoading'
+import { useTrackOptions } from '@/views/tracks/useTracks'
 
 export interface CourseLevel {
   id: string
-  track: string
+  track: { id: string; name: string }
   name: string
   slug: string
   sort_order: number
@@ -17,7 +18,8 @@ export interface CourseLevel {
 }
 
 interface FormData {
-  track: string
+  track_id: string
+  track_name: string
   name: string
   slug: string
   sort_order: number | null
@@ -26,11 +28,11 @@ interface FormData {
 }
 
 const GET_COURSE_LEVELS = gql`
-  query GetCourseLevels($first: Int!, $page: Int!, $track: String, $name: String, $sort_order: Int) {
-    courseLevels(first: $first, page: $page, track: $track, name: $name, sort_order: $sort_order) {
+  query GetCourseLevels($first: Int!, $page: Int!, $track_id: ID, $name: String, $sort_order: Int) {
+    courseLevels(first: $first, page: $page, track_id: $track_id, name: $name, sort_order: $sort_order) {
       data {
         id
-        track
+        track { id name }
         name
         slug
         sort_order
@@ -45,13 +47,13 @@ const GET_COURSE_LEVELS = gql`
 
 const CREATE_COURSE_LEVEL = gql`
   mutation CreateCourseLevel($input: CreateCourseLevelInput!) {
-    createCourseLevel(input: $input) { id track name slug sort_order next_level_id texts }
+    createCourseLevel(input: $input) { id track { id name } name slug sort_order next_level_id texts }
   }
 `
 
 const UPDATE_COURSE_LEVEL = gql`
   mutation UpdateCourseLevel($id: ID!, $input: UpdateCourseLevelInput!) {
-    updateCourseLevel(id: $id, input: $input) { id track name slug sort_order next_level_id texts }
+    updateCourseLevel(id: $id, input: $input) { id track { id name } name slug sort_order next_level_id texts }
   }
 `
 
@@ -66,12 +68,13 @@ export function useCourseLevels() {
   const { show: showLoading, hide: hideLoading } = useLoading()
   const route = useRoute()
   const router = useRouter()
+  const { trackOptions } = useTrackOptions()
 
   // ── State ──────────────────────────────────────────────────────────────────
   const courseLevels = ref<CourseLevel[]>([])
   const showModal = ref(false)
   const selectedCourseLevel = ref<CourseLevel | null>(null)
-  const formData = ref<FormData>({ track: '', name: '', slug: '', sort_order: null, next_level_id: null, texts: null })
+  const formData = ref<FormData>({ track_id: '', track_name: '', name: '', slug: '', sort_order: null, next_level_id: null, texts: null })
   const formErrors = ref<{ track?: string; name?: string; slug?: string; sort_order?: string }>({})
   const deleteConfirmModal = ref(false)
   const levelToDelete = ref<CourseLevel | null>(null)
@@ -88,7 +91,7 @@ export function useCourseLevels() {
   const lastPage = ref(1)
 
   // ── Filters ────────────────────────────────────────────────────────────────
-  const filterTrack = ref((route.query.track as string) || '')
+  const filterTrackId = ref((route.query.track_id as string) || '')
   const filterName = ref((route.query.name as string) || '')
   const filterSortOrder = ref((route.query.sort_order as string) || '')
   let filterTimeout: ReturnType<typeof setTimeout> | null = null
@@ -97,7 +100,7 @@ export function useCourseLevels() {
   const queryVars = () => ({
     first: perPage.value,
     page: currentPage.value,
-    track: filterTrack.value || undefined,
+    track_id: filterTrackId.value || undefined,
     name: filterName.value ? `%${filterName.value}%` : undefined,
     sort_order: filterSortOrder.value ? parseInt(filterSortOrder.value) : undefined,
   })
@@ -114,16 +117,15 @@ export function useCourseLevels() {
   const endItem = computed(() => Math.min(currentPage.value * perPage.value, totalItems.value))
   const totalPages = computed(() => lastPage.value)
   const hasActiveFilters = computed(() =>
-    filterTrack.value.trim() !== '' || filterName.value.trim() !== '' || filterSortOrder.value.trim() !== ''
+    filterTrackId.value.trim() !== '' || filterName.value.trim() !== '' || filterSortOrder.value.trim() !== ''
   )
   const availableNextLevels = computed(() =>
     selectedCourseLevel.value
       ? courseLevels.value.filter(l => l.id !== selectedCourseLevel.value?.id)
       : courseLevels.value
   )
-  const uniqueTracks = computed(() => [...new Set(courseLevels.value.map(l => l.track))].sort())
   const uniqueSortOrders = computed(() => [...new Set(courseLevels.value.map(l => l.sort_order))].sort((a, b) => a - b))
-  const selectedTrackValue = computed(() => trackState.value.isCustom ? '__custom__' : formData.value.track)
+  const selectedTrackValue = computed(() => trackState.value.isCustom ? '__custom__' : formData.value.track_id)
 
   // ── Watchers ───────────────────────────────────────────────────────────────
   watch(
@@ -133,10 +135,10 @@ export function useCourseLevels() {
   )
 
   watch(
-    () => ({ track: filterTrack.value, name: filterName.value, sort_order: filterSortOrder.value, page: currentPage.value }),
+    () => ({ track_id: filterTrackId.value, name: filterName.value, sort_order: filterSortOrder.value, page: currentPage.value }),
     (v) => {
       const q: Record<string, string> = {}
-      if (v.track) q.track = v.track
+      if (v.track_id) q.track_id = v.track_id
       if (v.name) q.name = v.name
       if (v.sort_order) q.sort_order = v.sort_order
       if (v.page > 1) q.page = String(v.page)
@@ -159,7 +161,7 @@ export function useCourseLevels() {
       formData.value.slug = newName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')
   })
 
-  watch([filterTrack, filterName, filterSortOrder], () => {
+  watch([filterTrackId, filterName, filterSortOrder], () => {
     if (filterTimeout) clearTimeout(filterTimeout)
     filterTimeout = setTimeout(applyFilters, 500)
   })
@@ -175,7 +177,7 @@ export function useCourseLevels() {
   // ── Validation ─────────────────────────────────────────────────────────────
   const validateForm = (): boolean => {
     formErrors.value = {}
-    if (!formData.value.track.trim()) formErrors.value.track = t('courseLevels.validation.trackRequired')
+    if (!formData.value.track_id && !formData.value.track_name.trim()) formErrors.value.track = t('courseLevels.validation.trackRequired')
     if (!formData.value.name.trim()) formErrors.value.name = t('courseLevels.validation.nameRequired')
     if (!formData.value.slug.trim()) formErrors.value.slug = t('courseLevels.validation.slugRequired')
     if (formData.value.sort_order === null || formData.value.sort_order === undefined)
@@ -187,7 +189,7 @@ export function useCourseLevels() {
 
   // ── Modal ──────────────────────────────────────────────────────────────────
   const resetForm = () => {
-    formData.value = { track: '', name: '', slug: '', sort_order: null, next_level_id: null, texts: null }
+    formData.value = { track_id: '', track_name: '', name: '', slug: '', sort_order: null, next_level_id: null, texts: null }
     formErrors.value = {}
     slugEditState.value.isEditable = false
     trackState.value = { isCustom: false, customValue: '' }
@@ -201,12 +203,10 @@ export function useCourseLevels() {
 
   const openEditModal = (level: CourseLevel) => {
     selectedCourseLevel.value = level
-    formData.value = { track: level.track, name: level.name, slug: level.slug, sort_order: level.sort_order, next_level_id: level.next_level_id, texts: level.texts ?? null }
+    formData.value = { track_id: level.track.id, track_name: '', name: level.name, slug: level.slug, sort_order: level.sort_order, next_level_id: level.next_level_id, texts: level.texts ?? null }
     formErrors.value = {}
     slugEditState.value.isEditable = false
-    trackState.value = uniqueTracks.value.includes(level.track)
-      ? { isCustom: false, customValue: '' }
-      : { isCustom: true, customValue: level.track }
+    trackState.value = { isCustom: false, customValue: '' }
     showModal.value = true
   }
 
@@ -221,17 +221,20 @@ export function useCourseLevels() {
     const value = (event.target as HTMLSelectElement).value
     if (value === '__custom__') {
       trackState.value.isCustom = true
-      formData.value.track = trackState.value.customValue
+      formData.value.track_id = ''
+      formData.value.track_name = trackState.value.customValue
     } else {
       trackState.value = { isCustom: false, customValue: '' }
-      formData.value.track = value
+      formData.value.track_id = value
+      formData.value.track_name = ''
     }
   }
 
   const handleCustomTrackInput = (event: Event) => {
     const value = (event.target as HTMLInputElement).value
     trackState.value.customValue = value
-    formData.value.track = value
+    formData.value.track_name = value
+    formData.value.track_id = ''
   }
 
   // ── CRUD ───────────────────────────────────────────────────────────────────
@@ -239,7 +242,8 @@ export function useCourseLevels() {
     if (!validateForm()) return
     try {
       const input = {
-        track: formData.value.track.trim(),
+        track_id: formData.value.track_id || undefined,
+        track_name: formData.value.track_name.trim() || undefined,
         name: formData.value.name.trim(),
         slug: formData.value.slug.trim(),
         sort_order: Number(formData.value.sort_order),
@@ -304,7 +308,7 @@ export function useCourseLevels() {
   }
 
   const clearFilters = () => {
-    filterTrack.value = ''
+    filterTrackId.value = ''
     filterName.value = ''
     filterSortOrder.value = ''
     applyFilters()
@@ -318,10 +322,10 @@ export function useCourseLevels() {
     deleteConfirmModal, levelToDelete, slugEditState, trackState,
     showToast, toastMessage, toastType,
     currentPage, perPage, totalItems,
-    filterTrack, filterName, filterSortOrder,
+    filterTrackId, filterName, filterSortOrder,
     loading, error, creating, deleting, refetch,
     isSubmitting, modalTitle, startItem, endItem, totalPages, hasActiveFilters,
-    availableNextLevels, uniqueTracks, uniqueSortOrders, selectedTrackValue,
+    availableNextLevels, trackOptions, uniqueSortOrders, selectedTrackValue,
     openCreateModal, openEditModal, closeModal,
     handleTrackChange, handleCustomTrackInput,
     handleSave, openDeleteConfirm, handleDelete, cancelDelete,

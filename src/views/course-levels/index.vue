@@ -14,10 +14,10 @@ const {
   deleteConfirmModal, levelToDelete, slugEditState, trackState,
   showToast, toastMessage, toastType,
   currentPage, perPage, totalItems,
-  filterTrack, filterName, filterSortOrder,
+  filterTrackId, filterName, filterSortOrder,
   loading, error, creating, deleting,
   isSubmitting, modalTitle, startItem, endItem, totalPages, hasActiveFilters,
-  availableNextLevels, uniqueTracks, uniqueSortOrders, selectedTrackValue,
+  availableNextLevels, trackOptions, uniqueSortOrders, selectedTrackValue,
   openCreateModal, openEditModal, closeModal,
   handleTrackChange, handleCustomTrackInput,
   handleSave, openDeleteConfirm, handleDelete, cancelDelete,
@@ -46,9 +46,9 @@ const {
             <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none z-10">
               <Lucide icon="Tag" class="w-4 h-4 text-slate-400" />
             </div>
-            <FormSelect v-model="filterTrack" class="pl-10">
+            <FormSelect v-model="filterTrackId" class="pl-10">
               <option value="">{{ t('courseLevels.filters.searchByTrack') }}</option>
-              <option v-for="track in uniqueTracks" :key="track" :value="track">{{ track }}</option>
+              <option v-for="track in trackOptions" :key="track.id" :value="track.id">{{ track.name }}</option>
             </FormSelect>
           </div>
         </div>
@@ -114,7 +114,7 @@ const {
           </Table.Tr>
           <Table.Tr v-for="level in courseLevels" :key="level.id" class="[&_td]:last:border-b-0">
             <Table.Td class="py-4 border-dashed dark:bg-darkmode-600">
-              <div class="px-2 py-1 text-xs font-semibold rounded-md bg-primary/10 text-primary inline-block">{{ level.track }}</div>
+              <div class="px-2 py-1 text-xs font-semibold rounded-md bg-primary/10 text-primary inline-block">{{ level.track.name }}</div>
             </Table.Td>
             <Table.Td class="py-4 border-dashed dark:bg-darkmode-600">
               <div class="font-medium">{{ level.name }}</div>
@@ -194,7 +194,7 @@ const {
           <FormLabel htmlFor="level-track">{{ t('courseLevels.form.trackLabel') }} {{ t('courseLevels.form.required') }}</FormLabel>
           <FormSelect id="level-track" :value="selectedTrackValue" @change="handleTrackChange" :class="{ 'border-danger': formErrors.track }">
             <option value="">{{ t('courseLevels.form.trackPlaceholder') }}</option>
-            <option v-for="track in uniqueTracks" :key="track" :value="track">{{ track }}</option>
+            <option v-for="track in trackOptions" :key="track.id" :value="track.id">{{ track.name }}</option>
             <option value="__custom__">{{ t('courseLevels.form.customTrack', 'Otro...') }}</option>
           </FormSelect>
           <FormInput v-if="trackState.isCustom" :value="trackState.customValue" @input="handleCustomTrackInput" type="text" :placeholder="t('courseLevels.form.customTrackPlaceholder', 'Escriba el nuevo track')" :class="{ 'border-danger': formErrors.track }" class="mt-2" />
@@ -226,7 +226,7 @@ const {
           <FormLabel htmlFor="level-next">{{ t('courseLevels.form.nextLevelLabel') }}</FormLabel>
           <FormSelect id="level-next" v-model="formData.next_level_id">
             <option :value="null">{{ t('courseLevels.form.noNextLevel') }}</option>
-            <option v-for="level in availableNextLevels" :key="level.id" :value="level.id">{{ level.name }} ({{ level.track }})</option>
+            <option v-for="level in availableNextLevels" :key="level.id" :value="level.id">{{ level.name }} ({{ level.track.name }})</option>
           </FormSelect>
         </div>
         <div class="col-span-12">
@@ -253,7 +253,7 @@ const {
         <div class="mt-5 text-3xl">{{ t('courseLevels.delete.confirmTitle') }}</div>
         <div class="mt-2 text-slate-500">
           {{ t('courseLevels.delete.confirmMessage') }}<br />
-          <span class="font-medium">{{ levelToDelete?.name }} ({{ levelToDelete?.track }})</span><br />
+          <span class="font-medium">{{ levelToDelete?.name }} ({{ levelToDelete?.track.name }})</span><br />
           {{ t('courseLevels.delete.cannotUndo') }}
         </div>
       </div>

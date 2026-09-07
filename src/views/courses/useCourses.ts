@@ -4,11 +4,12 @@ import { ref, watch, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from '@/composables/useI18n'
 import { useLoading } from '@/composables/useLoading'
+import { useTrackOptions } from '@/views/tracks/useTracks'
 
 export interface Teacher { id: string; name: string; email: string }
 
 export interface CourseLevel {
-  id: string; track: string; name: string; slug: string; sort_order: number
+  id: string; track: { id: string; name: string }; name: string; slug: string; sort_order: number
 }
 
 export interface Course {
@@ -25,17 +26,17 @@ interface FormData { name: string; course_level_id: string }
 const GET_COURSE_LEVELS = gql`
   query GetCourseLevels {
     courseLevels(first: 100, page: 1) {
-      data { id track name slug sort_order }
+      data { id track { id name } name slug sort_order }
     }
   }
 `
 
 const GET_COURSES = gql`
-  query GetCourses($first: Int!, $page: Int!, $name: String, $course_level_id: ID, $track: String) {
-    courses(first: $first, page: $page, name: $name, course_level_id: $course_level_id, track: $track) {
+  query GetCourses($first: Int!, $page: Int!, $name: String, $course_level_id: ID, $track_id: ID) {
+    courses(first: $first, page: $page, name: $name, course_level_id: $course_level_id, track_id: $track_id) {
       data {
         id name level course_level_id
-        courseLevel { id track name slug sort_order }
+        courseLevel { id track { id name } name slug sort_order }
         teachers { id name email }
       }
       paginatorInfo { total count currentPage lastPage hasMorePages perPage }
@@ -45,13 +46,13 @@ const GET_COURSES = gql`
 
 const CREATE_COURSE = gql`
   mutation CreateCourse($input: CreateCourseInput!) {
-    createCourse(input: $input) { id name course_level_id courseLevel { id name track } }
+    createCourse(input: $input) { id name course_level_id courseLevel { id name track { id name } } }
   }
 `
 
 const UPDATE_COURSE = gql`
   mutation UpdateCourse($id: ID!, $input: UpdateCourseInput!) {
-    updateCourse(id: $id, input: $input) { id name course_level_id courseLevel { id name track } }
+    updateCourse(id: $id, input: $input) { id name course_level_id courseLevel { id name track { id name } } }
   }
 `
 
@@ -64,6 +65,7 @@ export function useCourses() {
   const { show: showLoading, hide: hideLoading } = useLoading()
   const route = useRoute()
   const router = useRouter()
+  const { trackOptions } = useTrackOptions()
 
   // ── State ──────────────────────────────────────────────────────────────────
   const courses = ref<Course[]>([])
@@ -71,7 +73,7 @@ export function useCourses() {
   const showModal = ref(false)
   const selectedCourse = ref<Course | null>(null)
   const formData = ref<FormData>({ name: '', course_level_id: '' })
-  const formState = ref({ selectedTrack: '' })
+  const formState = ref({ selectedTrackId: '' })
   const formErrors = ref<{ name?: string; course_level_id?: string }>({})
   const deleteConfirmModal = ref(false)
   const courseToDelete = ref<Course | null>(null)
@@ -87,7 +89,7 @@ export function useCourses() {
 
   // ── Filters ────────────────────────────────────────────────────────────────
   const filterName = ref((route.query.name as string) || '')
-  const filterTrack = ref((route.query.track as string) || '')
+  const filterTrackId = ref((route.query.track_id as string) || '')
   const filterCourseLevel = ref((route.query.level as string) || '')
   let filterTimeout: ReturnType<typeof setTimeout> | null = null
 
@@ -97,7 +99,7 @@ export function useCourses() {
     page: currentPage.value,
     name: filterName.value ? `%${filterName.value}%` : undefined,
     course_level_id: filterCourseLevel.value || undefined,
-    track: filterTrack.value || undefined,
+    track_id: filterTrackId.value || undefined,
   })
 
   const { result: courseLevelsResult } = useQuery(GET_COURSE_LEVELS, {}, { fetchPolicy: 'cache-and-network' })
@@ -113,17 +115,16 @@ export function useCourses() {
   const endItem = computed(() => Math.min(currentPage.value * perPage.value, totalItems.value))
   const totalPages = computed(() => lastPage.value)
   const hasActiveFilters = computed(() =>
-    filterName.value.trim() !== '' || filterTrack.value.trim() !== '' || filterCourseLevel.value.trim() !== ''
+    filterName.value.trim() !== '' || filterTrackId.value.trim() !== '' || filterCourseLevel.value.trim() !== ''
   )
-  const availableTracks = computed(() => [...new Set(courseLevels.value.map(l => l.track))].sort())
   const filteredCourseLevels = computed(() =>
-    formState.value.selectedTrack
-      ? courseLevels.value.filter(l => l.track === formState.value.selectedTrack).sort((a, b) => a.sort_order - b.sort_order)
+    formState.value.selectedTrackId
+      ? courseLevels.value.filter(l => l.track.id === formState.value.selectedTrackId).sort((a, b) => a.sort_order - b.sort_order)
       : []
   )
   const filteredCourseLevelsForFilter = computed(() =>
-    filterTrack.value
-      ? courseLevels.value.filter(l => l.track === filterTrack.value).sort((a, b) => a.sort_order - b.sort_order)
+    filterTrackId.value
+      ? courseLevels.value.filter(l => l.track.id === filterTrackId.value).sort((a, b) => a.sort_order - b.sort_order)
       : []
   )
 
@@ -135,11 +136,11 @@ export function useCourses() {
   )
 
   watch(
-    () => ({ name: filterName.value, track: filterTrack.value, level: filterCourseLevel.value, page: currentPage.value }),
+    () => ({ name: filterName.value, track_id: filterTrackId.value, level: filterCourseLevel.value, page: currentPage.value }),
     (v) => {
       const q: Record<string, string> = {}
       if (v.name) q.name = v.name
-      if (v.track) q.track = v.track
+      if (v.track_id) q.track_id = v.track_id
       if (v.level) q.level = v.level
       if (v.page > 1) q.page = String(v.page)
       void router.replace({ query: q })
@@ -160,7 +161,7 @@ export function useCourses() {
     }
   })
 
-  watch([filterName, filterTrack, filterCourseLevel], () => {
+  watch([filterName, filterTrackId, filterCourseLevel], () => {
     if (filterTimeout) clearTimeout(filterTimeout)
     filterTimeout = setTimeout(applyFilters, 500)
   })
@@ -183,7 +184,7 @@ export function useCourses() {
   const openCreateModal = () => {
     selectedCourse.value = null
     formData.value = { name: '', course_level_id: '' }
-    formState.value = { selectedTrack: '' }
+    formState.value = { selectedTrackId: '' }
     formErrors.value = {}
     showModal.value = true
   }
@@ -191,7 +192,7 @@ export function useCourses() {
   const openEditModal = (course: Course) => {
     selectedCourse.value = course
     formData.value = { name: course.name, course_level_id: course.course_level_id || '' }
-    formState.value = { selectedTrack: course.courseLevel?.track || '' }
+    formState.value = { selectedTrackId: course.courseLevel?.track.id || '' }
     formErrors.value = {}
     showModal.value = true
   }
@@ -200,7 +201,7 @@ export function useCourses() {
     showModal.value = false
     selectedCourse.value = null
     formData.value = { name: '', course_level_id: '' }
-    formState.value = { selectedTrack: '' }
+    formState.value = { selectedTrackId: '' }
     formErrors.value = {}
   }
 
@@ -263,7 +264,7 @@ export function useCourses() {
   const applyFilters = () => { currentPage.value = 1; refetch() }
 
   const clearFilters = () => {
-    filterName.value = ''; filterTrack.value = ''; filterCourseLevel.value = ''
+    filterName.value = ''; filterTrackId.value = ''; filterCourseLevel.value = ''
     applyFilters()
   }
 
@@ -273,10 +274,10 @@ export function useCourses() {
     t, courses, showModal, selectedCourse, formData, formState, formErrors,
     deleteConfirmModal, courseToDelete, showToast, toastMessage, toastType,
     currentPage, perPage, totalItems,
-    filterName, filterTrack, filterCourseLevel,
+    filterName, filterTrackId, filterCourseLevel,
     loading, error, creating, deleting,
     isSubmitting, modalTitle, startItem, endItem, totalPages, hasActiveFilters,
-    availableTracks, filteredCourseLevels, filteredCourseLevelsForFilter,
+    trackOptions, filteredCourseLevels, filteredCourseLevelsForFilter,
     openCreateModal, openEditModal, closeModal,
     handleTrackChange, handleFilterTrackChange,
     handleSave, openDeleteConfirm, handleDelete, cancelDelete,

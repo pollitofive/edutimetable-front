@@ -23,6 +23,7 @@
   },
   "menu": {
     "dashboard": "Dashboard",
+    "tracks": "Tracks",
     "courseLevels": "Course Levels",
     "teachers": "Teachers",
     "courses": "Courses",
@@ -108,6 +109,55 @@
       "show": "Show",
       "entries": "entries",
       "showingInfo": "Showing {start} to {end} of {total} course levels"
+    }
+  },
+  "tracks": {
+    "title": "Track Management",
+    "newTrack": "New Track",
+    "editTrack": "Edit Track",
+    "deleteTrack": "Delete Track",
+    "columns": {
+      "name": "Name",
+      "actions": "Actions"
+    },
+    "actions": {
+      "edit": "Edit",
+      "delete": "Delete",
+      "save": "Save",
+      "cancel": "Cancel",
+      "retry": "Retry",
+      "clearFilters": "Clear Filters"
+    },
+    "filters": {
+      "searchByName": "Search by name..."
+    },
+    "form": {
+      "nameLabel": "Track Name",
+      "namePlaceholder": "e.g., English, Portuguese",
+      "required": "*"
+    },
+    "validation": {
+      "nameRequired": "Name is required"
+    },
+    "messages": {
+      "loading": "Loading tracks...",
+      "error": "Error loading tracks",
+      "noTracks": "No tracks found. Create your first track!",
+      "createSuccess": "Track created successfully",
+      "updateSuccess": "Track updated successfully",
+      "deleteSuccess": "Track deleted successfully",
+      "deleteError": "Error deleting track",
+      "generalError": "An error occurred"
+    },
+    "delete": {
+      "confirmTitle": "Are you sure?",
+      "confirmMessage": "Do you really want to delete this track?",
+      "cannotUndo": "This process cannot be undone."
+    },
+    "pagination": {
+      "show": "Show",
+      "entries": "entries",
+      "showingInfo": "Showing {start} to {end} of {total} tracks"
     }
   },
   "teachers": {

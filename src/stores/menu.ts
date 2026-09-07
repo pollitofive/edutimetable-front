@@ -40,6 +40,11 @@ export const useMenuStore = defineStore("menu", {
             this.value = [
                 t('menu.dashboard'),
                 {
+                    icon: "Tags",
+                    pageName: "tracks",
+                    title: t('menu.tracks'),
+                },
+                {
                     icon: "Layers",
                     pageName: "course-levels",
                     title: t('menu.courseLevels'),

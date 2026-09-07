@@ -11,10 +11,10 @@ import { useStudents } from './useStudents'
 const {
   t, students, showModal, selectedStudent, formData, formState, formErrors,
   deleteConfirmModal, studentToDelete, showToast, toastMessage, toastType,
-  currentPage, perPage, totalItems, filterSearch, filterTrack, filterCourseLevel,
+  currentPage, perPage, totalItems, filterSearch, filterTrackId, filterCourseLevel,
   loading, error, creating, deleting,
   isSubmitting, modalTitle, startItem, endItem, totalPages, hasActiveFilters,
-  availableTracks, filteredCourseLevels, filteredCourseLevelsForFilter,
+  trackOptions, filteredCourseLevels, filteredCourseLevelsForFilter,
   openCreateModal, openEditModal, closeModal, handleTrackChange, handleFilterTrackChange,
   handleSave, openDeleteConfirm, handleDelete, cancelDelete,
   goToPage, changePerPage, clearFilters, retryFetch, handleToastClose,
@@ -49,9 +49,9 @@ const {
             <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none z-10">
               <Lucide icon="Layers" class="w-4 h-4 text-slate-400" />
             </div>
-            <FormSelect v-model="filterTrack" @change="handleFilterTrackChange" class="pl-10">
+            <FormSelect v-model="filterTrackId" @change="handleFilterTrackChange" class="pl-10">
               <option value="">{{ t('students.filters.searchByTrack') }}</option>
-              <option v-for="track in availableTracks" :key="track" :value="track">{{ track }}</option>
+              <option v-for="track in trackOptions" :key="track.id" :value="track.id">{{ track.name }}</option>
             </FormSelect>
           </div>
         </div>
@@ -60,8 +60,8 @@ const {
             <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none z-10">
               <Lucide icon="Award" class="w-4 h-4 text-slate-400" />
             </div>
-            <FormSelect v-model="filterCourseLevel" class="pl-10" :disabled="!filterTrack" :class="{ 'opacity-50 cursor-not-allowed': !filterTrack }">
-              <option value="">{{ filterTrack ? t('students.filters.searchByLevel') : t('students.filters.selectTrackFirst') }}</option>
+            <FormSelect v-model="filterCourseLevel" class="pl-10" :disabled="!filterTrackId" :class="{ 'opacity-50 cursor-not-allowed': !filterTrackId }">
+              <option value="">{{ filterTrackId ? t('students.filters.searchByLevel') : t('students.filters.selectTrackFirst') }}</option>
               <option v-for="level in filteredCourseLevelsForFilter" :key="level.id" :value="level.id">{{ level.name }}</option>
             </FormSelect>
           </div>
@@ -109,7 +109,7 @@ const {
             <Table.Td class="py-4 border-dashed dark:bg-darkmode-600">
               <div v-if="student.courseLevel" class="flex flex-col gap-1">
                 <div class="font-medium text-slate-700">{{ student.courseLevel.name }}</div>
-                <div class="px-2 py-0.5 text-xs font-semibold rounded-md bg-primary/10 text-primary inline-block w-fit">{{ student.courseLevel.track }}</div>
+                <div class="px-2 py-0.5 text-xs font-semibold rounded-md bg-primary/10 text-primary inline-block w-fit">{{ student.courseLevel.track.name }}</div>
               </div>
               <div v-else class="text-xs text-slate-400">-</div>
             </Table.Td>
@@ -179,16 +179,16 @@ const {
         </div>
         <div class="col-span-12 sm:col-span-6">
           <FormLabel htmlFor="student-track">{{ t('students.form.trackLabel') }} {{ t('students.form.required') }}</FormLabel>
-          <FormSelect id="student-track" v-model="formState.selectedTrack" @change="handleTrackChange" :class="{ 'border-danger': formErrors.course_level_id && !formState.selectedTrack }">
+          <FormSelect id="student-track" v-model="formState.selectedTrackId" @change="handleTrackChange" :class="{ 'border-danger': formErrors.course_level_id && !formState.selectedTrackId }">
             <option value="">{{ t('students.form.trackPlaceholder') }}</option>
-            <option v-for="track in availableTracks" :key="track" :value="track">{{ track }}</option>
+            <option v-for="track in trackOptions" :key="track.id" :value="track.id">{{ track.name }}</option>
           </FormSelect>
-          <div v-if="formErrors.course_level_id && !formState.selectedTrack" class="mt-1 text-xs text-danger">{{ t('students.validation.trackRequired') }}</div>
+          <div v-if="formErrors.course_level_id && !formState.selectedTrackId" class="mt-1 text-xs text-danger">{{ t('students.validation.trackRequired') }}</div>
         </div>
         <div class="col-span-12 sm:col-span-6">
           <FormLabel htmlFor="student-level">{{ t('students.form.levelLabel') }} {{ t('students.form.required') }}</FormLabel>
-          <FormSelect id="student-level" v-model="formData.course_level_id" :disabled="!formState.selectedTrack" :class="{ 'border-danger': formErrors.course_level_id, 'opacity-50 cursor-not-allowed': !formState.selectedTrack }">
-            <option value="">{{ formState.selectedTrack ? t('students.form.levelPlaceholder') : t('students.form.selectTrackFirst') }}</option>
+          <FormSelect id="student-level" v-model="formData.course_level_id" :disabled="!formState.selectedTrackId" :class="{ 'border-danger': formErrors.course_level_id, 'opacity-50 cursor-not-allowed': !formState.selectedTrackId }">
+            <option value="">{{ formState.selectedTrackId ? t('students.form.levelPlaceholder') : t('students.form.selectTrackFirst') }}</option>
             <option v-for="level in filteredCourseLevels" :key="level.id" :value="level.id">{{ level.name }}</option>
           </FormSelect>
           <div v-if="formErrors.course_level_id" class="mt-1 text-xs text-danger">{{ formErrors.course_level_id }}</div>

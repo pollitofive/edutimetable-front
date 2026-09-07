@@ -87,7 +87,7 @@ watch(() => props.visible, (val) => {
       <div class="px-6 pt-6 pb-4 border-b border-slate-100">
         <h2 class="text-lg font-semibold text-slate-800">{{ t('enrollments.enrollStudent') }}</h2>
         <p v-if="schedule" class="mt-1 text-sm text-slate-500">
-          {{ schedule.course.course_level.track }} - {{ schedule.course.course_level.name }}
+          {{ schedule.course.course_level.track.name }} - {{ schedule.course.course_level.name }}
           · {{ groupDaysLabel }} {{ schedule.starts_at }} - {{ schedule.ends_at }}
           · Prof. {{ schedule.teacher.name }}
         </p>

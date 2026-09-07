@@ -23,6 +23,12 @@ const router = createRouter({
                     component: () => import("../pages/DashboardOverview1.vue"),
                 },
                 {
+                    path: "/tracks",
+                    name: "tracks",
+                    meta: { requiresAuth: true },
+                    component: () => import("../views/tracks/index.vue"),
+                },
+                {
                     path: "/course-levels",
                     name: "course-levels",
                     meta: { requiresAuth: true },

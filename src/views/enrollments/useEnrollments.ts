@@ -8,6 +8,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from '@/composables/useI18n'
 import { useLoading } from '@/composables/useLoading'
 import { enrollmentService, type ScheduleData, type ScheduleFilters } from '@/services/enrollmentService'
+import { useTrackOptions } from '@/views/tracks/useTracks'
 
 const toArr = (v: string | string[] | undefined): string[] =>
   v === undefined ? [] : Array.isArray(v) ? v : [v]
@@ -17,6 +18,7 @@ export function useEnrollments() {
   const { show: showLoading, hide: hideLoading } = useLoading()
   const route = useRoute()
   const router = useRouter()
+  const { trackOptions } = useTrackOptions()
 
   // ── State ──────────────────────────────────────────────────────────────────
   const allSchedules = ref<ScheduleData[]>([])
@@ -31,7 +33,7 @@ export function useEnrollments() {
 
   const filters = reactive<ScheduleFilters>({
     course_ids: toArr(route.query.courses as string | string[]),
-    tracks: toArr(route.query.tracks as string | string[]),
+    track_ids: toArr(route.query.track_ids as string | string[]),
     teacher_ids: toArr(route.query.teachers as string | string[]),
     days_of_week: toArr(route.query.days as string | string[]),
   })
@@ -53,9 +55,7 @@ export function useEnrollments() {
       .sort((a, b) => a.name.localeCompare(b.name))
   })
 
-  const uniqueTracks = computed(() =>
-    [...new Set(allSchedules.value.map(s => s.course.course_level.track))].sort()
-  )
+  const uniqueTracks = computed(() => [...trackOptions.value].sort((a, b) => a.name.localeCompare(b.name)))
 
   const days = computed(() => [
     { value: '1', label: t('schedules.days.monday') },
@@ -100,14 +100,14 @@ export function useEnrollments() {
     return monday.toISOString().split('T')[0]
   }
 
-  function getTrackColor(track: string): string {
-    const palette: Record<string, string> = {
-      English: '#10b981', Inglés: '#10b981',
-      Spanish: '#f97316', Español: '#f97316',
-      French: '#3b82f6', Francés: '#3b82f6',
-      Portuguese: '#8b5cf6', Portugués: '#8b5cf6',
-    }
-    return palette[track] ?? '#6b7280'
+  // Deterministic color per track id — stays stable regardless of locale or
+  // track name, and needs no hardcoded entry when a new track is created.
+  const trackColorPalette = ['#10b981', '#f97316', '#3b82f6', '#8b5cf6', '#ec4899', '#14b8a6', '#eab308', '#ef4444']
+
+  function getTrackColor(trackId: number | string): string {
+    const id = Number(trackId)
+    if (isNaN(id)) return '#6b7280'
+    return trackColorPalette[id % trackColorPalette.length]
   }
 
   function buildEvents(data: ScheduleData[]): EventInput[] {
@@ -115,7 +115,7 @@ export function useEnrollments() {
       id: String(s.id),
       start: `${getDateForDow(s.day_of_week)}T${s.starts_at}`,
       end: `${getDateForDow(s.day_of_week)}T${s.ends_at}`,
-      backgroundColor: getTrackColor(s.course.course_level.track),
+      backgroundColor: getTrackColor(s.course.course_level.track.id),
       borderColor: 'transparent',
       extendedProps: { schedule: s },
     }))
@@ -147,7 +147,7 @@ export function useEnrollments() {
       return {
         html: `
           <div class="p-1.5 text-xs leading-tight overflow-hidden h-full">
-            <div class="font-semibold truncate">${s.course.course_level.track} - ${s.course.course_level.name}</div>
+            <div class="font-semibold truncate">${s.course.course_level.track.name} - ${s.course.course_level.name}</div>
             <div class="opacity-80 truncate">Prof. ${s.teacher.name}</div>
             <div class="opacity-70">${s.starts_at} - ${s.ends_at}</div>
             <div class="${isFull ? 'text-red-200 font-medium' : 'opacity-70'}">
@@ -226,7 +226,7 @@ export function useEnrollments() {
     (v) => {
       const q: Record<string, string | string[]> = {}
       if (v.course_ids.length) q.courses = v.course_ids
-      if (v.tracks.length) q.tracks = v.tracks
+      if (v.track_ids.length) q.track_ids = v.track_ids
       if (v.teacher_ids.length) q.teachers = v.teacher_ids
       if (v.days_of_week.length) q.days = v.days_of_week
       void router.replace({ query: q })
