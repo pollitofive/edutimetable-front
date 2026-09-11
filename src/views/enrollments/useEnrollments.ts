@@ -167,15 +167,22 @@ export function useEnrollments() {
   })
 
   // ── Data loading ───────────────────────────────────────────────────────────
+  const hasActiveFilters = () =>
+    filters.course_ids.length > 0 || filters.track_ids.length > 0 ||
+    filters.teacher_ids.length > 0 || filters.days_of_week.length > 0
+
   async function loadAllSchedules() {
     allSchedules.value = await enrollmentService.getSchedules({})
+    return allSchedules.value
   }
 
-  async function loadSchedules() {
+  // preloaded lets onMounted reuse the unfiltered fetch instead of firing the
+  // same request twice when the page loads with no filters active.
+  async function loadSchedules(preloaded?: ScheduleData[]) {
     loading.value = true
     showLoading()
     try {
-      const data = await enrollmentService.getSchedules(filters)
+      const data = preloaded ?? await enrollmentService.getSchedules(filters)
       schedules.value = data
       if (selectedSchedule.value)
         selectedSchedule.value = data.find(s => s.id === selectedSchedule.value!.id) ?? null
@@ -236,8 +243,8 @@ export function useEnrollments() {
 
   onMounted(async () => {
     showLoading()
-    await loadAllSchedules()
-    await loadSchedules()
+    const all = await loadAllSchedules()
+    await loadSchedules(hasActiveFilters() ? undefined : all)
   })
 
   return {

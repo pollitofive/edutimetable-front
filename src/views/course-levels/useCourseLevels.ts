@@ -105,7 +105,7 @@ export function useCourseLevels() {
     sort_order: filterSortOrder.value ? parseInt(filterSortOrder.value) : undefined,
   })
 
-  const { result, loading, error, refetch } = useQuery(GET_COURSE_LEVELS, queryVars, { fetchPolicy: 'cache-and-network' })
+  const { result, loading, error, refetch } = useQuery(GET_COURSE_LEVELS, queryVars(), { fetchPolicy: 'cache-and-network' })
   const { mutate: createCourseLevel, loading: creating } = useMutation(CREATE_COURSE_LEVEL)
   const { mutate: updateCourseLevel, loading: updating } = useMutation(UPDATE_COURSE_LEVEL)
   const { mutate: deleteCourseLevel, loading: deleting } = useMutation(DELETE_COURSE_LEVEL)
@@ -291,20 +291,20 @@ export function useCourseLevels() {
   const goToPage = (page: number) => {
     if (page >= 1 && page <= lastPage.value) {
       currentPage.value = page
-      refetch()
+      refetch(queryVars())
     }
   }
 
   const changePerPage = (newPerPage: number) => {
     perPage.value = newPerPage
     currentPage.value = 1
-    refetch()
+    refetch(queryVars())
   }
 
   // ── Filters ────────────────────────────────────────────────────────────────
   const applyFilters = () => {
     currentPage.value = 1
-    refetch()
+    refetch(queryVars())
   }
 
   const clearFilters = () => {

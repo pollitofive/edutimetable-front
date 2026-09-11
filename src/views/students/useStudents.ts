@@ -71,7 +71,7 @@ export function useStudents() {
   })
 
   const { result: courseLevelsResult } = useQuery(GET_COURSE_LEVELS, {}, { fetchPolicy: 'cache-and-network' })
-  const { result, loading, error, refetch } = useQuery(GET_STUDENTS, queryVars, { fetchPolicy: 'cache-and-network' })
+  const { result, loading, error, refetch } = useQuery(GET_STUDENTS, queryVars(), { fetchPolicy: 'cache-and-network' })
   const { mutate: createStudent, loading: creating } = useMutation(CREATE_STUDENT)
   const { mutate: updateStudent, loading: updating } = useMutation(UPDATE_STUDENT)
   const { mutate: deleteStudent, loading: deleting } = useMutation(DELETE_STUDENT)
@@ -184,12 +184,12 @@ export function useStudents() {
   const cancelDelete = () => { deleteConfirmModal.value = false; studentToDelete.value = null }
 
   const goToPage = (page: number) => {
-    if (page >= 1 && page <= lastPage.value) { currentPage.value = page; refetch() }
+    if (page >= 1 && page <= lastPage.value) { currentPage.value = page; refetch(queryVars()) }
   }
   const changePerPage = (newPerPage: number) => {
-    perPage.value = newPerPage; currentPage.value = 1; refetch()
+    perPage.value = newPerPage; currentPage.value = 1; refetch(queryVars())
   }
-  const applyFilters = () => { currentPage.value = 1; refetch() }
+  const applyFilters = () => { currentPage.value = 1; refetch(queryVars()) }
   const clearFilters = () => { filterSearch.value = ''; filterTrackId.value = ''; filterCourseLevel.value = ''; applyFilters() }
   const retryFetch = () => refetch()
 

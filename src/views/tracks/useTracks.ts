@@ -76,7 +76,7 @@ export function useTracks() {
     name: filterName.value ? `%${filterName.value}%` : undefined,
   })
 
-  const { result, loading, error, refetch } = useQuery(GET_TRACKS, queryVars, { fetchPolicy: 'cache-and-network' })
+  const { result, loading, error, refetch } = useQuery(GET_TRACKS, queryVars(), { fetchPolicy: 'cache-and-network' })
   const { mutate: createTrack, loading: creating } = useMutation(CREATE_TRACK)
   const { mutate: updateTrack, loading: updating } = useMutation(UPDATE_TRACK)
   const { mutate: deleteTrack, loading: deleting } = useMutation(DELETE_TRACK)
@@ -207,20 +207,20 @@ export function useTracks() {
   const goToPage = (page: number) => {
     if (page >= 1 && page <= lastPage.value) {
       currentPage.value = page
-      refetch()
+      refetch(queryVars())
     }
   }
 
   const changePerPage = (newPerPage: number) => {
     perPage.value = newPerPage
     currentPage.value = 1
-    refetch()
+    refetch(queryVars())
   }
 
   // ── Filters ────────────────────────────────────────────────────────────────
   const applyFilters = () => {
     currentPage.value = 1
-    refetch()
+    refetch(queryVars())
   }
 
   const clearFilters = () => {
