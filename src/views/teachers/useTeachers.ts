@@ -15,7 +15,7 @@ export interface Teacher {
     name: string
     courseLevel?: {
       name: string
-      track: string
+      track: { name: string }
     }
   }>
 }
@@ -39,7 +39,7 @@ const GET_TEACHERS = gql`
           name
           courseLevel {
             name
-            track
+            track { name }
           }
         }
       }
