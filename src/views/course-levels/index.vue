@@ -17,7 +17,7 @@ const {
   filterTrackId, filterName, filterSortOrder,
   loading, error, creating, deleting,
   isSubmitting, modalTitle, startItem, endItem, totalPages, hasActiveFilters,
-  availableNextLevels, trackOptions, uniqueSortOrders, selectedTrackValue,
+  availablePreviousLevels, trackOptions, uniqueSortOrders, selectedTrackValue,
   openCreateModal, openEditModal, closeModal,
   handleTrackChange, handleCustomTrackInput,
   handleSave, openDeleteConfirm, handleDelete, cancelDelete,
@@ -98,7 +98,7 @@ const {
             <Table.Td class="py-4 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">{{ t('courseLevels.columns.name') }}</Table.Td>
             <Table.Td class="py-4 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">{{ t('courseLevels.columns.slug') }}</Table.Td>
             <Table.Td class="py-4 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">{{ t('courseLevels.columns.sortOrder') }}</Table.Td>
-            <Table.Td class="py-4 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">{{ t('courseLevels.columns.nextLevel') }}</Table.Td>
+            <Table.Td class="py-4 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">{{ t('courseLevels.columns.previousLevel') }}</Table.Td>
             <Table.Td class="py-4 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">{{ t('courseLevels.columns.texts') }}</Table.Td>
             <Table.Td class="py-4 font-medium text-center bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">{{ t('courseLevels.columns.actions') }}</Table.Td>
           </Table.Tr>
@@ -126,7 +126,7 @@ const {
               <div class="px-2 py-1 text-xs rounded-md bg-slate-100 text-slate-600 inline-block">{{ level.sort_order }}</div>
             </Table.Td>
             <Table.Td class="py-4 border-dashed dark:bg-darkmode-600">
-              <div v-if="level.nextLevel" class="text-slate-600">{{ level.nextLevel.name }}</div>
+              <div v-if="level.previousLevel" class="text-slate-600">{{ level.previousLevel.name }}</div>
               <div v-else class="text-xs text-slate-400">-</div>
             </Table.Td>
             <Table.Td class="py-4 border-dashed dark:bg-darkmode-600 max-w-xs">
@@ -223,10 +223,10 @@ const {
           <div v-if="formErrors.sort_order" class="mt-1 text-xs text-danger">{{ formErrors.sort_order }}</div>
         </div>
         <div class="col-span-12 sm:col-span-6">
-          <FormLabel htmlFor="level-next">{{ t('courseLevels.form.nextLevelLabel') }}</FormLabel>
-          <FormSelect id="level-next" v-model="formData.next_level_id">
-            <option :value="null">{{ t('courseLevels.form.noNextLevel') }}</option>
-            <option v-for="level in availableNextLevels" :key="level.id" :value="level.id">{{ level.name }} ({{ level.track.name }})</option>
+          <FormLabel htmlFor="level-previous">{{ t('courseLevels.form.previousLevelLabel') }}</FormLabel>
+          <FormSelect id="level-previous" v-model="formData.previous_level_id">
+            <option :value="null">{{ t('courseLevels.form.noPreviousLevel') }}</option>
+            <option v-for="level in availablePreviousLevels" :key="level.id" :value="level.id">{{ level.name }} ({{ level.track.name }})</option>
           </FormSelect>
         </div>
         <div class="col-span-12">

@@ -12,9 +12,9 @@ export interface CourseLevel {
   name: string
   slug: string
   sort_order: number
-  next_level_id: string | null
+  previous_level_id: string | null
   texts: string | null
-  nextLevel?: { id: string; name: string } | null
+  previousLevel?: { id: string; name: string } | null
 }
 
 interface FormData {
@@ -23,7 +23,7 @@ interface FormData {
   name: string
   slug: string
   sort_order: number | null
-  next_level_id: string | null
+  previous_level_id: string | null
   texts: string | null
 }
 
@@ -36,9 +36,9 @@ const GET_COURSE_LEVELS = gql`
         name
         slug
         sort_order
-        next_level_id
+        previous_level_id
         texts
-        nextLevel { id name }
+        previousLevel { id name }
       }
       paginatorInfo { total count currentPage lastPage hasMorePages perPage }
     }
@@ -47,13 +47,13 @@ const GET_COURSE_LEVELS = gql`
 
 const CREATE_COURSE_LEVEL = gql`
   mutation CreateCourseLevel($input: CreateCourseLevelInput!) {
-    createCourseLevel(input: $input) { id track { id name } name slug sort_order next_level_id texts }
+    createCourseLevel(input: $input) { id track { id name } name slug sort_order previous_level_id texts }
   }
 `
 
 const UPDATE_COURSE_LEVEL = gql`
   mutation UpdateCourseLevel($id: ID!, $input: UpdateCourseLevelInput!) {
-    updateCourseLevel(id: $id, input: $input) { id track { id name } name slug sort_order next_level_id texts }
+    updateCourseLevel(id: $id, input: $input) { id track { id name } name slug sort_order previous_level_id texts }
   }
 `
 
@@ -74,7 +74,7 @@ export function useCourseLevels() {
   const courseLevels = ref<CourseLevel[]>([])
   const showModal = ref(false)
   const selectedCourseLevel = ref<CourseLevel | null>(null)
-  const formData = ref<FormData>({ track_id: '', track_name: '', name: '', slug: '', sort_order: null, next_level_id: null, texts: null })
+  const formData = ref<FormData>({ track_id: '', track_name: '', name: '', slug: '', sort_order: null, previous_level_id: null, texts: null })
   const formErrors = ref<{ track?: string; name?: string; slug?: string; sort_order?: string }>({})
   const deleteConfirmModal = ref(false)
   const levelToDelete = ref<CourseLevel | null>(null)
@@ -119,7 +119,7 @@ export function useCourseLevels() {
   const hasActiveFilters = computed(() =>
     filterTrackId.value.trim() !== '' || filterName.value.trim() !== '' || filterSortOrder.value.trim() !== ''
   )
-  const availableNextLevels = computed(() =>
+  const availablePreviousLevels = computed(() =>
     selectedCourseLevel.value
       ? courseLevels.value.filter(l => l.id !== selectedCourseLevel.value?.id)
       : courseLevels.value
@@ -189,7 +189,7 @@ export function useCourseLevels() {
 
   // ── Modal ──────────────────────────────────────────────────────────────────
   const resetForm = () => {
-    formData.value = { track_id: '', track_name: '', name: '', slug: '', sort_order: null, next_level_id: null, texts: null }
+    formData.value = { track_id: '', track_name: '', name: '', slug: '', sort_order: null, previous_level_id: null, texts: null }
     formErrors.value = {}
     slugEditState.value.isEditable = false
     trackState.value = { isCustom: false, customValue: '' }
@@ -203,7 +203,7 @@ export function useCourseLevels() {
 
   const openEditModal = (level: CourseLevel) => {
     selectedCourseLevel.value = level
-    formData.value = { track_id: level.track.id, track_name: '', name: level.name, slug: level.slug, sort_order: level.sort_order, next_level_id: level.next_level_id, texts: level.texts ?? null }
+    formData.value = { track_id: level.track.id, track_name: '', name: level.name, slug: level.slug, sort_order: level.sort_order, previous_level_id: level.previous_level_id, texts: level.texts ?? null }
     formErrors.value = {}
     slugEditState.value.isEditable = false
     trackState.value = { isCustom: false, customValue: '' }
@@ -247,7 +247,7 @@ export function useCourseLevels() {
         name: formData.value.name.trim(),
         slug: formData.value.slug.trim(),
         sort_order: Number(formData.value.sort_order),
-        next_level_id: formData.value.next_level_id || null,
+        previous_level_id: formData.value.previous_level_id || null,
         texts: formData.value.texts?.trim() || null,
       }
       if (selectedCourseLevel.value) {
@@ -325,7 +325,7 @@ export function useCourseLevels() {
     filterTrackId, filterName, filterSortOrder,
     loading, error, creating, deleting, refetch,
     isSubmitting, modalTitle, startItem, endItem, totalPages, hasActiveFilters,
-    availableNextLevels, trackOptions, uniqueSortOrders, selectedTrackValue,
+    availablePreviousLevels, trackOptions, uniqueSortOrders, selectedTrackValue,
     openCreateModal, openEditModal, closeModal,
     handleTrackChange, handleCustomTrackInput,
     handleSave, openDeleteConfirm, handleDelete, cancelDelete,
