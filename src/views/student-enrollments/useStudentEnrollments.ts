@@ -3,6 +3,7 @@ import { useQuery, useMutation, useLazyQuery } from '@vue/apollo-composable'
 import { ref, watch, computed } from 'vue'
 import { useI18n } from '@/composables/useI18n'
 import { useLoading } from '@/composables/useLoading'
+import { useDayNames } from '@/composables/useDayNames'
 import { useRoute, useRouter } from 'vue-router'
 
 export interface Student { id: string; name: string; code: string }
@@ -49,6 +50,7 @@ const DELETE_STUDENT_ENROLLMENT = gql`mutation DeleteStudentEnrollment($id: ID!)
 export function useStudentEnrollments() {
   const { t } = useI18n()
   const { show: showLoading, hide: hideLoading } = useLoading()
+  const { getDayName } = useDayNames('studentEnrollments')
   const route = useRoute()
   const router = useRouter()
 
@@ -148,11 +150,6 @@ export function useStudentEnrollments() {
       }
     }
   })
-
-  const getDayName = (day: number): string => {
-    const days = [t('studentEnrollments.days.sunday'), t('studentEnrollments.days.monday'), t('studentEnrollments.days.tuesday'), t('studentEnrollments.days.wednesday'), t('studentEnrollments.days.thursday'), t('studentEnrollments.days.friday'), t('studentEnrollments.days.saturday')]
-    return days[day] || ''
-  }
 
   const getStatusBadgeClass = (status: string): string => {
     const classes: Record<string, string> = { active: 'bg-success/10 text-success', completed: 'bg-primary/10 text-primary', dropped: 'bg-danger/10 text-danger', pending: 'bg-warning/10 text-warning' }

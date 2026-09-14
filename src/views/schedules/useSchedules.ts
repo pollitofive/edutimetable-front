@@ -4,6 +4,7 @@ import { ref, watch, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from '@/composables/useI18n'
 import { useLoading } from '@/composables/useLoading'
+import { useDayNames } from '@/composables/useDayNames'
 
 export interface Teacher { id: string; name: string }
 export interface Course { id: string; name: string }
@@ -42,6 +43,7 @@ const DELETE_SCHEDULE = gql`mutation DeleteSchedule($id: ID!) { deleteSchedule(i
 export function useSchedules() {
   const { t } = useI18n()
   const { show: showLoading, hide: hideLoading } = useLoading()
+  const { getDayName } = useDayNames('schedules')
   const route = useRoute()
   const router = useRouter()
 
@@ -162,11 +164,6 @@ export function useSchedules() {
     if (!time) return time
     const parts = time.split(':')
     return parts.length >= 2 ? `${parts[0]}:${parts[1]}` : time
-  }
-
-  const getDayName = (day: number): string => {
-    const days = [t('schedules.days.sunday'), t('schedules.days.monday'), t('schedules.days.tuesday'), t('schedules.days.wednesday'), t('schedules.days.thursday'), t('schedules.days.friday'), t('schedules.days.saturday')]
-    return days[day] || ''
   }
 
   const addSlot = () => {

@@ -4,6 +4,7 @@ import { ref, watch, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from '@/composables/useI18n'
 import { useLoading } from '@/composables/useLoading'
+import { useDayNames } from '@/composables/useDayNames'
 
 export interface Teacher {
   id: string
@@ -18,7 +19,30 @@ export interface Teacher {
       track: { name: string }
     }
   }>
+  schedules?: Array<{
+    id: string
+    day_of_week: number
+    starts_at: string
+    ends_at: string
+    capacity: number
+    group_id?: string | null
+    course: { id: string; name: string }
+    enrollments: Array<{ id: string; status: string }>
+  }>
 }
+
+export interface TeacherScheduleGroup {
+  key: string
+  course_id: string
+  courseName: string
+  starts_at: string
+  ends_at: string
+  days: number[]
+  capacity: number
+  enrolledCount: number
+}
+
+const DAY_DISPLAY_ORDER = [1, 2, 3, 4, 5, 6, 0]
 
 interface FormData {
   name: string
@@ -41,6 +65,16 @@ const GET_TEACHERS = gql`
             name
             track { name }
           }
+        }
+        schedules {
+          id
+          day_of_week
+          starts_at
+          ends_at
+          capacity
+          group_id
+          course { id name }
+          enrollments { id status }
         }
       }
       paginatorInfo {
@@ -88,11 +122,13 @@ const DELETE_TEACHER = gql`
 export function useTeachers() {
   const { t } = useI18n()
   const { show: showLoading, hide: hideLoading } = useLoading()
+  const { getDayName } = useDayNames('teachers')
   const route = useRoute()
   const router = useRouter()
 
   // ── State ──────────────────────────────────────────────────────────────────
   const teachers = ref<Teacher[]>([])
+  const expandedTeacherId = ref<string | null>(null)
   const showModal = ref(false)
   const selectedTeacher = ref<Teacher | null>(null)
   const formData = ref<FormData>({ name: '', email: '', phone: '' })
@@ -282,10 +318,48 @@ export function useTeachers() {
     applyFilters()
   }
 
+  // ── Expandable row ─────────────────────────────────────────────────────────
+  const toggleExpand = (teacherId: string) => {
+    expandedTeacherId.value = expandedTeacherId.value === teacherId ? null : teacherId
+  }
+
+  const getTeacherScheduleGroups = (teacher: Teacher): TeacherScheduleGroup[] => {
+    const groups = new Map<string, TeacherScheduleGroup>()
+    ;(teacher.schedules || []).forEach((schedule) => {
+      // Un mismo "group_id" son varios Schedule (uno por día) de la misma oferta de curso.
+      const key = schedule.group_id || schedule.id
+      if (!groups.has(key)) {
+        groups.set(key, {
+          key,
+          course_id: schedule.course.id,
+          courseName: schedule.course.name,
+          starts_at: schedule.starts_at.substring(0, 5),
+          ends_at: schedule.ends_at.substring(0, 5),
+          days: [],
+          capacity: schedule.capacity,
+          enrolledCount: schedule.enrollments.filter((e) => e.status === 'ACTIVE').length,
+        })
+      }
+      groups.get(key)!.days.push(schedule.day_of_week)
+    })
+    return Array.from(groups.values()).sort((a, b) =>
+      a.courseName !== b.courseName ? a.courseName.localeCompare(b.courseName) : a.starts_at.localeCompare(b.starts_at)
+    )
+  }
+
+  const formatScheduleDays = (days: number[]): string => {
+    const names = [...new Set(days)]
+      .sort((a, b) => DAY_DISPLAY_ORDER.indexOf(a) - DAY_DISPLAY_ORDER.indexOf(b))
+      .map((day) => getDayName(day))
+    if (names.length <= 1) return names.join('')
+    return `${names.slice(0, -1).join(', ')} ${t('teachers.schedule.daysConnector')} ${names[names.length - 1]}`
+  }
+
   return {
     // state
     t, teachers, showModal, selectedTeacher, formData, formErrors,
     deleteConfirmModal, teacherToDelete, showToast, toastMessage, toastType,
+    expandedTeacherId,
     // pagination
     currentPage, perPage, totalItems,
     // filters
@@ -298,5 +372,6 @@ export function useTeachers() {
     openCreateModal, openEditModal, closeModal, handleSave,
     openDeleteConfirm, handleDelete, cancelDelete,
     goToPage, changePerPage, clearFilters, handleToastClose,
+    toggleExpand, getTeacherScheduleGroups, formatScheduleDays,
   }
 }

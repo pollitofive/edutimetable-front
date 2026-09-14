@@ -210,7 +210,8 @@
       "updateSuccess": "Teacher updated successfully",
       "deleteSuccess": "Teacher deleted successfully",
       "deleteError": "Error deleting teacher",
-      "generalError": "An error occurred"
+      "generalError": "An error occurred",
+      "noSchedules": "No schedules assigned"
     },
     "delete": {
       "confirmTitle": "Are you sure?",
@@ -221,6 +222,20 @@
       "show": "Show",
       "entries": "entries",
       "showingInfo": "Showing {start} to {end} of {total} teachers"
+    },
+    "days": {
+      "sunday": "Sunday",
+      "monday": "Monday",
+      "tuesday": "Tuesday",
+      "wednesday": "Wednesday",
+      "thursday": "Thursday",
+      "friday": "Friday",
+      "saturday": "Saturday"
+    },
+    "schedule": {
+      "timeRange": "from {start} to {end}",
+      "daysConnector": "and",
+      "enrolledCount": "{enrolled}/{capacity} enrolled"
     }
   },
   "courses": {
