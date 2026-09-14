@@ -179,7 +179,8 @@
       "save": "Save",
       "cancel": "Cancel",
       "retry": "Retry",
-      "clearFilters": "Clear Filters"
+      "clearFilters": "Clear Filters",
+      "viewSchedules": "View schedules"
     },
     "filters": {
       "searchByName": "Search by name...",

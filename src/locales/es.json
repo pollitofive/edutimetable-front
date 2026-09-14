@@ -179,7 +179,8 @@
       "save": "Guardar",
       "cancel": "Cancelar",
       "retry": "Reintentar",
-      "clearFilters": "Limpiar Filtros"
+      "clearFilters": "Limpiar Filtros",
+      "viewSchedules": "Ver horarios"
     },
     "filters": {
       "searchByName": "Buscar por nombre...",

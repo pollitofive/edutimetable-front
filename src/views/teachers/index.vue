@@ -109,7 +109,7 @@ const {
               <div class="text-slate-500">{{ teacher.email }}</div>
             </Table.Td>
             <Table.Td class="py-4 border-dashed dark:bg-darkmode-600">
-              <div v-if="teacher.courses && teacher.courses.length > 0" class="flex flex-wrap gap-1">
+              <div v-if="teacher.courses && teacher.courses.length > 0" class="flex flex-wrap items-center gap-1">
                 <span v-for="course in teacher.courses.slice(0, 3)" :key="course.id" class="px-2 py-0.5 text-xs rounded-md bg-primary/10 text-primary">
                   {{ course.name }}
                 </span>
@@ -118,6 +118,13 @@ const {
                 </span>
               </div>
               <div v-else class="text-xs text-slate-400">{{ t('teachers.messages.noCourses') }}</div>
+              <router-link
+                :to="{ path: '/schedules', query: { teacher: teacher.id } }"
+                class="inline-flex items-center gap-1 mt-1 text-xs text-primary hover:underline"
+              >
+                <Lucide icon="Calendar" class="w-3 h-3 shrink-0" />
+                {{ t('teachers.actions.viewSchedules') }}
+              </router-link>
             </Table.Td>
             <Table.Td class="py-4 border-dashed dark:bg-darkmode-600">
               <a
