@@ -11,6 +11,7 @@ import { useTeachers } from './useTeachers'
 const {
   t, teachers, showModal, selectedTeacher, formData, formErrors,
   deleteConfirmModal, teacherToDelete, showToast, toastMessage, toastType,
+  expandedTeacherId,
   currentPage, perPage, totalItems,
   filterName, filterEmail,
   loading, error, creating, deleting, refetch,
@@ -18,6 +19,7 @@ const {
   openCreateModal, openEditModal, closeModal, handleSave,
   openDeleteConfirm, handleDelete, cancelDelete,
   goToPage, changePerPage, clearFilters, handleToastClose,
+  toggleExpand, getTeacherScheduleGroups, formatScheduleDays,
 } = useTeachers()
 </script>
 
@@ -101,9 +103,22 @@ const {
               </div>
             </Table.Td>
           </Table.Tr>
-          <Table.Tr v-for="teacher in teachers" :key="teacher.id" class="[&_td]:last:border-b-0">
+          <template v-for="teacher in teachers" :key="teacher.id">
+          <Table.Tr class="[&_td]:last:border-b-0">
             <Table.Td class="py-4 border-dashed dark:bg-darkmode-600">
-              <div class="font-medium">{{ teacher.name }}</div>
+              <button
+                v-if="teacher.courses && teacher.courses.length > 0"
+                type="button"
+                class="flex items-center gap-2 font-medium"
+                @click="toggleExpand(teacher.id)"
+              >
+                <Lucide :icon="expandedTeacherId === teacher.id ? 'ChevronDown' : 'ChevronRight'" class="w-4 h-4 text-slate-400 shrink-0" />
+                {{ teacher.name }}
+              </button>
+              <div v-else class="flex items-center gap-2 font-medium">
+                <Lucide icon="ChevronRight" class="w-4 h-4 shrink-0 invisible" />
+                {{ teacher.name }}
+              </div>
             </Table.Td>
             <Table.Td class="py-4 border-dashed dark:bg-darkmode-600">
               <div class="text-slate-500">{{ teacher.email }}</div>
@@ -119,6 +134,7 @@ const {
               </div>
               <div v-else class="text-xs text-slate-400">{{ t('teachers.messages.noCourses') }}</div>
               <router-link
+                v-if="teacher.courses && teacher.courses.length > 0"
                 :to="{ path: '/schedules', query: { teacher: teacher.id } }"
                 class="inline-flex items-center gap-1 mt-1 text-xs text-primary hover:underline"
               >
@@ -152,6 +168,32 @@ const {
               </div>
             </Table.Td>
           </Table.Tr>
+          <Table.Tr v-if="expandedTeacherId === teacher.id">
+            <Table.Td colspan="5" class="pl-11 pr-5 py-3 border-dashed bg-slate-100 dark:bg-darkmode-900">
+              <div v-if="getTeacherScheduleGroups(teacher).length > 0" class="flex flex-col gap-1.5 border-l-2 border-slate-300 dark:border-darkmode-400 pl-4">
+                <div
+                  v-for="group in getTeacherScheduleGroups(teacher)"
+                  :key="group.key"
+                  class="text-sm text-slate-600 dark:text-slate-300"
+                >
+                  <router-link
+                    :to="{ path: '/courses', query: { id: group.course_id } }"
+                    class="font-medium text-primary hover:underline"
+                  >
+                    {{ group.courseName }}
+                  </router-link>
+                  → {{ formatScheduleDays(group.days) }} {{ t('teachers.schedule.timeRange', { start: group.starts_at, end: group.ends_at }) }}
+                  <span class="text-slate-400">
+                    · {{ t('teachers.schedule.enrolledCount', { enrolled: group.enrolledCount, capacity: group.capacity }) }}
+                  </span>
+                </div>
+              </div>
+              <div v-else class="pl-4 border-l-2 border-slate-300 dark:border-darkmode-400 text-xs text-slate-400">
+                {{ t('teachers.messages.noSchedules') }}
+              </div>
+            </Table.Td>
+          </Table.Tr>
+          </template>
         </Table.Tbody>
       </Table>
     </div>

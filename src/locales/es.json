@@ -210,7 +210,8 @@
       "updateSuccess": "Profesor actualizado exitosamente",
       "deleteSuccess": "Profesor eliminado exitosamente",
       "deleteError": "Error al eliminar profesor",
-      "generalError": "Ocurrió un error"
+      "generalError": "Ocurrió un error",
+      "noSchedules": "Sin horarios asignados"
     },
     "delete": {
       "confirmTitle": "¿Estás seguro?",
@@ -221,6 +222,20 @@
       "show": "Mostrar",
       "entries": "entradas",
       "showingInfo": "Mostrando {start} a {end} de {total} profesores"
+    },
+    "days": {
+      "sunday": "Domingo",
+      "monday": "Lunes",
+      "tuesday": "Martes",
+      "wednesday": "Miércoles",
+      "thursday": "Jueves",
+      "friday": "Viernes",
+      "saturday": "Sábado"
+    },
+    "schedule": {
+      "timeRange": "de {start} a {end} hs",
+      "daysConnector": "y",
+      "enrolledCount": "{enrolled}/{capacity} inscriptos"
     }
   },
   "courses": {

@@ -32,8 +32,8 @@ const GET_COURSE_LEVELS = gql`
 `
 
 const GET_COURSES = gql`
-  query GetCourses($first: Int!, $page: Int!, $name: String, $course_level_id: ID, $track_id: ID) {
-    courses(first: $first, page: $page, name: $name, course_level_id: $course_level_id, track_id: $track_id) {
+  query GetCourses($first: Int!, $page: Int!, $id: ID, $name: String, $course_level_id: ID, $track_id: ID) {
+    courses(first: $first, page: $page, id: $id, name: $name, course_level_id: $course_level_id, track_id: $track_id) {
       data {
         id name level course_level_id
         courseLevel { id track { id name } name slug sort_order }
@@ -88,6 +88,7 @@ export function useCourses() {
   const lastPage = ref(1)
 
   // ── Filters ────────────────────────────────────────────────────────────────
+  const filterId = ref((route.query.id as string) || '')
   const filterName = ref((route.query.name as string) || '')
   const filterTrackId = ref((route.query.track_id as string) || '')
   const filterCourseLevel = ref((route.query.level as string) || '')
@@ -97,6 +98,7 @@ export function useCourses() {
   const queryVars = () => ({
     first: perPage.value,
     page: currentPage.value,
+    id: filterId.value || undefined,
     name: filterName.value ? `%${filterName.value}%` : undefined,
     course_level_id: filterCourseLevel.value || undefined,
     track_id: filterTrackId.value || undefined,
@@ -115,7 +117,7 @@ export function useCourses() {
   const endItem = computed(() => Math.min(currentPage.value * perPage.value, totalItems.value))
   const totalPages = computed(() => lastPage.value)
   const hasActiveFilters = computed(() =>
-    filterName.value.trim() !== '' || filterTrackId.value.trim() !== '' || filterCourseLevel.value.trim() !== ''
+    filterId.value.trim() !== '' || filterName.value.trim() !== '' || filterTrackId.value.trim() !== '' || filterCourseLevel.value.trim() !== ''
   )
   const filteredCourseLevels = computed(() =>
     formState.value.selectedTrackId
@@ -136,9 +138,10 @@ export function useCourses() {
   )
 
   watch(
-    () => ({ name: filterName.value, track_id: filterTrackId.value, level: filterCourseLevel.value, page: currentPage.value }),
+    () => ({ id: filterId.value, name: filterName.value, track_id: filterTrackId.value, level: filterCourseLevel.value, page: currentPage.value }),
     (v) => {
       const q: Record<string, string> = {}
+      if (v.id) q.id = v.id
       if (v.name) q.name = v.name
       if (v.track_id) q.track_id = v.track_id
       if (v.level) q.level = v.level
@@ -264,7 +267,7 @@ export function useCourses() {
   const applyFilters = () => { currentPage.value = 1; refetch(queryVars()) }
 
   const clearFilters = () => {
-    filterName.value = ''; filterTrackId.value = ''; filterCourseLevel.value = ''
+    filterId.value = ''; filterName.value = ''; filterTrackId.value = ''; filterCourseLevel.value = ''
     applyFilters()
   }
 
