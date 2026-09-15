@@ -90,6 +90,51 @@ export interface ScheduleFilters {
   days_of_week?: string[]
 }
 
+export interface EnrollmentData {
+  id: number
+  student_id: number
+  schedule_id: number
+  enrolled_at: string
+  status: 'active' | 'completed' | 'dropped' | 'pending'
+  notes: string | null
+  created_at: string
+  student: {
+    id: number
+    name: string
+    email: string
+    phone: string | null
+    level: string | null
+  }
+  schedule: {
+    id: number
+    course_id: number
+    teacher_id: number
+    day_of_week: number
+    starts_at: string
+    ends_at: string
+    description: string | null
+    group_id: string | null
+    course: { id: number; name: string; level: string | null }
+    teacher: { id: number; name: string }
+  }
+}
+
+export interface PaginatedResponse<T> {
+  data: T[]
+  current_page: number
+  last_page: number
+  total: number
+  per_page: number
+}
+
+export interface EnrollmentFilters {
+  student_id?: number | string
+  schedule_id?: number | string
+  status?: string
+  page?: number
+  per_page?: number
+}
+
 export const enrollmentService = {
   async getSchedules(filters: ScheduleFilters = {}): Promise<ScheduleData[]> {
     const params: Record<string, unknown> = {}
@@ -118,7 +163,22 @@ export const enrollmentService = {
     return res.data
   },
 
-  async createEnrollment(studentId: number, scheduleIds: number[]): Promise<void> {
-    await http.post('/enrollments', { student_id: studentId, schedule_ids: scheduleIds })
+  async createEnrollment(studentId: number, scheduleIds: number[]): Promise<EnrollmentData[]> {
+    const res = await http.post('/enrollments', { student_id: studentId, schedule_ids: scheduleIds })
+    return res.data
+  },
+
+  async getEnrollments(filters: EnrollmentFilters = {}): Promise<PaginatedResponse<EnrollmentData>> {
+    const res = await http.get('/enrollments', { params: filters })
+    return res.data
+  },
+
+  async updateEnrollment(id: number, data: { status?: string; notes?: string }): Promise<EnrollmentData> {
+    const res = await http.patch(`/enrollments/${id}`, data)
+    return res.data
+  },
+
+  async deleteEnrollment(id: number): Promise<void> {
+    await http.delete(`/enrollments/${id}`)
   },
 }
