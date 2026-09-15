@@ -53,10 +53,10 @@ const {
           <div class="flex-1">
             <FormSelect v-model="filterStatus">
               <option value="">{{ t('studentEnrollments.filters.allStatuses') }}</option>
-              <option value="ACTIVE">{{ t('studentEnrollments.status.active') }}</option>
-              <option value="COMPLETED">{{ t('studentEnrollments.status.completed') }}</option>
-              <option value="DROPPED">{{ t('studentEnrollments.status.dropped') }}</option>
-              <option value="PENDING">{{ t('studentEnrollments.status.pending') }}</option>
+              <option value="active">{{ t('studentEnrollments.status.active') }}</option>
+              <option value="completed">{{ t('studentEnrollments.status.completed') }}</option>
+              <option value="dropped">{{ t('studentEnrollments.status.dropped') }}</option>
+              <option value="pending">{{ t('studentEnrollments.status.pending') }}</option>
             </FormSelect>
           </div>
           <div>
@@ -192,7 +192,7 @@ const {
             </div>
             <div v-if="formErrors.group_id" class="mt-1 text-xs text-danger">{{ formErrors.group_id }}</div>
           </div>
-          <div class="col-span-12">
+          <div v-if="isEditMode" class="col-span-12">
             <FormLabel htmlFor="enrollment-status">{{ t('studentEnrollments.form.status') }} *</FormLabel>
             <FormSelect id="enrollment-status" v-model="formData.status" :class="{ 'border-danger': formErrors.status }">
               <option v-for="option in statusOptions" :key="option.value" :value="option.value">{{ option.label }}</option>

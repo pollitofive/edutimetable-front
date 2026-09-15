@@ -1,10 +1,11 @@
 import { gql } from '@apollo/client/core'
-import { useQuery, useMutation, useLazyQuery } from '@vue/apollo-composable'
-import { ref, watch, computed } from 'vue'
+import { useQuery, useLazyQuery } from '@vue/apollo-composable'
+import { ref, watch, computed, onMounted } from 'vue'
 import { useI18n } from '@/composables/useI18n'
 import { useLoading } from '@/composables/useLoading'
 import { useDayNames } from '@/composables/useDayNames'
 import { useRoute, useRouter } from 'vue-router'
+import { enrollmentService, type EnrollmentData } from '@/services/enrollmentService'
 
 export interface Student { id: string; name: string; code: string }
 export interface Course { id: string; name: string; level?: string; year?: number }
@@ -14,14 +15,8 @@ interface StudentAvailability { id: string; student_id: string; day_of_week: num
 interface ScheduleGroup { group_id: string; course: Course; teacher: Teacher; description: string; schedules: Schedule[]; displayText: string }
 export interface StudentEnrollment { id: string; student_id: string; schedule_id: string; student: Student; schedule: Schedule; enrolled_at: string; status: 'active' | 'completed' | 'dropped' | 'pending'; notes?: string; created_at: string }
 
-const GET_STUDENT_ENROLLMENTS = gql`
-  query GetStudentEnrollments($first: Int!, $page: Int!, $student_id: ID, $schedule_id: ID, $status: StudentEnrollmentStatus) {
-    studentEnrollments(first: $first, page: $page, student_id: $student_id, schedule_id: $schedule_id, status: $status) {
-      data { id student_id schedule_id student { id name code } schedule { id course { id name level year } teacher { id name } day_of_week starts_at ends_at description group_id } enrolled_at status notes created_at }
-      paginatorInfo { total count currentPage lastPage hasMorePages perPage }
-    }
-  }
-`
+// These three stay on GraphQL: they're catalog/shared queries also consumed
+// by other screens (student-availabilities, etc.), out of scope for this migration.
 const GET_ALL_STUDENTS = gql`query GetAllStudents { students(first: 10000) { data { id name code } } }`
 const GET_ALL_SCHEDULES = gql`
   query GetAllSchedules {
@@ -35,17 +30,29 @@ const GET_STUDENT_AVAILABILITIES = gql`
     studentAvailabilities(student_id: $student_id) { data { id student_id day_of_week start_time end_time } }
   }
 `
-const CREATE_STUDENT_ENROLLMENT = gql`
-  mutation CreateStudentEnrollment($input: CreateStudentEnrollmentInput!) {
-    createStudentEnrollment(input: $input) { id student_id schedule_id student { id name code } schedule { id course { id name } teacher { id name } day_of_week starts_at ends_at description } enrolled_at status notes }
+
+function mapEnrollment(e: EnrollmentData): StudentEnrollment {
+  return {
+    id: String(e.id),
+    student_id: String(e.student_id),
+    schedule_id: String(e.schedule_id),
+    student: { id: String(e.student.id), name: e.student.name, code: '' },
+    schedule: {
+      id: String(e.schedule.id),
+      course: { id: String(e.schedule.course.id), name: e.schedule.course.name, level: e.schedule.course.level ?? undefined },
+      teacher: { id: String(e.schedule.teacher.id), name: e.schedule.teacher.name },
+      day_of_week: e.schedule.day_of_week,
+      starts_at: e.schedule.starts_at,
+      ends_at: e.schedule.ends_at,
+      description: e.schedule.description ?? '',
+      group_id: e.schedule.group_id ?? undefined,
+    },
+    enrolled_at: e.enrolled_at,
+    status: e.status,
+    notes: e.notes ?? undefined,
+    created_at: e.created_at,
   }
-`
-const UPDATE_STUDENT_ENROLLMENT = gql`
-  mutation UpdateStudentEnrollment($id: ID!, $input: UpdateStudentEnrollmentInput!) {
-    updateStudentEnrollment(id: $id, input: $input) { id student_id schedule_id status notes }
-  }
-`
-const DELETE_STUDENT_ENROLLMENT = gql`mutation DeleteStudentEnrollment($id: ID!) { deleteStudentEnrollment(id: $id) { id } }`
+}
 
 export function useStudentEnrollments() {
   const { t } = useI18n()
@@ -69,6 +76,12 @@ export function useStudentEnrollments() {
   const toastMessage = ref('')
   const toastType = ref<'success' | 'error' | 'info' | 'warning'>('success')
 
+  const loading = ref(false)
+  const error = ref<string | null>(null)
+  const creating = ref(false)
+  const updating = ref(false)
+  const deleting = ref(false)
+
   const currentPage = ref(Number(route.query.page) || 1)
   const perPage = ref(10)
   const totalItems = ref(0)
@@ -78,20 +91,9 @@ export function useStudentEnrollments() {
   const filterScheduleId = ref((route.query.schedule as string) || '')
   const filterStatus = ref<string>((route.query.status as string) || '')
 
-  const queryVars = () => ({
-    first: perPage.value, page: currentPage.value,
-    student_id: filterStudentId.value || undefined,
-    schedule_id: filterScheduleId.value || undefined,
-    status: filterStatus.value || undefined,
-  })
-
-  const { result, loading, error, refetch } = useQuery(GET_STUDENT_ENROLLMENTS, queryVars, { fetchPolicy: 'cache-and-network' })
   const { result: studentsResult } = useQuery(GET_ALL_STUDENTS)
   const { result: schedulesResult } = useQuery(GET_ALL_SCHEDULES)
   const { result: availabilitiesResult, loading: availabilitiesLoading, load: loadAvailabilities, refetch: refetchAvailabilities } = useLazyQuery(GET_STUDENT_AVAILABILITIES, null, { fetchPolicy: 'cache-and-network' })
-  const { mutate: createEnrollment, loading: creating } = useMutation(CREATE_STUDENT_ENROLLMENT)
-  const { mutate: updateEnrollment, loading: updating } = useMutation(UPDATE_STUDENT_ENROLLMENT)
-  const { mutate: deleteEnrollment, loading: deleting } = useMutation(DELETE_STUDENT_ENROLLMENT)
 
   const isSubmitting = computed(() => creating.value || updating.value)
   const modalTitle = computed(() => isEditMode.value ? t('studentEnrollments.form.editTitle') : t('studentEnrollments.form.addTitle'))
@@ -124,13 +126,6 @@ export function useStudentEnrollments() {
     }
   )
 
-  watch(result, (val) => {
-    if (val?.studentEnrollments?.data) enrollments.value = val.studentEnrollments.data
-    if (val?.studentEnrollments?.paginatorInfo) {
-      const info = val.studentEnrollments.paginatorInfo
-      totalItems.value = info.total; lastPage.value = info.lastPage; currentPage.value = info.currentPage
-    }
-  })
   watch(studentsResult, (val) => { if (val?.students?.data) allStudents.value = [...val.students.data].sort((a, b) => a.name.localeCompare(b.name)) }, { immediate: true })
   watch(schedulesResult, (val) => { if (val?.schedules?.data) allSchedules.value = [...val.schedules.data].sort((a, b) => a.course.name.localeCompare(b.course.name)) }, { immediate: true })
   watch(availabilitiesResult, (val) => { if (val?.studentAvailabilities?.data) studentAvailabilities.value = val.studentAvailabilities.data }, { immediate: true })
@@ -150,6 +145,28 @@ export function useStudentEnrollments() {
       }
     }
   })
+
+  async function fetchEnrollments() {
+    loading.value = true
+    error.value = null
+    try {
+      const res = await enrollmentService.getEnrollments({
+        student_id: filterStudentId.value || undefined,
+        schedule_id: filterScheduleId.value || undefined,
+        status: filterStatus.value || undefined,
+        page: currentPage.value,
+        per_page: perPage.value,
+      })
+      enrollments.value = res.data.map(mapEnrollment)
+      totalItems.value = res.total
+      lastPage.value = res.last_page
+      currentPage.value = res.current_page
+    } catch (err: any) {
+      error.value = err.response?.data?.message || err.message || t('studentEnrollments.messages.error')
+    } finally {
+      loading.value = false
+    }
+  }
 
   const getStatusBadgeClass = (status: string): string => {
     const classes: Record<string, string> = { active: 'bg-success/10 text-success', completed: 'bg-primary/10 text-primary', dropped: 'bg-danger/10 text-danger', pending: 'bg-warning/10 text-warning' }
@@ -228,38 +245,51 @@ export function useStudentEnrollments() {
     if (!validateForm()) return
     try {
       if (isEditMode.value) {
-        await updateEnrollment({ id: editingEnrollmentId.value, input: { status: formData.value.status.toUpperCase(), notes: formData.value.notes || undefined } })
+        updating.value = true
+        await enrollmentService.updateEnrollment(Number(editingEnrollmentId.value), {
+          status: formData.value.status,
+          notes: formData.value.notes || undefined,
+        })
         notify(t('studentEnrollments.messages.updateSuccess'))
       } else {
+        creating.value = true
         const group = groupedSchedules.value.find(g => g.group_id === formData.value.group_id)
         if (!group?.schedules.length) { notify('Invalid group selection', 'error'); return }
-        await Promise.all(group.schedules.map(s => createEnrollment({ input: { student_id: formData.value.student_id, schedule_id: s.id, status: formData.value.status.toUpperCase(), notes: formData.value.notes || undefined } })))
+        await enrollmentService.createEnrollment(Number(formData.value.student_id), group.schedules.map(s => Number(s.id)))
         notify(`Successfully enrolled in ${group.schedules.length} schedule${group.schedules.length > 1 ? 's' : ''}`, 'success')
       }
       closeModal(); applyFilters()
     } catch (err: any) {
-      if (err.graphQLErrors?.[0]?.extensions?.category === 'validation') { notify(`Validation Error: ${Object.values(err.graphQLErrors[0].extensions.validation).flat().join(', ')}`, 'error'); return }
-      if (err.graphQLErrors?.[0]?.message) { notify(err.graphQLErrors[0].message, 'error'); return }
-      notify(err.message || t('studentEnrollments.messages.generalError'), 'error')
+      notify(err.response?.data?.message || err.message || t('studentEnrollments.messages.generalError'), 'error')
+    } finally {
+      creating.value = false
+      updating.value = false
     }
   }
 
   const openDeleteConfirm = (e: StudentEnrollment) => { enrollmentToDelete.value = e; deleteConfirmModal.value = true }
   const handleDelete = async () => {
     if (!enrollmentToDelete.value) return
+    deleting.value = true
     try {
-      await deleteEnrollment({ id: enrollmentToDelete.value.id })
+      await enrollmentService.deleteEnrollment(Number(enrollmentToDelete.value.id))
       notify(t('studentEnrollments.messages.deleteSuccess'))
       deleteConfirmModal.value = false; enrollmentToDelete.value = null; applyFilters()
-    } catch (err: any) { notify(err.message || t('studentEnrollments.messages.deleteError'), 'error') }
+    } catch (err: any) {
+      notify(err.response?.data?.message || err.message || t('studentEnrollments.messages.deleteError'), 'error')
+    } finally {
+      deleting.value = false
+    }
   }
   const cancelDelete = () => { deleteConfirmModal.value = false; enrollmentToDelete.value = null }
 
-  const goToPage = (page: number) => { if (page >= 1 && page <= lastPage.value) { currentPage.value = page; refetch() } }
-  const changePerPage = (n: number) => { perPage.value = n; currentPage.value = 1; refetch() }
-  const applyFilters = () => { currentPage.value = 1; refetch() }
+  const goToPage = (page: number) => { if (page >= 1 && page <= lastPage.value) { currentPage.value = page; fetchEnrollments() } }
+  const changePerPage = (n: number) => { perPage.value = n; currentPage.value = 1; fetchEnrollments() }
+  function applyFilters() { currentPage.value = 1; fetchEnrollments() }
   const clearFilters = () => { filterStudentId.value = ''; filterScheduleId.value = ''; filterStatus.value = ''; applyFilters() }
-  const retryFetch = () => refetch()
+  const retryFetch = () => fetchEnrollments()
+
+  onMounted(fetchEnrollments)
 
   return {
     t, enrollments, allStudents, allSchedules, studentAvailabilities, showModal, isEditMode,
