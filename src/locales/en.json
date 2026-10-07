@@ -595,6 +595,14 @@
     "cancel": "Cancel",
     "add": "+ Add",
     "selectScheduleFirst": "Select a student to see compatible schedules",
+    "drop": {
+      "action": "Remove from course",
+      "title": "Remove student from course?",
+      "message": "{student} will no longer be enrolled in this course ({days}). The enrollment is kept as dropped.",
+      "confirm": "Remove",
+      "success": "Student removed from course",
+      "error": "Error removing student from course"
+    },
     "filters": {
       "allCourses": "All Courses",
       "allLanguages": "All Languages",

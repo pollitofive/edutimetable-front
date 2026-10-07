@@ -10,7 +10,9 @@ import { useLoading } from '@/composables/useLoading'
 import { enrollmentService, type ScheduleData, type ScheduleFilters } from '@/services/enrollmentService'
 import { useTrackOptions } from '@/views/tracks/useTracks'
 
-const toArr = (v: string | string[] | undefined): string[] =>
+type EnrollmentToDrop = ScheduleData['active_enrollments'][number]
+
+const toArr =(v: string | string[] | undefined): string[] =>
   v === undefined ? [] : Array.isArray(v) ? v : [v]
 
 export function useEnrollments() {
@@ -30,6 +32,8 @@ export function useEnrollments() {
   const showToast = ref(false)
   const toastMessage = ref('')
   const toastType = ref<'success' | 'error'>('success')
+  const enrollmentToDrop = ref<EnrollmentToDrop | null>(null)
+  const dropping = ref(false)
 
   const filters = reactive<ScheduleFilters>({
     course_ids: toArr(route.query.courses as string | string[]),
@@ -223,6 +227,24 @@ export function useEnrollments() {
     await loadSchedules()
   }
 
+  function openDropConfirm(enrollment: EnrollmentToDrop) { enrollmentToDrop.value = enrollment }
+  function cancelDrop() { if (!dropping.value) enrollmentToDrop.value = null }
+
+  async function handleDrop() {
+    if (!enrollmentToDrop.value) return
+    dropping.value = true
+    try {
+      await enrollmentService.dropEnrollment(enrollmentToDrop.value.id)
+      enrollmentToDrop.value = null
+      notify(t('enrollments.drop.success'))
+      await loadSchedules()
+    } catch (err: any) {
+      notify(err.response?.data?.message || t('enrollments.drop.error'), 'error')
+    } finally {
+      dropping.value = false
+    }
+  }
+
   // ── Watchers ───────────────────────────────────────────────────────────────
   watch(locale, (newLocale) => {
     calendarOptions.locale = newLocale === 'es' ? esLocale : 'en'
@@ -253,5 +275,6 @@ export function useEnrollments() {
     uniqueCourses, uniqueTeachers, uniqueTracks, days,
     selectedGroupDaysLabel, selectedGroupIds,
     getTrackColor, applyFilters, openQuickModal, openFullModal, onEnrolled,
+    enrollmentToDrop, dropping, openDropConfirm, cancelDrop, handleDrop,
   }
 }

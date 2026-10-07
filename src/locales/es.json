@@ -595,6 +595,14 @@
     "cancel": "Cancelar",
     "add": "+ Agregar",
     "selectScheduleFirst": "Seleccioná un alumno para ver horarios compatibles",
+    "drop": {
+      "action": "Quitar del curso",
+      "title": "¿Quitar alumno del curso?",
+      "message": "{student} dejará de estar inscripto en este curso ({days}). La inscripción queda registrada como retirada.",
+      "confirm": "Quitar",
+      "success": "Alumno quitado del curso",
+      "error": "Error al quitar al alumno del curso"
+    },
     "filters": {
       "allCourses": "Todos los Cursos",
       "allLanguages": "Todos los Idiomas",
