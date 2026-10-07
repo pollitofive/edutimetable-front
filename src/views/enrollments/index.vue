@@ -3,6 +3,7 @@ import FullCalendar from '@fullcalendar/vue3'
 import Lucide from '@/components/Base/Lucide'
 import Button from '@/components/Base/Button'
 import TomSelect from '@/components/Base/TomSelect'
+import { Dialog } from '@/components/Base/Headless'
 import ToastNotification from '@/views/components/ToastNotification.vue'
 import QuickEnrollModal from '@/views/components/enrollments/QuickEnrollModal.vue'
 import FullEnrollModal from '@/views/components/enrollments/FullEnrollModal.vue'
@@ -14,6 +15,7 @@ const {
   uniqueCourses, uniqueTeachers, uniqueTracks, days,
   selectedGroupDaysLabel, selectedGroupIds,
   getTrackColor, applyFilters, openQuickModal, openFullModal, onEnrolled,
+  enrollmentToDrop, dropping, openDropConfirm, cancelDrop, handleDrop,
 } = useEnrollments()
 </script>
 
@@ -88,10 +90,18 @@ const {
               <div class="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-xs font-semibold text-slate-600 flex-shrink-0">
                 {{ enrollment.student.name.split(' ').slice(0, 2).map((w: string) => w[0]).join('').toUpperCase() }}
               </div>
-              <div class="min-w-0">
+              <div class="min-w-0 flex-1">
                 <p class="text-sm font-medium text-slate-800 truncate">{{ enrollment.student.name }}</p>
                 <p v-if="enrollment.student.course_level" class="text-xs text-slate-400 truncate">{{ enrollment.student.course_level.name }}</p>
               </div>
+              <button
+                type="button"
+                class="p-1.5 rounded text-slate-400 hover:text-danger hover:bg-danger/10 transition flex-shrink-0"
+                :title="t('enrollments.drop.action')"
+                @click="openDropConfirm(enrollment)"
+              >
+                <Lucide icon="UserMinus" class="w-4 h-4" />
+              </button>
             </li>
           </ul>
         </div>
@@ -110,6 +120,24 @@ const {
 
   <QuickEnrollModal :visible="showQuickModal" :schedule="selectedSchedule" :schedule-ids="selectedGroupIds" :group-days-label="selectedGroupDaysLabel" @close="showQuickModal = false" @enrolled="onEnrolled" />
   <FullEnrollModal :visible="showFullModal" @close="showFullModal = false" @enrolled="onEnrolled" />
+  <Dialog :open="!!enrollmentToDrop" @close="cancelDrop" :staticBackdrop="true">
+    <Dialog.Panel>
+      <div class="p-5 text-center">
+        <Lucide icon="UserMinus" class="w-16 h-16 mx-auto mt-3 text-danger" />
+        <div class="mt-5 text-2xl">{{ t('enrollments.drop.title') }}</div>
+        <div class="mt-2 text-slate-500">
+          {{ t('enrollments.drop.message', { student: enrollmentToDrop?.student.name ?? '', days: selectedGroupDaysLabel }) }}
+        </div>
+      </div>
+      <div class="px-5 pb-8 text-center">
+        <Button type="button" variant="outline-secondary" :disabled="dropping" class="w-24 mr-2" @click="cancelDrop">{{ t('enrollments.cancel') }}</Button>
+        <Button type="button" variant="danger" :disabled="dropping" class="w-24" @click="handleDrop">
+          <Lucide v-if="dropping" icon="Loader" class="w-4 h-4 animate-spin" />
+          <span v-else>{{ t('enrollments.drop.confirm') }}</span>
+        </Button>
+      </div>
+    </Dialog.Panel>
+  </Dialog>
   <ToastNotification :show="showToast" :message="toastMessage" :type="toastType" @close="showToast = false" />
 </template>
 

@@ -178,6 +178,12 @@ export const enrollmentService = {
     return res.data
   },
 
+  // Drops the student from every schedule of the enrollment's group.
+  async dropEnrollment(id: number): Promise<{ dropped: number }> {
+    const res = await http.post(`/enrollments/${id}/drop`)
+    return res.data
+  },
+
   async deleteEnrollment(id: number): Promise<void> {
     await http.delete(`/enrollments/${id}`)
   },
