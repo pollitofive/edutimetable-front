@@ -93,6 +93,7 @@ async function confirm() {
   showLoading()
   try {
     await enrollmentService.createEnrollment(selectedStudent.value.student.id, group.schedule_ids)
+    reset()
     emit('enrolled')
   } finally {
     saving.value = false
@@ -100,11 +101,16 @@ async function confirm() {
   }
 }
 
-function close() {
+function reset() {
+  if (searchTimeout.value) clearTimeout(searchTimeout.value)
   search.value = ''
   searchResults.value = []
   selectedStudent.value = null
   selectedGroupId.value = null
+}
+
+function close() {
+  reset()
   emit('close')
 }
 
