@@ -73,6 +73,13 @@ function selectGroup(group: ScheduleGroup) {
   selectedGroupId.value = group.group_id ?? group.schedule_ids[0].toString()
 }
 
+function groupStatusLabel(group: ScheduleGroup): string {
+  if (group.is_compatible) return t('enrollments.compatible')
+  if (group.already_enrolled) return t('enrollments.alreadyEnrolled')
+  if (group.available_spots <= 0) return t('enrollments.full')
+  return t('enrollments.notAvailable')
+}
+
 function getSelectedGroup(): ScheduleGroup | undefined {
   return selectedStudent.value?.schedule_groups.find(
     g => (g.group_id ?? g.schedule_ids[0].toString()) === selectedGroupId.value
@@ -271,7 +278,7 @@ watch(() => selectedStudent.value, () => { selectedGroupId.value = null })
                   class="text-xs flex-shrink-0 font-medium"
                   :class="group.is_compatible ? 'text-emerald-600' : 'text-amber-500'"
                 >
-                  {{ group.is_compatible ? t('enrollments.compatible') : t('enrollments.notAvailable') }}
+                  {{ groupStatusLabel(group) }}
                 </span>
               </label>
             </div>
