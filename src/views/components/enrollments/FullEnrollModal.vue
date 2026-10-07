@@ -105,7 +105,7 @@ watch(() => selectedStudent.value, () => { selectedGroupId.value = null })
 </script>
 
 <template>
-  <Dialog :open="visible" @close="close">
+  <Dialog :open="visible" size="xl" @close="close">
     <Dialog.Panel class="w-full max-w-3xl p-0 overflow-hidden">
       <div class="flex min-h-[480px]">
 
@@ -282,6 +282,7 @@ watch(() => selectedStudent.value, () => { selectedGroupId.value = null })
             <Button variant="outline-secondary" @click="close">{{ t('enrollments.cancel') }}</Button>
             <Button
               variant="primary"
+              class="whitespace-nowrap"
               :disabled="!selectedGroupId || saving"
               @click="confirm"
             >
