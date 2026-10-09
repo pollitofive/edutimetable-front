@@ -10,16 +10,16 @@ import ToastNotification from '@/views/components/ToastNotification.vue'
 import { useSchedules } from './useSchedules'
 
 const {
-  t, schedules, allCourses, allTeachers, showModal, isEditMode, isSingleEditMode,
-  loadingGroupSchedules, formData, formErrors, deleteConfirmModal, scheduleToDelete,
+  t, scheduleGroups, allCourses, allTeachers, showModal, isEditMode, enrolledCount, isTimeLocked,
+  loadingGroupSchedules, formData, formErrors, deleteConfirmModal, groupToDelete,
   showToast, toastMessage, toastType, currentPage, perPage, totalItems,
   filterCourseId, filterDayOfWeek, filterTeacherId, filterDescription, filterStartTime, filterEndTime,
   loading, error, creating, deleting,
-  isSubmitting, modalTitle, startItem, endItem, totalPages, hasActiveFilters, sortedSchedules, dayOptions,
-  openCreateModal, openSingleEditModal, openEditModal, closeModal,
+  isSubmitting, modalTitle, startItem, endItem, totalPages, hasActiveFilters, dayOptions,
+  openCreateModal, openEditModal, closeModal,
   addSlot, removeSlot, handleSave, openDeleteConfirm, handleDelete, cancelDelete,
   goToPage, changePerPage, clearFilters, handleToastClose, refetch,
-  getDayName, isFirstOccurrenceOfGroup, isFirstInCourseGroup, isDifferentCourseFromPrevious, getCourseGroupBackground,
+  getDayName, isFirstGroupOfCourse, getCourseBackground,
 } = useSchedules()
 </script>
 
@@ -97,18 +97,18 @@ const {
         <Table class="border-b border-slate-200/60">
           <Table.Thead>
             <Table.Tr>
-              <Table.Td class="py-4 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">{{ t('schedules.columns.course') }}</Table.Td>
-              <Table.Td class="py-4 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">{{ t('schedules.columns.teacher') }}</Table.Td>
-              <Table.Td class="py-4 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">{{ t('schedules.columns.dayOfWeek') }}</Table.Td>
-              <Table.Td class="py-4 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">{{ t('schedules.columns.startsAt') }}</Table.Td>
-              <Table.Td class="py-4 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">{{ t('schedules.columns.endsAt') }}</Table.Td>
-              <Table.Td class="py-4 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">{{ t('schedules.columns.description') }}</Table.Td>
-              <Table.Td class="py-4 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">{{ t('schedules.columns.capacity') }}</Table.Td>
-              <Table.Td class="py-4 font-medium text-center bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">{{ t('schedules.columns.actions') }}</Table.Td>
+              <Table.Td class="py-3 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">{{ t('schedules.columns.course') }}</Table.Td>
+              <Table.Td class="py-3 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">{{ t('schedules.columns.description') }}</Table.Td>
+              <Table.Td class="py-3 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">{{ t('schedules.columns.capacity') }}</Table.Td>
+              <Table.Td class="py-3 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">{{ t('schedules.columns.teacher') }}</Table.Td>
+              <Table.Td class="py-3 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">{{ t('schedules.columns.dayOfWeek') }}</Table.Td>
+              <Table.Td class="py-3 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">{{ t('schedules.columns.startsAt') }}</Table.Td>
+              <Table.Td class="py-3 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">{{ t('schedules.columns.endsAt') }}</Table.Td>
+              <Table.Td class="py-3 font-medium text-center bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">{{ t('schedules.columns.actions') }}</Table.Td>
             </Table.Tr>
           </Table.Thead>
           <Table.Tbody>
-            <Table.Tr v-if="sortedSchedules.length === 0">
+            <Table.Tr v-if="scheduleGroups.length === 0">
               <Table.Td colspan="8" class="py-10 text-center text-slate-500">
                 <div class="flex flex-col items-center gap-3">
                   <Lucide icon="Inbox" class="w-10 h-10 text-slate-300" />
@@ -116,48 +116,46 @@ const {
                 </div>
               </Table.Td>
             </Table.Tr>
-            <Table.Tr
-              v-for="(schedule, index) in sortedSchedules"
-              :key="schedule.id"
-              :class="['[&_td]:last:border-b-0', getCourseGroupBackground(schedule.course_id), isDifferentCourseFromPrevious(schedule.course_id, index) ? 'border-t-2 border-t-slate-300 dark:border-t-slate-600' : '']"
-            >
-              <Table.Td :class="['py-4 border-dashed transition-colors', getCourseGroupBackground(schedule.course_id)]">
-                <div v-if="isFirstInCourseGroup(schedule.course_id, index)" class="font-medium text-slate-700 dark:text-slate-200">{{ schedule.course.name }}</div>
-                <div v-else class="text-slate-400 dark:text-slate-500 text-sm">&mdash;</div>
-              </Table.Td>
-              <Table.Td :class="['py-4 border-dashed transition-colors', getCourseGroupBackground(schedule.course_id)]">
-                <div class="text-slate-600 dark:text-slate-300">{{ schedule.teacher.name }}</div>
-              </Table.Td>
-              <Table.Td :class="['py-4 border-dashed transition-colors', getCourseGroupBackground(schedule.course_id)]">
-                <div class="px-2 py-1 text-xs font-medium rounded-md bg-primary/10 text-primary inline-block">{{ getDayName(schedule.day_of_week) }}</div>
-              </Table.Td>
-              <Table.Td :class="['py-4 border-dashed transition-colors', getCourseGroupBackground(schedule.course_id)]">
-                <div class="font-mono text-slate-600 dark:text-slate-300">{{ schedule.starts_at }}</div>
-              </Table.Td>
-              <Table.Td :class="['py-4 border-dashed transition-colors', getCourseGroupBackground(schedule.course_id)]">
-                <div class="font-mono text-slate-600 dark:text-slate-300">{{ schedule.ends_at }}</div>
-              </Table.Td>
-              <Table.Td :class="['py-4 border-dashed transition-colors', getCourseGroupBackground(schedule.course_id)]">
-                <div class="font-mono text-slate-600 dark:text-slate-300">{{ schedule.description }}</div>
-              </Table.Td>
-              <Table.Td :class="['py-4 border-dashed transition-colors', getCourseGroupBackground(schedule.course_id)]">
-                <div class="text-slate-600 dark:text-slate-300">{{ schedule.capacity }}</div>
-              </Table.Td>
-              <Table.Td :class="['relative py-4 border-dashed transition-colors', getCourseGroupBackground(schedule.course_id)]">
-                <div class="flex items-center justify-center gap-2">
-                  <Button variant="outline-primary" size="sm" @click="openSingleEditModal(schedule)" class="w-16">
-                    <Lucide icon="Pencil" class="w-3.5 h-3.5 mr-1" />{{ t('schedules.actions.edit') }}
-                  </Button>
-                  <Button variant="outline-danger" size="sm" @click="openDeleteConfirm(schedule)" class="w-20">
-                    <Lucide icon="Trash2" class="w-3.5 h-3.5 mr-1" />{{ t('schedules.actions.delete') }}
-                  </Button>
-                  <Button v-if="isFirstOccurrenceOfGroup(schedule, index)" variant="outline-secondary" size="sm" @click="openEditModal(schedule)" class="w-24">
-                    <Lucide icon="List" class="w-3.5 h-3.5 mr-1" />{{ t('schedules.actions.manage') }}
-                  </Button>
-                  <div v-else class="w-24"></div>
-                </div>
-              </Table.Td>
-            </Table.Tr>
+            <!-- One block per group (course offering): group-level data on its first slot, no lines between its slots -->
+            <template v-for="(group, groupIndex) in scheduleGroups" :key="group.group_id">
+              <Table.Tr
+                v-for="(schedule, slotIndex) in group.schedules"
+                :key="schedule.id"
+                :class="[getCourseBackground(group.course.id), slotIndex === 0 && groupIndex > 0 ? (isFirstGroupOfCourse(groupIndex) ? 'border-t-2 border-t-slate-300 dark:border-t-slate-600' : 'border-t border-t-slate-200/60') : '']"
+              >
+                <Table.Td class="py-2 border-b-0">
+                  <div v-if="slotIndex === 0 && isFirstGroupOfCourse(groupIndex)" class="font-medium text-slate-700 dark:text-slate-200">{{ group.course.name }}</div>
+                </Table.Td>
+                <Table.Td class="py-2 border-b-0">
+                  <div v-if="slotIndex === 0" class="text-slate-600 dark:text-slate-300">{{ group.description }}</div>
+                </Table.Td>
+                <Table.Td class="py-2 border-b-0">
+                  <div v-if="slotIndex === 0" :class="['font-mono', group.active_enrollments_count >= group.capacity ? 'text-danger font-medium' : 'text-slate-600 dark:text-slate-300']">{{ group.active_enrollments_count }}/{{ group.capacity }}</div>
+                </Table.Td>
+                <Table.Td class="py-2 border-b-0">
+                  <div class="text-slate-600 dark:text-slate-300">{{ schedule.teacher.name }}</div>
+                </Table.Td>
+                <Table.Td class="py-2 border-b-0">
+                  <div class="px-2 py-0.5 text-xs font-medium rounded-md bg-primary/10 text-primary inline-block">{{ getDayName(schedule.day_of_week) }}</div>
+                </Table.Td>
+                <Table.Td class="py-2 border-b-0">
+                  <div class="font-mono text-slate-600 dark:text-slate-300">{{ schedule.starts_at }}</div>
+                </Table.Td>
+                <Table.Td class="py-2 border-b-0">
+                  <div class="font-mono text-slate-600 dark:text-slate-300">{{ schedule.ends_at }}</div>
+                </Table.Td>
+                <Table.Td class="py-2 border-b-0">
+                  <div v-if="slotIndex === 0" class="flex items-center justify-center gap-2">
+                    <Button variant="outline-secondary" size="sm" @click="openEditModal(group)" class="w-24">
+                      <Lucide icon="List" class="w-3.5 h-3.5 mr-1" />{{ t('schedules.actions.manage') }}
+                    </Button>
+                    <Button variant="outline-danger" size="sm" :disabled="group.active_enrollments_count > 0" :title="group.active_enrollments_count > 0 ? t('schedules.messages.deleteLocked', { count: group.active_enrollments_count }) : undefined" @click="openDeleteConfirm(group)" class="w-20">
+                      <Lucide icon="Trash2" class="w-3.5 h-3.5 mr-1" />{{ t('schedules.actions.delete') }}
+                    </Button>
+                  </div>
+                </Table.Td>
+              </Table.Tr>
+            </template>
           </Table.Tbody>
         </Table>
       </div>
@@ -193,7 +191,7 @@ const {
         <Dialog.Description class="grid grid-cols-12 gap-4 gap-y-3">
           <div class="col-span-12">
             <FormLabel htmlFor="schedule-course">{{ t('schedules.form.course') }} *</FormLabel>
-            <FormSelect id="schedule-course" v-model="formData.course_id" :disabled="isEditMode || isSingleEditMode || loadingGroupSchedules" :class="{ 'border-danger': formErrors.course_id }">
+            <FormSelect id="schedule-course" v-model="formData.course_id" :disabled="isEditMode || loadingGroupSchedules" :class="{ 'border-danger': formErrors.course_id }">
               <option value="">{{ t('schedules.form.selectCourse') }}</option>
               <option v-for="course in allCourses" :key="course.id" :value="course.id">{{ course.name }}</option>
             </FormSelect>
@@ -215,6 +213,10 @@ const {
             </div>
           </div>
           <div v-if="!loadingGroupSchedules" class="col-span-12">
+            <div v-if="isTimeLocked" class="flex items-start gap-2 p-3 mb-3 text-sm border rounded-lg bg-warning/10 border-warning/20 text-slate-700 dark:text-slate-300">
+              <Lucide icon="Lock" class="w-4 h-4 mt-0.5 shrink-0 text-warning" />
+              <span>{{ t('schedules.form.timeLocked', { count: enrolledCount }) }}</span>
+            </div>
             <div class="flex items-center justify-between mb-3">
               <FormLabel class="mb-0">{{ t('schedules.form.scheduleSlots') }}</FormLabel>
             </div>
@@ -225,7 +227,7 @@ const {
                     <div class="flex items-center justify-center w-7 h-7 rounded-full bg-primary/10 text-primary font-semibold text-sm">{{ index + 1 }}</div>
                     <div class="text-sm font-medium text-slate-700 dark:text-slate-300">{{ t('schedules.form.slot', { number: index + 1 }) }}</div>
                   </div>
-                  <Button v-if="!isSingleEditMode && formData.schedules.length > 1" type="button" variant="soft-danger" size="sm" @click="removeSlot(index)" class="px-3">
+                  <Button v-if="formData.schedules.length > 1" type="button" variant="soft-danger" size="sm" :disabled="isTimeLocked" @click="removeSlot(index)" class="px-3">
                     <Lucide icon="Trash2" class="w-3.5 h-3.5 mr-1.5" />{{ t('schedules.actions.removeSlot') }}
                   </Button>
                 </div>
@@ -240,7 +242,7 @@ const {
                   </div>
                   <div class="col-span-12 sm:col-span-4">
                     <FormLabel :htmlFor="`slot-day-${index}`">{{ t('schedules.form.dayOfWeek') }} *</FormLabel>
-                    <FormSelect :id="`slot-day-${index}`" v-model="slot.day_of_week" :class="{ 'border-danger': formErrors.schedules?.[index]?.day_of_week }">
+                    <FormSelect :id="`slot-day-${index}`" v-model="slot.day_of_week" :disabled="isTimeLocked" :class="{ 'border-danger': formErrors.schedules?.[index]?.day_of_week }">
                       <option value="">{{ t('schedules.form.selectDay') }}</option>
                       <option v-for="day in dayOptions" :key="day.value" :value="day.value">{{ day.label }}</option>
                     </FormSelect>
@@ -248,19 +250,19 @@ const {
                   </div>
                   <div class="col-span-12 sm:col-span-4">
                     <FormLabel :htmlFor="`slot-start-${index}`">{{ t('schedules.form.startsAt') }} *</FormLabel>
-                    <FormInput :id="`slot-start-${index}`" v-model="slot.starts_at" type="time" :class="{ 'border-danger': formErrors.schedules?.[index]?.starts_at }" />
+                    <FormInput :id="`slot-start-${index}`" v-model="slot.starts_at" type="time" :disabled="isTimeLocked" :class="{ 'border-danger': formErrors.schedules?.[index]?.starts_at }" />
                     <div v-if="formErrors.schedules?.[index]?.starts_at" class="mt-1 text-xs text-danger">{{ formErrors.schedules[index].starts_at }}</div>
                   </div>
                   <div class="col-span-12 sm:col-span-4">
                     <FormLabel :htmlFor="`slot-end-${index}`">{{ t('schedules.form.endsAt') }} *</FormLabel>
-                    <FormInput :id="`slot-end-${index}`" v-model="slot.ends_at" type="time" :class="{ 'border-danger': formErrors.schedules?.[index]?.ends_at }" />
+                    <FormInput :id="`slot-end-${index}`" v-model="slot.ends_at" type="time" :disabled="isTimeLocked" :class="{ 'border-danger': formErrors.schedules?.[index]?.ends_at }" />
                     <div v-if="formErrors.schedules?.[index]?.ends_at" class="mt-1 text-xs text-danger">{{ formErrors.schedules[index].ends_at }}</div>
                   </div>
                 </div>
               </div>
             </div>
-            <div v-if="!isSingleEditMode" class="mt-3">
-              <Button type="button" variant="outline-primary" size="sm" @click="addSlot" class="w-full">
+            <div class="mt-3">
+              <Button type="button" variant="outline-primary" size="sm" :disabled="isTimeLocked" @click="addSlot" class="w-full">
                 <Lucide icon="Plus" class="w-4 h-4 mr-2" />{{ t('schedules.actions.addSlot') }}
               </Button>
             </div>
@@ -270,7 +272,6 @@ const {
           <Button type="button" variant="outline-secondary" @click="closeModal" :disabled="isSubmitting || loadingGroupSchedules" class="min-w-28 mr-2">{{ t('schedules.actions.cancel') }}</Button>
           <Button type="button" variant="primary" @click="handleSave" :disabled="isSubmitting || loadingGroupSchedules" class="min-w-44">
             <Lucide v-if="isSubmitting" icon="Loader" class="w-4 h-4 animate-spin" />
-            <span v-else-if="isSingleEditMode">{{ t('schedules.actions.update') }}</span>
             <span v-else-if="isEditMode">{{ t('schedules.actions.updateAll') }}</span>
             <span v-else>{{ t('schedules.actions.createAll') }}</span>
           </Button>
@@ -285,7 +286,7 @@ const {
           <Lucide icon="AlertTriangle" class="w-16 h-16 mx-auto mt-3 text-danger" />
           <div class="mt-5 text-3xl">{{ t('schedules.delete.title') }}</div>
           <div class="mt-2 text-slate-500">
-            {{ t('schedules.delete.message', { course: scheduleToDelete?.course?.name || '' }) }}<br />
+            {{ t('schedules.delete.message', { course: groupToDelete?.course.name || '', description: groupToDelete?.description || '' }) }}<br />
             {{ t('schedules.delete.cannotUndo') }}
           </div>
         </div>

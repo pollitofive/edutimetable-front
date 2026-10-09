@@ -471,7 +471,7 @@
       "startsAt": "Hora de Inicio",
       "endsAt": "Hora de Fin",
       "description": "Descripción",
-      "capacity": "Capacidad",
+      "capacity": "Inscriptos / Capacidad",
       "actions": "Acciones"
     },
     "days": {
@@ -515,7 +515,8 @@
       "selectCourse": "Seleccione curso...",
       "selectDay": "Seleccione día...",
       "slot": "Horario {number}",
-      "scheduleSlots": "Horarios"
+      "scheduleSlots": "Horarios",
+      "timeLocked": "Este curso tiene {count} alumnos inscriptos. Para cambiar día u horario usá el simulador en Inscripciones."
     },
     "validation": {
       "courseRequired": "El curso es obligatorio",
@@ -531,18 +532,19 @@
       "createSuccess": "Horarios creados exitosamente",
       "updateSuccess": "Horarios actualizados exitosamente",
       "updateSingleSuccess": "Horario actualizado exitosamente",
-      "deleteSuccess": "Horario eliminado exitosamente",
+      "deleteSuccess": "Horarios eliminados exitosamente",
       "createError": "Error al crear horario",
       "updateError": "Error al actualizar horario",
       "deleteError": "Error al eliminar horario",
+      "deleteLocked": "Tiene {count} alumnos inscriptos: quitalos del curso desde Inscripciones para poder eliminarlo",
       "loadError": "Error al cargar horarios",
       "error": "Error al cargar horarios",
       "generalError": "Ocurrió un error",
       "loadingSchedules": "Cargando horarios del curso..."
     },
     "delete": {
-      "title": "Eliminar Horario",
-      "message": "¿Estás seguro de que deseas eliminar este horario de {course}?",
+      "title": "Eliminar Horarios",
+      "message": "¿Estás seguro de que deseas eliminar todos los horarios de {course} ({description})?",
       "confirm": "Eliminar",
       "cancel": "Cancelar",
       "cannotUndo": "Este proceso no se puede deshacer."
@@ -562,7 +564,7 @@
     "pagination": {
       "show": "Mostrar",
       "entries": "entradas",
-      "showingInfo": "Mostrando {start} a {end} de {total} horarios"
+      "showingInfo": "Mostrando {start} a {end} de {total} cursos"
     }
   },
   "enrollments": {
