@@ -7,6 +7,7 @@ import { Dialog } from '@/components/Base/Headless'
 import ToastNotification from '@/views/components/ToastNotification.vue'
 import QuickEnrollModal from '@/views/components/enrollments/QuickEnrollModal.vue'
 import FullEnrollModal from '@/views/components/enrollments/FullEnrollModal.vue'
+import ScheduleChangeModal from '@/views/components/enrollments/ScheduleChangeModal.vue'
 import { useEnrollments } from './useEnrollments'
 
 const {
@@ -16,6 +17,7 @@ const {
   selectedGroupDaysLabel, selectedGroupIds,
   getTrackColor, applyFilters, openQuickModal, openFullModal, onEnrolled,
   enrollmentToDrop, dropping, openDropConfirm, cancelDrop, handleDrop,
+  changeSchedule, changeProposal, openScheduleChange, closeScheduleChange, onScheduleChanged,
 } = useEnrollments()
 </script>
 
@@ -113,6 +115,10 @@ const {
           <Button variant="primary" class="w-full" @click="openQuickModal">
             <Lucide icon="UserPlus" class="w-4 h-4 mr-2" />{{ t('enrollments.enrollStudentInSchedule') }}
           </Button>
+          <Button variant="outline-secondary" class="w-full mt-2" @click="openScheduleChange">
+            <Lucide icon="CalendarClock" class="w-4 h-4 mr-2" />{{ t('enrollments.scheduleChange.open') }}
+          </Button>
+          <p v-if="selectedSchedule.group_slots.length === 1" class="mt-2 text-xs text-slate-400 text-center">{{ t('enrollments.scheduleChange.dragHint') }}</p>
         </div>
       </template>
     </div>
@@ -120,6 +126,7 @@ const {
 
   <QuickEnrollModal :visible="showQuickModal" :schedule="selectedSchedule" :schedule-ids="selectedGroupIds" :group-days-label="selectedGroupDaysLabel" @close="showQuickModal = false" @enrolled="onEnrolled" />
   <FullEnrollModal :visible="showFullModal" @close="showFullModal = false" @enrolled="onEnrolled" />
+  <ScheduleChangeModal :visible="!!changeSchedule" :schedule="changeSchedule" :proposal="changeProposal" @close="closeScheduleChange" @applied="onScheduleChanged" />
   <Dialog :open="!!enrollmentToDrop" @close="cancelDrop" :staticBackdrop="true">
     <Dialog.Panel>
       <div class="p-5 text-center">

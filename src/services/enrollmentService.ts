@@ -18,6 +18,14 @@ export interface ScheduleData {
   capacity: number
   enrolled_count: number
   available_spots: number
+  // Every day of the course (schedule group), even the ones hidden by the day filter
+  group_slots: Array<{
+    id: number
+    teacher_id: number
+    day_of_week: number
+    starts_at: string
+    ends_at: string
+  }>
   course: {
     id: number
     name: string
@@ -119,6 +127,45 @@ export interface EnrollmentData {
   }
 }
 
+export interface ScheduleSlot {
+  day_of_week: number
+  starts_at: string
+  ends_at: string
+}
+
+// Proposed day/time for one schedule of the group being moved
+export interface ScheduleChangeSlot extends ScheduleSlot {
+  schedule_id: number
+}
+
+export interface ScheduleChangeIssue extends ScheduleSlot {
+  type: 'unavailable' | 'overlap'
+  other?: ScheduleSlot & { course_name: string }
+}
+
+export interface ScheduleChangePreview {
+  can_apply: boolean
+  changes: Array<{ schedule_id: number; from: ScheduleSlot; to: ScheduleSlot }>
+  internal_conflicts: Array<{ slot: ScheduleSlot; other: ScheduleSlot }>
+  teacher_conflicts: Array<{
+    schedule_id: number
+    teacher: { id: number; name: string }
+    slot: ScheduleSlot
+    conflict: ScheduleSlot & { schedule_id: number; course_name: string }
+  }>
+  affected_students: Array<{
+    student: { id: number; name: string }
+    issues: ScheduleChangeIssue[]
+    // The student's whole declared availability, sorted by day and time
+    availabilities: ScheduleSlot[]
+  }>
+}
+
+export interface ScheduleChangeApplyResult {
+  changes: ScheduleChangePreview['changes']
+  dropped_students: number
+}
+
 export interface PaginatedResponse<T> {
   data: T[]
   current_page: number
@@ -186,5 +233,18 @@ export const enrollmentService = {
 
   async deleteEnrollment(id: number): Promise<void> {
     await http.delete(`/enrollments/${id}`)
+  },
+
+  // "What if": impact of moving a course to new days/times, nothing is saved.
+  // slots must be every day of the course (its group_slots).
+  async previewScheduleChange(slots: ScheduleChangeSlot[]): Promise<ScheduleChangePreview> {
+    const res = await http.post('/schedule-changes/preview', { slots })
+    return res.data
+  },
+
+  // Moves the schedules in place (enrollments are kept) and drops the given affected students.
+  async applyScheduleChange(slots: ScheduleChangeSlot[], dropStudentIds: number[] = []): Promise<ScheduleChangeApplyResult> {
+    const res = await http.post('/schedule-changes/apply', { slots, drop_student_ids: dropStudentIds })
+    return res.data
   },
 }

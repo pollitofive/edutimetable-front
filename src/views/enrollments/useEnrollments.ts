@@ -1,13 +1,19 @@
 import '@/assets/css/vendors/full-calendar.css'
 import timeGridPlugin from '@fullcalendar/timegrid'
 import interactionPlugin from '@fullcalendar/interaction'
-import { type CalendarOptions, type EventInput } from '@fullcalendar/core'
+import { type CalendarOptions, type EventApi, type EventInput } from '@fullcalendar/core'
 import esLocale from '@fullcalendar/core/locales/es'
 import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from '@/composables/useI18n'
 import { useLoading } from '@/composables/useLoading'
-import { enrollmentService, type ScheduleData, type ScheduleFilters } from '@/services/enrollmentService'
+import {
+  enrollmentService,
+  type ScheduleData,
+  type ScheduleFilters,
+  type ScheduleChangeSlot,
+  type ScheduleChangeApplyResult,
+} from '@/services/enrollmentService'
 import { useTrackOptions } from '@/views/tracks/useTracks'
 
 type EnrollmentToDrop = ScheduleData['active_enrollments'][number]
@@ -34,6 +40,12 @@ export function useEnrollments() {
   const toastType = ref<'success' | 'error'>('success')
   const enrollmentToDrop = ref<EnrollmentToDrop | null>(null)
   const dropping = ref(false)
+
+  // Schedule change simulator: the course being moved, the proposal from a
+  // drag/resize (null when opened from the panel) and how to undo the drag
+  const changeSchedule = ref<ScheduleData | null>(null)
+  const changeProposal = ref<ScheduleChangeSlot[] | null>(null)
+  let revertDrag: (() => void) | null = null
 
   const filters = reactive<ScheduleFilters>({
     course_ids: toArr(route.query.courses as string | string[]),
@@ -71,12 +83,9 @@ export function useEnrollments() {
   ])
 
   // ── Selected group helpers ─────────────────────────────────────────────────
-  const selectedGroupSchedules = computed(() => {
-    if (!selectedSchedule.value) return []
-    const gid = selectedSchedule.value.group_id
-    if (!gid) return [selectedSchedule.value]
-    return schedules.value.filter(s => s.group_id === gid)
-  })
+  // group_slots comes from the API with every day of the course, so it stays
+  // complete even when the day filter hides some of them from the calendar
+  const selectedGroupSchedules = computed(() => selectedSchedule.value?.group_slots ?? [])
 
   const selectedGroupDaysLabel = computed(() => {
     const dayNames = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']
@@ -121,8 +130,28 @@ export function useEnrollments() {
       end: `${getDateForDow(s.day_of_week)}T${s.ends_at}`,
       backgroundColor: getTrackColor(s.course.course_level.track.id),
       borderColor: 'transparent',
+      // Only single-day courses are moved by dragging; the others go through
+      // the "simulate schedule change" button in the panel
+      editable: s.group_slots.length === 1,
       extendedProps: { schedule: s },
     }))
+  }
+
+  const toHHmm = (d: Date) => `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
+
+  // Drop or resize of a single-day course: simulate it right away. The block
+  // stays where it was dropped until the change is applied or cancelled.
+  function onEventChanged({ event, revert }: { event: EventApi; revert: () => void }) {
+    if (!event.start || !event.end) return revert()
+    const schedule = event.extendedProps.schedule as ScheduleData
+    revertDrag = revert
+    changeSchedule.value = schedule
+    changeProposal.value = [{
+      schedule_id: schedule.id,
+      day_of_week: event.start.getDay(),
+      starts_at: toHHmm(event.start),
+      ends_at: toHHmm(event.end),
+    }]
   }
 
   // ── Calendar options ───────────────────────────────────────────────────────
@@ -140,7 +169,9 @@ export function useEnrollments() {
     slotDuration: '00:30:00',
     height: 'auto',
     navLinks: false,
-    editable: false,
+    editable: true,
+    eventDurationEditable: true,
+    snapDuration: '00:15:00',
     selectable: false,
     dayHeaderFormat: { weekday: 'long' },
     events: [],
@@ -168,6 +199,9 @@ export function useEnrollments() {
       el.classList.add('fc-selected-schedule')
       selectedSchedule.value = event.extendedProps.schedule as ScheduleData
     },
+
+    eventDrop: onEventChanged,
+    eventResize: onEventChanged,
   })
 
   // ── Data loading ───────────────────────────────────────────────────────────
@@ -245,6 +279,32 @@ export function useEnrollments() {
     }
   }
 
+  // ── Schedule change simulator ──────────────────────────────────────────────
+  function openScheduleChange() {
+    if (!selectedSchedule.value) return
+    revertDrag = null
+    changeProposal.value = null
+    changeSchedule.value = selectedSchedule.value
+  }
+
+  function closeScheduleChange() {
+    revertDrag?.()
+    revertDrag = null
+    changeSchedule.value = null
+    changeProposal.value = null
+  }
+
+  async function onScheduleChanged(result: ScheduleChangeApplyResult) {
+    revertDrag = null
+    changeSchedule.value = null
+    changeProposal.value = null
+    notify(result.dropped_students
+      ? t('enrollments.scheduleChange.successWithDrops', { n: result.dropped_students })
+      : t('enrollments.scheduleChange.success'))
+    await loadAllSchedules()
+    await loadSchedules()
+  }
+
   // ── Watchers ───────────────────────────────────────────────────────────────
   watch(locale, (newLocale) => {
     calendarOptions.locale = newLocale === 'es' ? esLocale : 'en'
@@ -276,5 +336,6 @@ export function useEnrollments() {
     selectedGroupDaysLabel, selectedGroupIds,
     getTrackColor, applyFilters, openQuickModal, openFullModal, onEnrolled,
     enrollmentToDrop, dropping, openDropConfirm, cancelDrop, handleDrop,
+    changeSchedule, changeProposal, openScheduleChange, closeScheduleChange, onScheduleChanged,
   }
 }
