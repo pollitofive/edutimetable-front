@@ -40,7 +40,7 @@ const {
       <TomSelect v-model="filters.course_ids" :options="{ placeholder: t('enrollments.filters.allCourses'), create: false, onDelete: () => true }" class="flex-1" multiple @update:modelValue="applyFilters">
         <option v-for="course in uniqueCourses" :key="course.id" :value="String(course.id)">{{ course.name }}</option>
       </TomSelect>
-      <TomSelect v-model="filters.track_ids" :options="{ placeholder: t('enrollments.filters.allLanguages'), create: false, onDelete: () => true }" class="flex-1" multiple @update:modelValue="applyFilters">
+      <TomSelect v-model="filters.track_ids" :options="{ placeholder: t('enrollments.filters.allTracks'), create: false, onDelete: () => true }" class="flex-1" multiple @update:modelValue="applyFilters">
         <option v-for="track in uniqueTracks" :key="track.id" :value="track.id">{{ track.name }}</option>
       </TomSelect>
       <TomSelect v-model="filters.teacher_ids" :options="{ placeholder: t('enrollments.filters.allTeachers'), create: false, onDelete: () => true }" class="flex-1" multiple @update:modelValue="applyFilters">

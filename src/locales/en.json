@@ -607,7 +607,7 @@
     },
     "filters": {
       "allCourses": "All Courses",
-      "allLanguages": "All Languages",
+      "allTracks": "All Tracks",
       "allTeachers": "All Teachers",
       "allDays": "All Days"
     }
