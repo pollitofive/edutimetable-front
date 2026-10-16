@@ -2,10 +2,8 @@
 import "@/assets/css/vendors/tom-select.css";
 import _ from "lodash";
 import { setValue, init, updateValue } from "./tom-select";
-import {
-  type TomSettings,
-  type RecursivePartial,
-} from "tom-select/src/types/index";
+import { type TomSettings } from "tom-select/dist/esm/types/settings.js";
+import { type RecursivePartial } from "tom-select/dist/esm/types/core.js";
 import TomSelectPlugin from "tom-select";
 import {
   computed,
