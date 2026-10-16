@@ -235,11 +235,6 @@ export const enrollmentService = {
     return res.data
   },
 
-  async updateEnrollment(id: number, data: { status?: string; notes?: string }): Promise<EnrollmentData> {
-    const res = await http.patch(`/enrollments/${id}`, data)
-    return res.data
-  },
-
   // Drops the student from every schedule of the enrollment's group.
   async dropEnrollment(id: number): Promise<{ dropped: number }> {
     const res = await http.post(`/enrollments/${id}/drop`)
