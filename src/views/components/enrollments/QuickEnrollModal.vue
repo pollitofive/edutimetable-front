@@ -3,7 +3,7 @@ import { ref, watch } from 'vue'
 import Lucide from '@/components/Base/Lucide'
 import Button from '@/components/Base/Button'
 import { Dialog } from '@/components/Base/Headless'
-import { enrollmentService, type EligibleStudent, type ScheduleData } from '@/services/enrollmentService'
+import { enrollmentService, type EligibleStudent, type EnrollmentConflict, type ScheduleData } from '@/services/enrollmentService'
 import { useI18n } from '@/composables/useI18n'
 import { useLoading } from '@/composables/useLoading'
 
@@ -32,6 +32,13 @@ const searchTimeout = ref<ReturnType<typeof setTimeout> | null>(null)
 
 function getInitials(name: string) {
   return name.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase()
+}
+
+const dayKeys = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']
+
+function conflictLabel(c: EnrollmentConflict): string {
+  const day = t(`schedules.days.${dayKeys[c.day_of_week]}`).slice(0, 3)
+  return t('enrollments.overlapsWith', { course: c.course_name, slot: `${day} ${c.starts_at} - ${c.ends_at}` })
 }
 
 async function fetchStudents() {
@@ -135,8 +142,8 @@ watch(() => props.visible, (val) => {
               class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-colors"
               :class="selectedStudentId === student.id
                 ? 'bg-orange-50 ring-1 ring-orange-400'
-                : 'hover:bg-slate-50'"
-              :disabled="student.already_enrolled"
+                : student.is_available ? 'hover:bg-slate-50' : 'opacity-50 cursor-not-allowed'"
+              :disabled="!student.is_available"
               @click="selectStudent(student.id)"
             >
               <!-- Avatar -->
@@ -148,6 +155,7 @@ watch(() => props.visible, (val) => {
               <div class="flex-1 min-w-0">
                 <p class="text-sm font-medium text-slate-800 truncate">{{ student.name }}</p>
                 <p class="text-xs text-slate-400 truncate">{{ student.email }}</p>
+                <p v-if="student.conflict" class="text-xs text-amber-600">{{ conflictLabel(student.conflict) }}</p>
               </div>
 
               <!-- Badges -->
@@ -163,7 +171,8 @@ watch(() => props.visible, (val) => {
                   <Lucide icon="Check" class="w-3 h-3" /> {{ t('enrollments.available') }}
                 </span>
                 <span v-else class="text-xs text-amber-500 flex items-center gap-0.5">
-                  <Lucide icon="AlertCircle" class="w-3 h-3" /> {{ t('enrollments.noAvailability') }}
+                  <Lucide icon="AlertCircle" class="w-3 h-3" />
+                  {{ student.blocked_reason === 'overlap' ? t('enrollments.overlap') : t('enrollments.noAvailability') }}
                 </span>
               </div>
             </button>

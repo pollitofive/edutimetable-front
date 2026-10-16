@@ -586,6 +586,8 @@
     "compatible": "Compatible",
     "notAvailable": "Sin disp.",
     "full": "Completo",
+    "overlap": "Superpuesto",
+    "overlapsWith": "Se superpone con {course} ({slot})",
     "alreadyEnrolled": "Ya inscripto",
     "confirmEnrollment": "Confirmar Inscripción",
     "enrollSuccess": "Alumno inscripto exitosamente",

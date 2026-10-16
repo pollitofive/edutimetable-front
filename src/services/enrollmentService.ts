@@ -47,12 +47,25 @@ export interface ScheduleData {
   }>
 }
 
+// Why a student can't take a schedule (group): null when they can
+export type BlockedReason = 'enrolled' | 'full' | 'unavailable' | 'overlap' | null
+
+// Another schedule the student attends that overlaps (blocked_reason 'overlap')
+export interface EnrollmentConflict {
+  course_name: string
+  day_of_week: number
+  starts_at: string
+  ends_at: string
+}
+
 export interface EligibleStudent {
   id: number
   name: string
   email: string
   already_enrolled: boolean
   is_available: boolean
+  blocked_reason: Exclude<BlockedReason, 'full'>
+  conflict: EnrollmentConflict | null
   course_level: { name: string; track: { id: number; name: string } } | null
 }
 
@@ -77,6 +90,8 @@ export interface ScheduleGroup {
   available_spots: number
   is_compatible: boolean
   already_enrolled: boolean
+  blocked_reason: BlockedReason
+  conflict: EnrollmentConflict | null
 }
 
 export interface CompatibleSchedulesResponse {
