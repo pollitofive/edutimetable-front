@@ -15,7 +15,7 @@ const {
   showToast, toastMessage, toastType, calendarOptions,
   uniqueCourses, uniqueTeachers, uniqueTracks, days,
   selectedGroupDaysLabel, selectedGroupIds,
-  getTrackColor, applyFilters, openQuickModal, openFullModal, onEnrolled,
+  getTrackColor, applyFilters, onTracksChanged, openQuickModal, openFullModal, onEnrolled,
   enrollmentToDrop, dropping, openDropConfirm, cancelDrop, handleDrop,
   changeSchedule, changeProposal, openScheduleChange, closeScheduleChange, onScheduleChanged,
 } = useEnrollments()
@@ -39,11 +39,11 @@ const {
   <!-- Filters -->
   <div class="box box--stacked p-4 mt-5">
     <div class="flex gap-3 items-center">
+      <TomSelect v-model="filters.track_ids" :options="{ placeholder: t('enrollments.filters.allTracks'), create: false, onDelete: () => true }" class="flex-1" multiple @update:modelValue="onTracksChanged">
+        <option v-for="track in uniqueTracks" :key="track.id" :value="track.id">{{ track.name }}</option>
+      </TomSelect>
       <TomSelect v-model="filters.course_ids" :options="{ placeholder: t('enrollments.filters.allCourses'), create: false, onDelete: () => true }" class="flex-1" multiple @update:modelValue="applyFilters">
         <option v-for="course in uniqueCourses" :key="course.id" :value="String(course.id)">{{ course.name }}</option>
-      </TomSelect>
-      <TomSelect v-model="filters.track_ids" :options="{ placeholder: t('enrollments.filters.allTracks'), create: false, onDelete: () => true }" class="flex-1" multiple @update:modelValue="applyFilters">
-        <option v-for="track in uniqueTracks" :key="track.id" :value="track.id">{{ track.name }}</option>
       </TomSelect>
       <TomSelect v-model="filters.teacher_ids" :options="{ placeholder: t('enrollments.filters.allTeachers'), create: false, onDelete: () => true }" class="flex-1" multiple @update:modelValue="applyFilters">
         <option v-for="teacher in uniqueTeachers" :key="teacher.id" :value="String(teacher.id)">{{ teacher.name }}</option>
