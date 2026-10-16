@@ -586,6 +586,8 @@
     "compatible": "Compatible",
     "notAvailable": "No availability",
     "full": "Full",
+    "overlap": "Overlap",
+    "overlapsWith": "Overlaps {course} ({slot})",
     "alreadyEnrolled": "Already enrolled",
     "confirmEnrollment": "Confirm Enrollment",
     "enrollSuccess": "Student enrolled successfully",

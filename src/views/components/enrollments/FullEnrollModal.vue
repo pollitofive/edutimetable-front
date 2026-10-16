@@ -8,6 +8,7 @@ import {
   type StudentData,
   type ScheduleGroup,
   type CompatibleSchedulesResponse,
+  type EnrollmentConflict,
 } from '@/services/enrollmentService'
 import { useI18n } from '@/composables/useI18n'
 import { useLoading } from '@/composables/useLoading'
@@ -74,10 +75,20 @@ function selectGroup(group: ScheduleGroup) {
 }
 
 function groupStatusLabel(group: ScheduleGroup): string {
-  if (group.is_compatible) return t('enrollments.compatible')
-  if (group.already_enrolled) return t('enrollments.alreadyEnrolled')
-  if (group.available_spots <= 0) return t('enrollments.full')
-  return t('enrollments.notAvailable')
+  switch (group.blocked_reason) {
+    case null: return t('enrollments.compatible')
+    case 'enrolled': return t('enrollments.alreadyEnrolled')
+    case 'full': return t('enrollments.full')
+    case 'overlap': return t('enrollments.overlap')
+    default: return t('enrollments.notAvailable')
+  }
+}
+
+const dayKeys = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']
+
+function conflictLabel(c: EnrollmentConflict): string {
+  const day = t(`schedules.days.${dayKeys[c.day_of_week]}`).slice(0, 3)
+  return t('enrollments.overlapsWith', { course: c.course_name, slot: `${day} ${c.starts_at} - ${c.ends_at}` })
 }
 
 function getSelectedGroup(): ScheduleGroup | undefined {
@@ -278,6 +289,9 @@ watch(() => selectedStudent.value, () => { selectedGroupId.value = null })
                   </p>
                   <p class="text-xs text-slate-400 mt-0.5">
                     {{ group.enrolled_count }}/{{ group.capacity }} alumnos inscriptos
+                  </p>
+                  <p v-if="group.conflict" class="text-xs text-amber-600 mt-0.5">
+                    {{ conflictLabel(group.conflict) }}
                   </p>
                 </div>
                 <span
