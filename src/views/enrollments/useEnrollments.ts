@@ -47,7 +47,8 @@ export function useEnrollments() {
   const changeProposal = ref<ScheduleChangeSlot[] | null>(null)
   let revertDrag: (() => void) | null = null
 
-  const filters = reactive<ScheduleFilters>({
+  // The service accepts partial filters; the page always holds all four
+  const filters = reactive<Required<ScheduleFilters>>({
     course_ids: toArr(route.query.courses as string | string[]),
     track_ids: toArr(route.query.track_ids as string | string[]),
     teacher_ids: toArr(route.query.teachers as string | string[]),

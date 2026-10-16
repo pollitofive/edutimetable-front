@@ -199,7 +199,8 @@ export function useStudentAvailabilities() {
     formData.value = { student_id: studentId, availabilities: [] }
     formErrors.value = {}; showModal.value = true; loadingEditAvailabilities.value = true
     try {
-      const res = await refetch({ first: 1000, page: 1, student_id: studentId })
+      // refetch merges with the current variables: clear the day filter so every slot is loaded
+      const res = await refetch({ first: 1000, page: 1, student_id: studentId, day_of_week: undefined })
       const data = res?.data?.studentAvailabilities?.data
       formData.value.availabilities = data?.length
         ? data.map((a: any) => ({ day_of_week: a.day_of_week, start_time: a.start_time, end_time: a.end_time }))

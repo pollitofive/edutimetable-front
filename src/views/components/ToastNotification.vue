@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import Notification from "@/components/Base/Notification";
-import Lucide from "@/components/Base/Lucide";
+import Lucide, { type Icon } from "@/components/Base/Lucide";
 import { type NotificationElement } from "@/components/Base/Notification";
-import { ref, onMounted, watch, provide } from "vue";
+import { ref, computed, onMounted, watch, provide } from "vue";
 
 interface Props {
   show: boolean;
@@ -33,8 +33,14 @@ provide(`bind[${refKey}]`, (el: NotificationElement) => {
 });
 
 // Configuración de iconos y colores por tipo
+interface NotificationConfig {
+  icon: Icon;
+  iconClass: string;
+  bgClass: string;
+}
+
 const getNotificationConfig = (type: string) => {
-  const configs = {
+  const configs: Record<NonNullable<Props['type']>, NotificationConfig> = {
     success: {
       icon: 'CheckCircle',
       iconClass: 'text-success',
@@ -59,7 +65,8 @@ const getNotificationConfig = (type: string) => {
   return configs[type as keyof typeof configs] || configs.info;
 };
 
-const config = getNotificationConfig(props.type);
+// computed: the same toast is reused with different types (success → error)
+const config = computed(() => getNotificationConfig(props.type));
 
 // Mostrar notificación cuando show cambie a true
 watch(() => props.show, (newValue) => {
