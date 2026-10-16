@@ -55,9 +55,12 @@ export function useEnrollments() {
   })
 
   // ── Filter options ─────────────────────────────────────────────────────────
+  // Narrowed to the selected tracks; with no track selected it lists them all
   const uniqueCourses = computed(() => {
     const seen = new Set<number>()
+    const trackIds = filters.track_ids.map(String)
     return allSchedules.value
+      .filter(s => !trackIds.length || trackIds.includes(String(s.course.course_level.track.id)))
       .filter(s => { const ok = !seen.has(s.course.id); seen.add(s.course.id); return ok })
       .map(s => s.course)
       .sort((a, b) => a.name.localeCompare(b.name))
@@ -246,6 +249,14 @@ export function useEnrollments() {
     filterTimeout.value = setTimeout(loadSchedules, 1000)
   }
 
+  // Drops the selected courses that no longer belong to the selected tracks,
+  // so the calendar never ends up filtered by a course the combo doesn't show
+  function onTracksChanged() {
+    const available = new Set(uniqueCourses.value.map(c => String(c.id)))
+    filters.course_ids = filters.course_ids.filter(id => available.has(id))
+    applyFilters()
+  }
+
   // ── Enrollment actions ─────────────────────────────────────────────────────
   function openQuickModal() { showQuickModal.value = true }
   function openFullModal() { showFullModal.value = true }
@@ -334,7 +345,7 @@ export function useEnrollments() {
     showToast, toastMessage, toastType, calendarOptions,
     uniqueCourses, uniqueTeachers, uniqueTracks, days,
     selectedGroupDaysLabel, selectedGroupIds,
-    getTrackColor, applyFilters, openQuickModal, openFullModal, onEnrolled,
+    getTrackColor, applyFilters, onTracksChanged, openQuickModal, openFullModal, onEnrolled,
     enrollmentToDrop, dropping, openDropConfirm, cancelDrop, handleDrop,
     changeSchedule, changeProposal, openScheduleChange, closeScheduleChange, onScheduleChanged,
   }
