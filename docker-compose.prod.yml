@@ -1,0 +1,23 @@
+# Compose de staging/prod (VPS). Lo que cambia entre entornos sale del .env del
+# directorio del deploy: COMPOSE_PROJECT_NAME, APP_DOMAIN y las VITE_* (se
+# compilan dentro del bundle, así que cambiar la URL de la API requiere rebuild).
+#
+# Staging suma docker-compose.staging.yml encima (basic-auth).
+# Uso: docker compose -f docker-compose.prod.yml up -d --build
+
+services:
+    web:
+        build:
+            context: .
+            target: prod
+            args:
+                VITE_API_URL: ${VITE_API_URL}
+                VITE_GRAPHQL_URL: ${VITE_GRAPHQL_URL}
+                VITE_PROJECT_NAME: ${VITE_PROJECT_NAME:-Edutimetable}
+        restart: unless-stopped
+        labels:
+            - "traefik.enable=true"
+            - "traefik.http.routers.${COMPOSE_PROJECT_NAME}.rule=Host(`${APP_DOMAIN}`)"
+            - "traefik.http.routers.${COMPOSE_PROJECT_NAME}.entrypoints=websecure"
+            - "traefik.http.routers.${COMPOSE_PROJECT_NAME}.tls.certresolver=letsencrypt"
+            - "traefik.http.services.${COMPOSE_PROJECT_NAME}.loadbalancer.server.port=80"

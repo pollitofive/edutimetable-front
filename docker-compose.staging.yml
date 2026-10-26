@@ -1,0 +1,12 @@
+# Override de staging: basic-auth delante del front para que no quede público.
+# Solo el front: la API no lleva basic-auth porque choca con el header
+# Authorization: Bearer del token de Sanctum (y sin token la API ya responde 401).
+#
+# BASIC_AUTH_USERS en el .env, formato htpasswd (htpasswd -nbB usuario clave).
+# Uso: docker compose -f docker-compose.prod.yml -f docker-compose.staging.yml up -d --build
+
+services:
+    web:
+        labels:
+            - "traefik.http.middlewares.${COMPOSE_PROJECT_NAME}-auth.basicauth.users=${BASIC_AUTH_USERS}"
+            - "traefik.http.routers.${COMPOSE_PROJECT_NAME}.middlewares=${COMPOSE_PROJECT_NAME}-auth"
