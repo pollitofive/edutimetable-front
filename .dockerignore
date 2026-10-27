@@ -1,0 +1,11 @@
+.git
+.idea
+.vscode
+.claude
+.env
+.env.*
+node_modules
+dist
+coverage
+*.tsbuildinfo
+docker-compose*.yml

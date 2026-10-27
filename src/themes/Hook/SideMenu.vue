@@ -21,6 +21,8 @@ import SimpleBar from "simplebar";
 import QuickSearch from "@/components/QuickSearch";
 import BusinessSelector from "@/views/components/BusinessSelector.vue";
 
+const projectName = import.meta.env.VITE_PROJECT_NAME || "Edutimetable";
+
 const compactMenu = useCompactMenuStore();
 const setCompactMenu = (val: boolean) => {
   compactMenu.setCompactMenu(val);
@@ -171,7 +173,7 @@ onMounted(() => {
             <div
               class="ml-3.5 group-[.side-menu--collapsed.side-menu--on-hover]:xl:opacity-100 group-[.side-menu--collapsed]:xl:opacity-0 transition-opacity font-medium text-white"
             >
-              HOOK
+              {{ projectName }}
             </div>
           </a>
           <a
