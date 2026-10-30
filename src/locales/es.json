@@ -21,6 +21,11 @@
       "tagline": "Todo lo que tu instituto necesita, en un solo sistema."
     }
   },
+  "notFound": {
+    "title": "Página no encontrada",
+    "description": "La página que buscás no existe o fue movida.",
+    "backHome": "Volver al inicio"
+  },
   "menu": {
     "dashboard": "Dashboard",
     "tracks": "Pistas",

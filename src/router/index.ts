@@ -69,6 +69,12 @@ const router = createRouter({
                     name: "student-enrollments",
                     meta: { requiresAuth: true },
                     component: () => import("../views/enrollments/index.vue"),
+                },
+                {
+                    path: "/:pathMatch(.*)*",
+                    name: "not-found",
+                    meta: { requiresAuth: true },
+                    component: () => import("../views/not-found/index.vue"),
                 }
             ],
         }

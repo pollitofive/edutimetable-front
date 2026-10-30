@@ -21,6 +21,11 @@
       "tagline": "Everything your institution needs, in one system."
     }
   },
+  "notFound": {
+    "title": "Page not found",
+    "description": "The page you are looking for does not exist or has been moved.",
+    "backHome": "Back to home"
+  },
   "menu": {
     "dashboard": "Dashboard",
     "tracks": "Tracks",
