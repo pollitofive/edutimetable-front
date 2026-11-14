@@ -80,13 +80,13 @@ const {
             <Table.Td class="py-4 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">
               {{ t('teachers.columns.name') }}
             </Table.Td>
-            <Table.Td class="py-4 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">
+            <Table.Td class="hidden md:table-cell py-4 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">
               {{ t('teachers.columns.email') }}
             </Table.Td>
-            <Table.Td class="py-4 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">
+            <Table.Td class="hidden lg:table-cell py-4 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">
               {{ t('teachers.columns.courses') }}
             </Table.Td>
-            <Table.Td class="py-4 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">
+            <Table.Td class="hidden md:table-cell py-4 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">
               {{ t('teachers.columns.phone') }}
             </Table.Td>
             <Table.Td class="py-4 font-medium text-center bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">
@@ -120,10 +120,10 @@ const {
                 {{ teacher.name }}
               </div>
             </Table.Td>
-            <Table.Td class="py-4 border-dashed dark:bg-darkmode-600">
+            <Table.Td class="hidden md:table-cell py-4 border-dashed dark:bg-darkmode-600">
               <div class="text-slate-500">{{ teacher.email }}</div>
             </Table.Td>
-            <Table.Td class="py-4 border-dashed dark:bg-darkmode-600">
+            <Table.Td class="hidden lg:table-cell py-4 border-dashed dark:bg-darkmode-600">
               <div v-if="teacher.courses && teacher.courses.length > 0" class="flex flex-wrap items-center gap-1">
                 <span v-for="course in teacher.courses.slice(0, 3)" :key="course.id" class="px-2 py-0.5 text-xs rounded-md bg-primary/10 text-primary">
                   {{ course.name }}
@@ -142,7 +142,7 @@ const {
                 {{ t('teachers.actions.viewSchedules') }}
               </router-link>
             </Table.Td>
-            <Table.Td class="py-4 border-dashed dark:bg-darkmode-600">
+            <Table.Td class="hidden md:table-cell py-4 border-dashed dark:bg-darkmode-600">
               <a
                 v-if="teacher.phone"
                 :href="`https://wa.me/${teacher.phone.replace(/\D/g, '')}`"
@@ -157,13 +157,13 @@ const {
             </Table.Td>
             <Table.Td class="relative py-4 border-dashed dark:bg-darkmode-600">
               <div class="flex items-center justify-center gap-2">
-                <Button variant="outline-secondary" size="sm" @click="openEditModal(teacher)" class="w-20">
-                  <Lucide icon="Edit" class="w-3.5 h-3.5 mr-1" />
-                  {{ t('teachers.actions.edit') }}
+                <Button variant="outline-secondary" size="sm" @click="openEditModal(teacher)" :title="t('teachers.actions.edit')" class="sm:w-20">
+                  <Lucide icon="Edit" class="w-3.5 h-3.5 sm:mr-1" />
+                  <span class="hidden sm:inline">{{ t('teachers.actions.edit') }}</span>
                 </Button>
-                <Button variant="outline-danger" size="sm" @click="openDeleteConfirm(teacher)" class="w-20">
-                  <Lucide icon="Trash2" class="w-3.5 h-3.5 mr-1" />
-                  {{ t('teachers.actions.delete') }}
+                <Button variant="outline-danger" size="sm" @click="openDeleteConfirm(teacher)" :title="t('teachers.actions.delete')" class="sm:w-20">
+                  <Lucide icon="Trash2" class="w-3.5 h-3.5 sm:mr-1" />
+                  <span class="hidden sm:inline">{{ t('teachers.actions.delete') }}</span>
                 </Button>
               </div>
             </Table.Td>

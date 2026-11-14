@@ -16,7 +16,7 @@ import {
   enter,
   leave,
 } from "./side-menu";
-import { watch, reactive, ref, computed, onMounted, provide } from "vue";
+import { watch, reactive, ref, computed, onMounted, onUnmounted, provide } from "vue";
 import SimpleBar from "simplebar";
 import QuickSearch from "@/components/QuickSearch";
 import BusinessSelector from "@/views/components/BusinessSelector.vue";
@@ -72,8 +72,15 @@ watch(
   computed(() => route.path),
   () => {
     delete route.forceActiveMenu;
+    activeMobileMenu.value = false;
   }
 );
+
+const closeMobileMenuOnEscape = (event: KeyboardEvent) => {
+  if (event.key === "Escape") {
+    activeMobileMenu.value = false;
+  }
+};
 
 onMounted(() => {
   if (scrollableRef.value) {
@@ -87,6 +94,12 @@ onMounted(() => {
   window.onresize = () => {
     compactLayout();
   };
+
+  window.addEventListener("keydown", closeMobileMenuOnEscape);
+});
+
+onUnmounted(() => {
+  window.removeEventListener("keydown", closeMobileMenuOnEscape);
 });
 </script>
 
@@ -100,13 +113,17 @@ onMounted(() => {
     <div
       :class="[
         'xl:ml-0 shadow-xl transition-[margin] duration-300 xl:shadow-none fixed top-0 left-0 z-50 side-menu group',
-        'after:content-[\'\'] after:fixed after:inset-0 after:bg-black/80 after:xl:hidden',
         { 'side-menu--collapsed': compactMenu.value },
         { 'side-menu--on-hover': compactMenuOnHover },
-        { 'ml-0 after:block': activeMobileMenu },
-        { '-ml-[275px] after:hidden': !activeMobileMenu },
+        { 'ml-0': activeMobileMenu },
+        { '-ml-[275px]': !activeMobileMenu },
       ]"
     >
+      <div
+        v-if="activeMobileMenu"
+        class="fixed inset-0 z-10 bg-black/80 xl:hidden"
+        @click="activeMobileMenu = false"
+      ></div>
       <div
         :class="[
           'fixed ml-[275px] w-10 h-10 items-center justify-center xl:hidden z-50',
@@ -418,7 +435,7 @@ onMounted(() => {
         { 'xl:ml-[91px]': compactMenu.value },
       ]"
     >
-      <div class="mt-[55px] z-10 relative max-w-[1920px] mx-auto px-5">
+      <div class="mt-[55px] z-10 relative max-w-[1920px] mx-auto sm:px-5">
         <RouterView />
       </div>
     </div>

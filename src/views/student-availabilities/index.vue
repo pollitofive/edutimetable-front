@@ -78,9 +78,9 @@ const {
         <Table.Thead>
           <Table.Tr>
             <Table.Td class="py-4 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">{{ t('studentAvailabilities.columns.student') }}</Table.Td>
-            <Table.Td class="py-4 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">{{ t('studentAvailabilities.columns.dayOfWeek') }}</Table.Td>
-            <Table.Td class="py-4 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">{{ t('studentAvailabilities.columns.startTime') }}</Table.Td>
-            <Table.Td class="py-4 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">{{ t('studentAvailabilities.columns.endTime') }}</Table.Td>
+            <Table.Td class="py-4 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 sm:whitespace-nowrap">{{ t('studentAvailabilities.columns.dayOfWeek') }}</Table.Td>
+            <Table.Td class="hidden md:table-cell py-4 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">{{ t('studentAvailabilities.columns.startTime') }}</Table.Td>
+            <Table.Td class="hidden md:table-cell py-4 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">{{ t('studentAvailabilities.columns.endTime') }}</Table.Td>
             <Table.Td class="py-4 font-medium text-center bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">{{ t('studentAvailabilities.columns.actions') }}</Table.Td>
           </Table.Tr>
         </Table.Thead>
@@ -104,25 +104,26 @@ const {
             </Table.Td>
             <Table.Td :class="['py-4 border-dashed transition-colors', getStudentGroupBackground(availability.student_id)]">
               <div class="px-2 py-1 text-xs font-medium rounded-md bg-primary/10 text-primary inline-block">{{ getDayName(availability.day_of_week) }}</div>
+              <div class="mt-1 font-mono text-xs text-slate-500 md:hidden">{{ availability.start_time }}–{{ availability.end_time }}</div>
             </Table.Td>
-            <Table.Td :class="['py-4 border-dashed transition-colors', getStudentGroupBackground(availability.student_id)]">
+            <Table.Td :class="['hidden md:table-cell py-4 border-dashed transition-colors', getStudentGroupBackground(availability.student_id)]">
               <div class="font-mono text-slate-600 dark:text-slate-300">{{ availability.start_time }}</div>
             </Table.Td>
-            <Table.Td :class="['py-4 border-dashed transition-colors', getStudentGroupBackground(availability.student_id)]">
+            <Table.Td :class="['hidden md:table-cell py-4 border-dashed transition-colors', getStudentGroupBackground(availability.student_id)]">
               <div class="font-mono text-slate-600 dark:text-slate-300">{{ availability.end_time }}</div>
             </Table.Td>
             <Table.Td :class="['relative py-4 border-dashed transition-colors', getStudentGroupBackground(availability.student_id)]">
-              <div class="flex items-center justify-center gap-2">
-                <Button variant="outline-primary" size="sm" @click="openSingleEditModal(availability)" class="w-16">
-                  <Lucide icon="Pencil" class="w-3.5 h-3.5 mr-1" />{{ t('studentAvailabilities.actions.edit') }}
+              <div class="grid grid-cols-2 gap-1.5 sm:flex sm:items-center sm:justify-center sm:gap-2">
+                <Button variant="outline-primary" size="sm" @click="openSingleEditModal(availability)" :title="t('studentAvailabilities.actions.edit')" class="sm:w-16">
+                  <Lucide icon="Pencil" class="w-3.5 h-3.5 sm:mr-1" /><span class="hidden sm:inline">{{ t('studentAvailabilities.actions.edit') }}</span>
                 </Button>
-                <Button variant="outline-danger" size="sm" @click="openDeleteConfirm(availability)" class="w-20">
-                  <Lucide icon="Trash2" class="w-3.5 h-3.5 mr-1" />{{ t('studentAvailabilities.actions.delete') }}
+                <Button variant="outline-danger" size="sm" @click="openDeleteConfirm(availability)" :title="t('studentAvailabilities.actions.delete')" class="sm:w-20">
+                  <Lucide icon="Trash2" class="w-3.5 h-3.5 sm:mr-1" /><span class="hidden sm:inline">{{ t('studentAvailabilities.actions.delete') }}</span>
                 </Button>
-                <Button v-if="isFirstOccurrenceOfStudent(availability.student_id, index)" variant="outline-secondary" size="sm" @click="openEditModal(availability)" class="w-24">
-                  <Lucide icon="List" class="w-3.5 h-3.5 mr-1" />{{ t('studentAvailabilities.actions.manage') }}
+                <Button v-if="isFirstOccurrenceOfStudent(availability.student_id, index)" variant="outline-secondary" size="sm" @click="openEditModal(availability)" :title="t('studentAvailabilities.actions.manage')" class="sm:w-24">
+                  <Lucide icon="List" class="w-3.5 h-3.5 sm:mr-1" /><span class="hidden sm:inline">{{ t('studentAvailabilities.actions.manage') }}</span>
                 </Button>
-                <div v-else class="w-24"></div>
+                <div v-else class="hidden sm:block sm:w-24"></div>
               </div>
             </Table.Td>
           </Table.Tr>

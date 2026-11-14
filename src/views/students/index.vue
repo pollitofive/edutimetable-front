@@ -88,9 +88,9 @@ const {
         <Table.Thead>
           <Table.Tr>
             <Table.Td class="py-4 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">{{ t('students.columns.name') }}</Table.Td>
-            <Table.Td class="py-4 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">{{ t('students.columns.email') }}</Table.Td>
-            <Table.Td class="py-4 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">{{ t('students.columns.level') }}</Table.Td>
-            <Table.Td class="py-4 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">{{ t('students.columns.phone') }}</Table.Td>
+            <Table.Td class="hidden lg:table-cell py-4 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">{{ t('students.columns.email') }}</Table.Td>
+            <Table.Td class="hidden md:table-cell py-4 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">{{ t('students.columns.level') }}</Table.Td>
+            <Table.Td class="hidden md:table-cell py-4 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">{{ t('students.columns.phone') }}</Table.Td>
             <Table.Td class="py-4 font-medium text-center bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">{{ t('students.columns.actions') }}</Table.Td>
           </Table.Tr>
         </Table.Thead>
@@ -104,16 +104,16 @@ const {
             </Table.Td>
           </Table.Tr>
           <Table.Tr v-for="student in students" :key="student.id" class="[&_td]:last:border-b-0">
-            <Table.Td class="py-4 border-dashed dark:bg-darkmode-600"><div class="font-medium">{{ student.name }}</div></Table.Td>
-            <Table.Td class="py-4 border-dashed dark:bg-darkmode-600"><div class="text-slate-500">{{ student.email }}</div></Table.Td>
-            <Table.Td class="py-4 border-dashed dark:bg-darkmode-600">
+            <Table.Td class="py-4 border-dashed dark:bg-darkmode-600"><div class="font-medium">{{ student.name }}</div><div v-if="student.courseLevel" class="mt-0.5 text-xs text-slate-500 md:hidden">{{ student.courseLevel.track.name }} · {{ student.courseLevel.name }}</div></Table.Td>
+            <Table.Td class="hidden lg:table-cell py-4 border-dashed dark:bg-darkmode-600"><div class="text-slate-500">{{ student.email }}</div></Table.Td>
+            <Table.Td class="hidden md:table-cell py-4 border-dashed dark:bg-darkmode-600">
               <div v-if="student.courseLevel" class="flex flex-col gap-1">
                 <div class="font-medium text-slate-700">{{ student.courseLevel.name }}</div>
                 <div class="px-2 py-0.5 text-xs font-semibold rounded-md bg-primary/10 text-primary inline-block w-fit">{{ student.courseLevel.track.name }}</div>
               </div>
               <div v-else class="text-xs text-slate-400">-</div>
             </Table.Td>
-            <Table.Td class="py-4 border-dashed dark:bg-darkmode-600">
+            <Table.Td class="hidden md:table-cell py-4 border-dashed dark:bg-darkmode-600">
               <a v-if="student.phone" :href="`https://wa.me/${student.phone.replace(/\D/g, '')}`" target="_blank" rel="noopener noreferrer" class="flex items-center gap-1 text-success hover:underline whitespace-nowrap">
                 <Lucide icon="MessageCircle" class="w-3.5 h-3.5 shrink-0" />{{ student.phone }}
               </a>
@@ -121,11 +121,11 @@ const {
             </Table.Td>
             <Table.Td class="relative py-4 border-dashed dark:bg-darkmode-600">
               <div class="flex items-center justify-center gap-2">
-                <Button variant="outline-secondary" size="sm" @click="openEditModal(student)" class="w-20">
-                  <Lucide icon="Edit" class="w-3.5 h-3.5 mr-1" />{{ t('students.actions.edit') }}
+                <Button variant="outline-secondary" size="sm" @click="openEditModal(student)" :title="t('students.actions.edit')" class="sm:w-20">
+                  <Lucide icon="Edit" class="w-3.5 h-3.5 sm:mr-1" /><span class="hidden sm:inline">{{ t('students.actions.edit') }}</span>
                 </Button>
-                <Button variant="outline-danger" size="sm" @click="openDeleteConfirm(student)" class="w-20">
-                  <Lucide icon="Trash2" class="w-3.5 h-3.5 mr-1" />{{ t('students.actions.delete') }}
+                <Button variant="outline-danger" size="sm" @click="openDeleteConfirm(student)" :title="t('students.actions.delete')" class="sm:w-20">
+                  <Lucide icon="Trash2" class="w-3.5 h-3.5 sm:mr-1" /><span class="hidden sm:inline">{{ t('students.actions.delete') }}</span>
                 </Button>
               </div>
             </Table.Td>
