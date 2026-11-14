@@ -130,11 +130,11 @@ watch(() => selectedStudent.value, () => { selectedGroupId.value = null })
 
 <template>
   <Dialog :open="visible" size="xl" @close="close">
-    <Dialog.Panel class="w-full max-w-3xl p-0 overflow-hidden">
-      <div class="flex min-h-[480px]">
+    <Dialog.Panel class="max-w-3xl p-0 overflow-hidden">
+      <div class="flex flex-col md:flex-row md:min-h-[480px]">
 
         <!-- LEFT: Student search / details -->
-        <div class="w-72 flex-shrink-0 border-r border-slate-100 flex flex-col">
+        <div class="md:w-72 md:flex-shrink-0 border-b md:border-b-0 md:border-r border-slate-100 flex flex-col">
 
           <!-- Student selected -->
           <template v-if="selectedStudent">
@@ -241,7 +241,7 @@ watch(() => selectedStudent.value, () => { selectedGroupId.value = null })
 
         <!-- RIGHT: Compatible schedules -->
         <div class="flex-1 flex flex-col">
-          <div class="px-6 pt-5 pb-4 border-b border-slate-100">
+          <div class="px-5 md:px-6 pt-5 pb-4 border-b border-slate-100">
             <p class="text-xs font-medium text-orange-500 uppercase tracking-wide mb-1">
               {{ t('enrollments.step2Title') }}
             </p>
@@ -251,7 +251,7 @@ watch(() => selectedStudent.value, () => { selectedGroupId.value = null })
             </p>
           </div>
 
-          <div class="flex-1 overflow-y-auto px-6 py-4">
+          <div class="flex-1 overflow-y-auto px-5 md:px-6 py-4">
             <!-- No student selected yet -->
             <div v-if="!selectedStudent && !schedulesLoading" class="flex flex-col items-center justify-center h-full text-center text-sm text-slate-400 gap-2">
               <Lucide icon="CalendarSearch" class="w-8 h-8 text-slate-300" />
@@ -305,7 +305,7 @@ watch(() => selectedStudent.value, () => { selectedGroupId.value = null })
           </div>
 
           <!-- Footer -->
-          <div class="px-6 py-4 border-t border-slate-100 flex justify-end gap-3">
+          <div class="px-5 md:px-6 py-4 border-t border-slate-100 flex flex-wrap justify-end gap-3">
             <Button variant="outline-secondary" @click="close">{{ t('enrollments.cancel') }}</Button>
             <Button
               variant="primary"

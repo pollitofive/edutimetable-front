@@ -194,7 +194,7 @@ watch(() => props.visible, (val) => {
   <Dialog :open="visible" size="xl" :staticBackdrop="true" @close="close">
     <Dialog.Panel class="p-0 overflow-hidden">
       <!-- Header -->
-      <div class="px-6 pt-6 pb-4 border-b border-slate-100">
+      <div class="px-4 sm:px-6 pt-6 pb-4 border-b border-slate-100">
         <h2 class="text-lg font-semibold text-slate-800">{{ t('enrollments.scheduleChange.title') }}</h2>
         <p v-if="schedule" class="mt-1 text-sm text-slate-500">
           {{ schedule.course.course_level.track.name }} - {{ schedule.course.course_level.name }}
@@ -204,20 +204,20 @@ watch(() => props.visible, (val) => {
       </div>
 
       <!-- Step 1: form (courses with several days) -->
-      <div v-if="step === 'form'" class="px-6 py-4">
-        <div class="grid grid-cols-[1fr_7rem_7rem_1fr] gap-x-3 gap-y-2 items-center text-sm">
+      <div v-if="step === 'form'" class="px-4 sm:px-6 py-4">
+        <div class="grid grid-cols-[minmax(0,1fr)_5.5rem_5.5rem] sm:grid-cols-[1fr_7rem_7rem_1fr] gap-x-2 sm:gap-x-3 gap-y-2 items-center text-sm">
           <div class="text-xs font-medium text-slate-500">{{ t('enrollments.scheduleChange.day') }}</div>
           <div class="text-xs font-medium text-slate-500">{{ t('enrollments.scheduleChange.from') }}</div>
           <div class="text-xs font-medium text-slate-500">{{ t('enrollments.scheduleChange.to') }}</div>
-          <div class="text-xs font-medium text-slate-500">{{ t('enrollments.scheduleChange.current') }}</div>
+          <div class="hidden sm:block text-xs font-medium text-slate-500">{{ t('enrollments.scheduleChange.current') }}</div>
 
           <template v-for="row in rows" :key="row.schedule_id">
-            <select v-model.number="row.day_of_week" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400">
+            <select v-model.number="row.day_of_week" class="w-full min-w-0 px-2 sm:px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400">
               <option v-for="d in dayOptions" :key="d" :value="d">{{ dayName(d) }}</option>
             </select>
-            <input v-model="row.starts_at" type="time" step="900" class="w-full px-2 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400" @change="onStartChange(row)" />
-            <input :value="endOf(row)" type="time" step="900" class="w-full px-2 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400" @change="onEndChange(row, ($event.target as HTMLInputElement).value)" />
-            <div class="text-xs text-slate-400">{{ slotLabel(row.original) }}</div>
+            <input v-model="row.starts_at" type="time" step="900" class="w-full px-1.5 sm:px-2 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400" @change="onStartChange(row)" />
+            <input :value="endOf(row)" type="time" step="900" class="w-full px-1.5 sm:px-2 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400" @change="onEndChange(row, ($event.target as HTMLInputElement).value)" />
+            <div class="col-span-3 sm:col-span-1 -mt-1 sm:mt-0 mb-1 sm:mb-0 text-xs text-slate-400"><span class="sm:hidden">{{ t('enrollments.scheduleChange.current') }}: </span>{{ slotLabel(row.original) }}</div>
           </template>
         </div>
 
@@ -232,7 +232,7 @@ watch(() => props.visible, (val) => {
       </div>
 
       <!-- Step 2: impact -->
-      <div v-else class="px-6 py-4 max-h-[60vh] overflow-y-auto space-y-4">
+      <div v-else class="px-4 sm:px-6 py-4 max-h-[60vh] overflow-y-auto space-y-4">
         <div v-if="loading" class="py-8 text-center text-sm text-slate-400">
           <Lucide icon="Loader" class="w-4 h-4 animate-spin inline mr-1" />
           {{ t('enrollments.scheduleChange.simulating') }}
@@ -309,10 +309,10 @@ watch(() => props.visible, (val) => {
         </template>
       </div>
 
-      <p v-if="error" class="px-6 pb-2 text-sm text-danger">{{ error }}</p>
+      <p v-if="error" class="px-4 sm:px-6 pb-2 text-sm text-danger">{{ error }}</p>
 
       <!-- Footer -->
-      <div class="px-6 py-4 border-t border-slate-100 flex justify-end gap-3">
+      <div class="px-4 sm:px-6 py-4 border-t border-slate-100 flex justify-end gap-3">
         <template v-if="step === 'form'">
           <Button variant="outline-secondary" @click="close">{{ t('enrollments.cancel') }}</Button>
           <Button variant="primary" :disabled="!!formError || !hasChanges" @click="goToImpact">
