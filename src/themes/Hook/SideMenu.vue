@@ -4,7 +4,7 @@ import "@/assets/css/themes/hook.css";
 import { useRoute, useRouter } from "vue-router";
 import Lucide from "@/components/Base/Lucide";
 import Breadcrumb from "@/components/Base/Breadcrumb";
-import { useMenuStore } from "@/stores/menu";
+import { useMenuStore, type Menu } from "@/stores/menu";
 import { useCompactMenuStore } from "@/stores/compact-menu";
 import {
   type ProvideForceActiveMenu,
@@ -52,6 +52,22 @@ provide<ProvideForceActiveMenu>("forceActiveMenu", (pageName: string) => {
 });
 
 const scrollableRef = ref<HTMLDivElement>();
+
+// Breadcrumb: home, plus the menu title of the current page
+const findMenuTitle = (items: Array<Menu | string>, pageName: string): string | undefined => {
+  for (const item of items) {
+    if (typeof item === "string") continue;
+    if (item.pageName === pageName) return item.title;
+    const nested = item.subMenu && findMenuTitle(item.subMenu, pageName);
+    if (nested) return nested;
+  }
+};
+const homeTitle = computed(() => findMenuTitle(menuStore.value, "dashboard"));
+const currentPageTitle = computed(() =>
+  route.name && route.name !== "dashboard"
+    ? findMenuTitle(menuStore.value, String(route.name))
+    : undefined
+);
 
 const toggleCompactMenu = (event: MouseEvent) => {
   event.preventDefault();
@@ -380,18 +396,19 @@ onUnmounted(() => {
             </div>
             <!-- BEGIN: Breadcrumb -->
             <Breadcrumb class="hidden xl:block">
-              <Breadcrumb.Link class="dark:before:bg-chevron-white" to="/"
-                >App</Breadcrumb.Link
-              >
-              <Breadcrumb.Link class="dark:before:bg-chevron-white" to="/"
-                >Dashboards</Breadcrumb.Link
-              >
               <Breadcrumb.Link
                 class="dark:before:bg-chevron-white"
                 to="/"
+                :active="!currentPageTitle"
+                >{{ homeTitle }}</Breadcrumb.Link
+              >
+              <Breadcrumb.Link
+                v-if="currentPageTitle"
+                class="dark:before:bg-chevron-white"
+                :to="route.path"
                 :active="true"
               >
-                Analytics
+                {{ currentPageTitle }}
               </Breadcrumb.Link>
             </Breadcrumb>
             <!-- END: Breadcrumb -->

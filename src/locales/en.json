@@ -28,6 +28,7 @@
   },
   "menu": {
     "dashboard": "Dashboard",
+    "home": "Home",
     "tracks": "Tracks",
     "courseLevels": "Course Levels",
     "teachers": "Teachers",
@@ -571,6 +572,37 @@
       "entries": "entries",
       "showingInfo": "Showing {start} to {end} of {total} courses"
     }
+  },
+  "dashboard": {
+    "title": "Home",
+    "subtitle": "Institute overview",
+    "totals": {
+      "activeStudents": "Active students",
+      "courses": "Courses",
+      "teachers": "Teachers",
+      "activeEnrollments": "Active enrollments"
+    },
+    "coursesWithCapacity": {
+      "title": "Courses with open spots",
+      "subtitle": "Sorted by occupancy: the closest to full come first",
+      "course": "Course",
+      "schedule": "Days and time",
+      "teacher": "Teacher",
+      "occupancy": "Occupancy",
+      "spots": "{n} spots",
+      "empty": "No courses with open spots",
+      "goToEnrollments": "View in Enrollments"
+    },
+    "teacherLoad": {
+      "title": "Teacher load",
+      "teacher": "Teacher",
+      "hours": "Weekly hours",
+      "students": "Students",
+      "hoursValue": "{n} h",
+      "empty": "No teachers yet"
+    },
+    "error": "Could not load the overview",
+    "retry": "Retry"
   },
   "enrollments": {
     "title": "Enrollments",

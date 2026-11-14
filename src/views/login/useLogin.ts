@@ -35,7 +35,7 @@ export function useLogin() {
     try {
       await authStore.login(email.value, password.value)
       showSuccess(t('login.successMessage'))
-      router.push('/teachers')
+      router.push('/')
     } catch (error: any) {
       const errorMessage = error.response?.data?.message || t('login.errorInvalidCredentials')
       showError(errorMessage)
