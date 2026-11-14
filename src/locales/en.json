@@ -753,5 +753,46 @@
       "schedules": "Schedules"
     },
     "keyboardHint": "Use ↑/↓ to pick a result, ←/→ for its shortcuts (calendar, schedules) and Enter to open it."
+  },
+  "print": {
+    "back": "Back",
+    "print": "Print / Save as PDF",
+    "printedAt": "Printed on {date}",
+    "loadError": "The schedules could not be loaded.",
+    "noSchedules": "There are no schedules to show.",
+    "time": "Time",
+    "and": "and",
+    "enrolledOfCapacity": "{enrolled}/{capacity} enrolled",
+    "course": "Course",
+    "daysAndTime": "Days and time",
+    "enrolled": "Enrolled",
+    "students": "Students",
+    "trackAndLevel": "Track and level",
+    "teacherLabel": "Teacher",
+    "name": "Name",
+    "email": "Email",
+    "phone": "Phone",
+    "timetable": {
+      "title": "Weekly timetable",
+      "filtered": "With the filters applied in Enrollments"
+    },
+    "teacher": {
+      "title": "{name}'s timetable",
+      "titleAll": "Teachers' timetables",
+      "noSchedules": "This teacher has no schedules.",
+      "filtered": "Teachers matching “{filter}”",
+      "noneMatch": "No teacher with schedules matches the filter."
+    },
+    "courseSheet": {
+      "attendanceColumns": "Attendance columns",
+      "notFound": "This course was not found.",
+      "noStudents": "This course has no active students."
+    },
+    "actions": {
+      "printTimetable": "Print timetable",
+      "printSheet": "Print sheet",
+      "printTeacher": "Print timetable",
+      "printAllTeachers": "Print timetables"
+    }
   }
 }

@@ -2,6 +2,7 @@
 import Lucide from '@/components/Base/Lucide'
 import Button from '@/components/Base/Button'
 import { type ScheduleData } from '@/services/enrollmentService'
+import { groupKey } from '@/views/print/usePrintSchedules'
 import { useI18n } from '@/composables/useI18n'
 
 const { t } = useI18n()
@@ -71,6 +72,9 @@ const emit = defineEmits<{
     </Button>
     <Button variant="outline-secondary" class="w-full mt-2" @click="emit('scheduleChange')">
       <Lucide icon="CalendarClock" class="w-4 h-4 mr-2" />{{ t('enrollments.scheduleChange.open') }}
+    </Button>
+    <Button as="router-link" variant="outline-secondary" class="w-full mt-2" :to="{ name: 'print-course', params: { groupId: groupKey(schedule) } }">
+      <Lucide icon="Printer" class="w-4 h-4 mr-2" />{{ t('print.actions.printSheet') }}
     </Button>
     <p v-if="showDragHint && schedule.group_slots.length === 1" class="mt-2 text-xs text-slate-400 text-center">{{ t('enrollments.scheduleChange.dragHint') }}</p>
   </div>

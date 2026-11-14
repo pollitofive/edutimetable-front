@@ -41,6 +41,7 @@ export interface ScheduleData {
       id: number
       name: string
       email: string
+      phone: string | null
       course_level: { name: string; track: { id: number; name: string } } | null
     }
     status: string

@@ -753,5 +753,46 @@
       "schedules": "Horarios"
     },
     "keyboardHint": "Con ↑/↓ elegís un resultado, con ←/→ sus accesos (calendario, horarios) y con Enter lo abrís."
+  },
+  "print": {
+    "back": "Volver",
+    "print": "Imprimir / Guardar PDF",
+    "printedAt": "Impreso el {date}",
+    "loadError": "No se pudieron cargar los horarios.",
+    "noSchedules": "No hay horarios para mostrar.",
+    "time": "Horario",
+    "and": "y",
+    "enrolledOfCapacity": "{enrolled}/{capacity} inscriptos",
+    "course": "Curso",
+    "daysAndTime": "Días y horario",
+    "enrolled": "Inscriptos",
+    "students": "Alumnos",
+    "trackAndLevel": "Pista y nivel",
+    "teacherLabel": "Profesor",
+    "name": "Nombre",
+    "email": "Email",
+    "phone": "Teléfono",
+    "timetable": {
+      "title": "Grilla semanal de horarios",
+      "filtered": "Con los filtros aplicados en Inscripciones"
+    },
+    "teacher": {
+      "title": "Horario de {name}",
+      "titleAll": "Horarios de los profesores",
+      "noSchedules": "Este profesor no tiene horarios.",
+      "filtered": "Profesores que coinciden con «{filter}»",
+      "noneMatch": "Ningún profesor con horarios coincide con el filtro."
+    },
+    "courseSheet": {
+      "attendanceColumns": "Columnas de asistencia",
+      "notFound": "No encontramos este curso.",
+      "noStudents": "Este curso no tiene alumnos activos."
+    },
+    "actions": {
+      "printTimetable": "Imprimir grilla",
+      "printSheet": "Imprimir planilla",
+      "printTeacher": "Imprimir horario",
+      "printAllTeachers": "Imprimir horarios"
+    }
   }
 }
