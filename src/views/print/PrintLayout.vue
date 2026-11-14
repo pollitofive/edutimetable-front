@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import Lucide from '@/components/Base/Lucide'
 import Button from '@/components/Base/Button'
@@ -35,6 +35,23 @@ const printedAt = computed(() =>
 // @page can't be scoped per route from a stylesheet: each page sets its own
 const pageStyle = computed(() => `@page { size: A4 ${props.orientation}; margin: 10mm; }`)
 
+// Screen preview: shrink the A4-wide sheet to the available width (pinch to enlarge)
+// (the sheet width comes from the paper size, not from the DOM, which zoom alters)
+const MM_TO_PX = 96 / 25.4
+const sheetWidth = computed(() => (props.orientation === 'landscape' ? 297 : 210) * MM_TO_PX)
+const stage = ref<HTMLElement | null>(null)
+const scale = ref(1)
+const fit = () => {
+  if (stage.value) scale.value = Math.min(1, stage.value.clientWidth / sheetWidth.value)
+}
+const observer = new ResizeObserver(fit)
+onMounted(() => {
+  if (stage.value) observer.observe(stage.value)
+  fit()
+})
+onUnmounted(() => observer.disconnect())
+watch(() => props.orientation, () => nextTick(fit))
+
 const goBack = () => (window.history.length > 1 ? router.back() : router.push('/'))
 const print = () => window.print()
 </script>
@@ -58,24 +75,28 @@ const print = () => window.print()
       </div>
     </div>
 
-    <div class="print-sheet">
-      <header class="print-header">
-        <div>
-          <div class="print-header__business">{{ businessName }}</div>
-          <h1 class="print-header__title">{{ title }}</h1>
-          <div v-if="subtitle" class="print-header__subtitle">{{ subtitle }}</div>
-        </div>
-        <div class="print-header__date">{{ t('print.printedAt', { date: printedAt }) }}</div>
-      </header>
+    <div v-if="scale < 1" class="print-preview-hint no-print">{{ t('print.previewHint') }}</div>
 
-      <div v-if="loading" class="print-state no-print">
-        <Lucide icon="Loader" class="w-6 h-6 animate-spin text-slate-400" />
+    <div ref="stage" class="print-stage">
+      <div class="print-sheet" :style="{ zoom: scale }">
+        <header class="print-header">
+          <div>
+            <div class="print-header__business">{{ businessName }}</div>
+            <h1 class="print-header__title">{{ title }}</h1>
+            <div v-if="subtitle" class="print-header__subtitle">{{ subtitle }}</div>
+          </div>
+          <div class="print-header__date">{{ t('print.printedAt', { date: printedAt }) }}</div>
+        </header>
+
+        <div v-if="loading" class="print-state no-print">
+          <Lucide icon="Loader" class="w-6 h-6 animate-spin text-slate-400" />
+        </div>
+        <div v-else-if="error" class="print-state">
+          <Lucide icon="AlertCircle" class="w-8 h-8 text-danger" />
+          <div>{{ t('print.loadError') }}</div>
+        </div>
+        <slot v-else />
       </div>
-      <div v-else-if="error" class="print-state">
-        <Lucide icon="AlertCircle" class="w-8 h-8 text-danger" />
-        <div>{{ t('print.loadError') }}</div>
-      </div>
-      <slot v-else />
     </div>
   </div>
 </template>

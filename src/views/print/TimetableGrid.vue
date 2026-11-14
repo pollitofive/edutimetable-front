@@ -60,7 +60,7 @@ const tracks = computed(() => {
               class="print-block"
               :style="{ '--track-color': getTrackColor(s.course.course_level.track.id) }"
             >
-              <span class="print-block__title">{{ s.course.name }}</span>
+              <strong class="print-block__title">{{ s.course.name }}</strong>
               <span v-if="showTeacher" class="print-block__meta">{{ s.teacher.name }}</span>
               <span class="print-block__meta print-block__count">{{ s.enrolled_count }}/{{ s.capacity }}</span>
             </div>

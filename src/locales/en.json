@@ -793,6 +793,7 @@
       "printSheet": "Print sheet",
       "printTeacher": "Print timetable",
       "printAllTeachers": "Print timetables"
-    }
+    },
+    "previewHint": "Sheet preview: pinch to zoom in."
   }
 }

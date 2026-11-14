@@ -16,19 +16,36 @@
   margin: 0 auto 1rem;
 }
 
-.print-sheet {
-  max-width: 297mm;
-  margin: 0 auto;
-  padding: 1.5rem;
-  background: #fff;
-  border-radius: 0.5rem;
-  box-shadow: 0 1px 3px rgb(0 0 0 / 0.08);
-  overflow-x: auto;
+.print-page--portrait .print-toolbar {
+  max-width: 210mm;
 }
 
-.print-page--portrait .print-toolbar,
+.print-preview-hint {
+  margin: -0.5rem 0 0.75rem;
+  text-align: center;
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+/* On screen the sheet is a preview of the paper: the real A4 width (minus the 10mm
+   margins as padding), shrunk with zoom by PrintLayout when the screen is narrower */
+.print-stage {
+  display: flex;
+  justify-content: center;
+}
+
+.print-sheet {
+  flex: none;
+  box-sizing: border-box;
+  width: 297mm;
+  padding: 10mm;
+  background: #fff;
+  border-radius: 0.25rem;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.12);
+}
+
 .print-page--portrait .print-sheet {
-  max-width: 210mm;
+  width: 210mm;
 }
 
 .print-header {
@@ -119,14 +136,14 @@
   width: 100%;
   border-collapse: collapse;
   table-layout: fixed;
-  font-size: 0.72rem;
-  line-height: 1.25;
+  font-size: 6.5pt;
+  line-height: 1.15;
 }
 
 .print-grid th,
 .print-grid td {
   border: 1px solid #cbd5e1;
-  padding: 0.25rem;
+  padding: 0.1rem 0.15rem;
   vertical-align: top;
 }
 
@@ -149,21 +166,20 @@
 }
 
 .print-block {
-  padding: 0.2rem 0.35rem;
-  border-left: 4px solid var(--track-color);
+  padding: 0.05rem 0.2rem;
+  border-left: 3px solid var(--track-color);
   background: color-mix(in srgb, var(--track-color) 14%, white);
-  border-radius: 0.2rem;
+  border-radius: 0.15rem;
   break-inside: avoid;
 }
 
 .print-block + .print-block {
-  margin-top: 0.25rem;
+  margin-top: 0.1rem;
 }
 
-.print-block__title,
-.print-block__meta {
-  display: block;
-  line-height: 1.2;
+/* One line per course: "Course · Teacher · 5/8" */
+.print-block__meta::before {
+  content: ' · ';
 }
 
 .print-block__title {
@@ -213,12 +229,16 @@
     background: #fff;
   }
 
+  .print-stage {
+    display: block;
+  }
+
   .print-sheet {
-    max-width: none;
+    width: auto;
     padding: 0;
     border-radius: 0;
     box-shadow: none;
-    overflow: visible;
+    zoom: 1 !important;
   }
 
   .print-page,
@@ -227,37 +247,8 @@
     print-color-adjust: exact;
   }
 
-  /* On paper the grid goes compact (one line per course) so the week fits one page */
   .print-header {
     padding-bottom: 0.4rem;
     margin-bottom: 0.5rem;
-  }
-
-  .print-grid {
-    font-size: 6.5pt;
-    line-height: 1.15;
-  }
-
-  .print-grid th,
-  .print-grid td {
-    padding: 0.1rem 0.15rem;
-  }
-
-  .print-block {
-    padding: 0.05rem 0.2rem;
-    border-left-width: 3px;
-  }
-
-  .print-block + .print-block {
-    margin-top: 0.1rem;
-  }
-
-  .print-block__title,
-  .print-block__meta {
-    display: inline;
-  }
-
-  .print-block__meta::before {
-    content: ' · ';
   }
 }
