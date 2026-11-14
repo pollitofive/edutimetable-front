@@ -89,13 +89,13 @@ const {
             </Table.Td>
             <Table.Td class="relative py-4 border-dashed dark:bg-darkmode-600">
               <div class="flex items-center justify-center gap-2">
-                <Button variant="outline-secondary" size="sm" @click="openEditModal(track)" class="w-20">
-                  <Lucide icon="Edit" class="w-3.5 h-3.5 mr-1" />
-                  {{ t('tracks.actions.edit') }}
+                <Button variant="outline-secondary" size="sm" @click="openEditModal(track)" :title="t('tracks.actions.edit')" class="sm:w-20">
+                  <Lucide icon="Edit" class="w-3.5 h-3.5 sm:mr-1" />
+                  <span class="hidden sm:inline">{{ t('tracks.actions.edit') }}</span>
                 </Button>
-                <Button variant="outline-danger" size="sm" @click="openDeleteConfirm(track)" class="w-20">
-                  <Lucide icon="Trash2" class="w-3.5 h-3.5 mr-1" />
-                  {{ t('tracks.actions.delete') }}
+                <Button variant="outline-danger" size="sm" @click="openDeleteConfirm(track)" :title="t('tracks.actions.delete')" class="sm:w-20">
+                  <Lucide icon="Trash2" class="w-3.5 h-3.5 sm:mr-1" />
+                  <span class="hidden sm:inline">{{ t('tracks.actions.delete') }}</span>
                 </Button>
               </div>
             </Table.Td>

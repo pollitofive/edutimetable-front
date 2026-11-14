@@ -98,12 +98,12 @@ const {
           <Table.Thead>
             <Table.Tr>
               <Table.Td class="py-3 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">{{ t('schedules.columns.course') }}</Table.Td>
-              <Table.Td class="py-3 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">{{ t('schedules.columns.description') }}</Table.Td>
-              <Table.Td class="py-3 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">{{ t('schedules.columns.capacity') }}</Table.Td>
-              <Table.Td class="py-3 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">{{ t('schedules.columns.teacher') }}</Table.Td>
-              <Table.Td class="py-3 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">{{ t('schedules.columns.dayOfWeek') }}</Table.Td>
-              <Table.Td class="py-3 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">{{ t('schedules.columns.startsAt') }}</Table.Td>
-              <Table.Td class="py-3 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">{{ t('schedules.columns.endsAt') }}</Table.Td>
+              <Table.Td class="hidden lg:table-cell py-3 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">{{ t('schedules.columns.description') }}</Table.Td>
+              <Table.Td class="hidden md:table-cell py-3 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">{{ t('schedules.columns.capacity') }}</Table.Td>
+              <Table.Td class="hidden md:table-cell py-3 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">{{ t('schedules.columns.teacher') }}</Table.Td>
+              <Table.Td class="py-3 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 sm:whitespace-nowrap">{{ t('schedules.columns.dayOfWeek') }}</Table.Td>
+              <Table.Td class="hidden md:table-cell py-3 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">{{ t('schedules.columns.startsAt') }}</Table.Td>
+              <Table.Td class="hidden md:table-cell py-3 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">{{ t('schedules.columns.endsAt') }}</Table.Td>
               <Table.Td class="py-3 font-medium text-center bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">{{ t('schedules.columns.actions') }}</Table.Td>
             </Table.Tr>
           </Table.Thead>
@@ -126,31 +126,32 @@ const {
                 <Table.Td class="py-2 border-b-0">
                   <div v-if="slotIndex === 0 && isFirstGroupOfCourse(groupIndex)" class="font-medium text-slate-700 dark:text-slate-200">{{ group.course.name }}</div>
                 </Table.Td>
-                <Table.Td class="py-2 border-b-0">
+                <Table.Td class="hidden lg:table-cell py-2 border-b-0">
                   <div v-if="slotIndex === 0" class="text-slate-600 dark:text-slate-300">{{ group.description }}</div>
                 </Table.Td>
-                <Table.Td class="py-2 border-b-0">
+                <Table.Td class="hidden md:table-cell py-2 border-b-0">
                   <div v-if="slotIndex === 0" :class="['font-mono', group.active_enrollments_count >= group.capacity ? 'text-danger font-medium' : 'text-slate-600 dark:text-slate-300']">{{ group.active_enrollments_count }}/{{ group.capacity }}</div>
                 </Table.Td>
-                <Table.Td class="py-2 border-b-0">
+                <Table.Td class="hidden md:table-cell py-2 border-b-0">
                   <div class="text-slate-600 dark:text-slate-300">{{ schedule.teacher.name }}</div>
                 </Table.Td>
                 <Table.Td class="py-2 border-b-0">
                   <div class="px-2 py-0.5 text-xs font-medium rounded-md bg-primary/10 text-primary inline-block">{{ getDayName(schedule.day_of_week) }}</div>
+                  <div class="mt-0.5 font-mono text-xs text-slate-500 md:hidden">{{ schedule.starts_at }}–{{ schedule.ends_at }}</div>
                 </Table.Td>
-                <Table.Td class="py-2 border-b-0">
+                <Table.Td class="hidden md:table-cell py-2 border-b-0">
                   <div class="font-mono text-slate-600 dark:text-slate-300">{{ schedule.starts_at }}</div>
                 </Table.Td>
-                <Table.Td class="py-2 border-b-0">
+                <Table.Td class="hidden md:table-cell py-2 border-b-0">
                   <div class="font-mono text-slate-600 dark:text-slate-300">{{ schedule.ends_at }}</div>
                 </Table.Td>
                 <Table.Td class="py-2 border-b-0">
                   <div v-if="slotIndex === 0" class="flex items-center justify-center gap-2">
-                    <Button variant="outline-secondary" size="sm" @click="openEditModal(group)" class="w-24">
-                      <Lucide icon="List" class="w-3.5 h-3.5 mr-1" />{{ t('schedules.actions.manage') }}
+                    <Button variant="outline-secondary" size="sm" @click="openEditModal(group)" :title="t('schedules.actions.manage')" class="sm:w-24">
+                      <Lucide icon="List" class="w-3.5 h-3.5 sm:mr-1" /><span class="hidden sm:inline">{{ t('schedules.actions.manage') }}</span>
                     </Button>
-                    <Button variant="outline-danger" size="sm" :disabled="group.active_enrollments_count > 0" :title="group.active_enrollments_count > 0 ? t('schedules.messages.deleteLocked', { count: group.active_enrollments_count }) : undefined" @click="openDeleteConfirm(group)" class="w-20">
-                      <Lucide icon="Trash2" class="w-3.5 h-3.5 mr-1" />{{ t('schedules.actions.delete') }}
+                    <Button variant="outline-danger" size="sm" :disabled="group.active_enrollments_count > 0" :title="group.active_enrollments_count > 0 ? t('schedules.messages.deleteLocked', { count: group.active_enrollments_count }) : t('schedules.actions.delete')" @click="openDeleteConfirm(group)" class="sm:w-20">
+                      <Lucide icon="Trash2" class="w-3.5 h-3.5 sm:mr-1" /><span class="hidden sm:inline">{{ t('schedules.actions.delete') }}</span>
                     </Button>
                   </div>
                 </Table.Td>

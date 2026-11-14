@@ -96,10 +96,10 @@ const {
           <Table.Tr>
             <Table.Td class="py-4 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">{{ t('courseLevels.columns.track') }}</Table.Td>
             <Table.Td class="py-4 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">{{ t('courseLevels.columns.name') }}</Table.Td>
-            <Table.Td class="py-4 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">{{ t('courseLevels.columns.slug') }}</Table.Td>
-            <Table.Td class="py-4 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">{{ t('courseLevels.columns.sortOrder') }}</Table.Td>
-            <Table.Td class="py-4 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">{{ t('courseLevels.columns.previousLevel') }}</Table.Td>
-            <Table.Td class="py-4 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">{{ t('courseLevels.columns.texts') }}</Table.Td>
+            <Table.Td class="hidden md:table-cell py-4 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">{{ t('courseLevels.columns.slug') }}</Table.Td>
+            <Table.Td class="hidden md:table-cell py-4 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">{{ t('courseLevels.columns.sortOrder') }}</Table.Td>
+            <Table.Td class="hidden lg:table-cell py-4 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">{{ t('courseLevels.columns.previousLevel') }}</Table.Td>
+            <Table.Td class="hidden lg:table-cell py-4 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">{{ t('courseLevels.columns.texts') }}</Table.Td>
             <Table.Td class="py-4 font-medium text-center bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">{{ t('courseLevels.columns.actions') }}</Table.Td>
           </Table.Tr>
         </Table.Thead>
@@ -119,29 +119,29 @@ const {
             <Table.Td class="py-4 border-dashed dark:bg-darkmode-600">
               <div class="font-medium">{{ level.name }}</div>
             </Table.Td>
-            <Table.Td class="py-4 border-dashed dark:bg-darkmode-600">
+            <Table.Td class="hidden md:table-cell py-4 border-dashed dark:bg-darkmode-600">
               <div class="text-slate-500 font-mono text-sm">{{ level.slug }}</div>
             </Table.Td>
-            <Table.Td class="py-4 border-dashed dark:bg-darkmode-600">
+            <Table.Td class="hidden md:table-cell py-4 border-dashed dark:bg-darkmode-600">
               <div class="px-2 py-1 text-xs rounded-md bg-slate-100 text-slate-600 inline-block">{{ level.sort_order }}</div>
             </Table.Td>
-            <Table.Td class="py-4 border-dashed dark:bg-darkmode-600">
+            <Table.Td class="hidden lg:table-cell py-4 border-dashed dark:bg-darkmode-600">
               <div v-if="level.previousLevel" class="text-slate-600">{{ level.previousLevel.name }}</div>
               <div v-else class="text-xs text-slate-400">-</div>
             </Table.Td>
-            <Table.Td class="py-4 border-dashed dark:bg-darkmode-600 max-w-xs">
+            <Table.Td class="hidden lg:table-cell py-4 border-dashed dark:bg-darkmode-600 max-w-xs">
               <div v-if="level.texts" class="text-sm text-slate-600 truncate max-w-[200px]" :title="level.texts">{{ level.texts }}</div>
               <div v-else class="text-xs text-slate-400">-</div>
             </Table.Td>
             <Table.Td class="relative py-4 border-dashed dark:bg-darkmode-600">
               <div class="flex items-center justify-center gap-2">
-                <Button variant="outline-secondary" size="sm" @click="openEditModal(level)" class="w-20">
-                  <Lucide icon="Edit" class="w-3.5 h-3.5 mr-1" />
-                  {{ t('courseLevels.actions.edit') }}
+                <Button variant="outline-secondary" size="sm" @click="openEditModal(level)" :title="t('courseLevels.actions.edit')" class="sm:w-20">
+                  <Lucide icon="Edit" class="w-3.5 h-3.5 sm:mr-1" />
+                  <span class="hidden sm:inline">{{ t('courseLevels.actions.edit') }}</span>
                 </Button>
-                <Button variant="outline-danger" size="sm" @click="openDeleteConfirm(level)" class="w-20">
-                  <Lucide icon="Trash2" class="w-3.5 h-3.5 mr-1" />
-                  {{ t('courseLevels.actions.delete') }}
+                <Button variant="outline-danger" size="sm" @click="openDeleteConfirm(level)" :title="t('courseLevels.actions.delete')" class="sm:w-20">
+                  <Lucide icon="Trash2" class="w-3.5 h-3.5 sm:mr-1" />
+                  <span class="hidden sm:inline">{{ t('courseLevels.actions.delete') }}</span>
                 </Button>
               </div>
             </Table.Td>
