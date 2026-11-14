@@ -1,9 +1,10 @@
 import '@/assets/css/vendors/full-calendar.css'
 import timeGridPlugin from '@fullcalendar/timegrid'
 import interactionPlugin from '@fullcalendar/interaction'
-import { type CalendarOptions, type EventApi, type EventInput } from '@fullcalendar/core'
+import listPlugin from '@fullcalendar/list'
+import { type CalendarApi, type CalendarOptions, type EventApi, type EventInput } from '@fullcalendar/core'
 import esLocale from '@fullcalendar/core/locales/es'
-import { ref, reactive, computed, onMounted, watch } from 'vue'
+import { ref, reactive, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from '@/composables/useI18n'
 import { useLoading } from '@/composables/useLoading'
@@ -46,6 +47,14 @@ export function useEnrollments() {
   const changeSchedule = ref<ScheduleData | null>(null)
   const changeProposal = ref<ScheduleChangeSlot[] | null>(null)
   let revertDrag: (() => void) | null = null
+
+  // Below md the week grid doesn't fit: the calendar switches to a list per
+  // day and the course detail opens in a bottom sheet instead of the side panel
+  const mobileQuery = window.matchMedia('(max-width: 767px)')
+  const isMobile = ref(mobileQuery.matches)
+  const onMobileQueryChange = (e: MediaQueryListEvent) => { isMobile.value = e.matches }
+  const calendarRef = ref<{ getApi: () => CalendarApi } | null>(null)
+  const calendarView = () => (isMobile.value ? 'listWeek' : 'timeGridWeek')
 
   // The service accepts partial filters; the page always holds all four
   const filters = reactive<Required<ScheduleFilters>>({
@@ -160,8 +169,8 @@ export function useEnrollments() {
 
   // ── Calendar options ───────────────────────────────────────────────────────
   const calendarOptions = reactive<CalendarOptions>({
-    plugins: [timeGridPlugin, interactionPlugin],
-    initialView: 'timeGridWeek',
+    plugins: [timeGridPlugin, listPlugin, interactionPlugin],
+    initialView: calendarView(),
     initialDate: getMonday(),
     firstDay: 1,
     locale: locale.value === 'es' ? esLocale : 'en',
@@ -178,11 +187,26 @@ export function useEnrollments() {
     snapDuration: '00:15:00',
     selectable: false,
     dayHeaderFormat: { weekday: 'long' },
+    listDayFormat: { weekday: 'long' },
+    listDaySideFormat: false,
     events: [],
 
-    eventContent({ event }) {
+    eventContent({ event, view }) {
       const s: ScheduleData = event.extendedProps.schedule
       const isFull = s.enrolled_count >= s.capacity
+      if (view.type === 'listWeek') {
+        return {
+          html: `
+            <div class="flex items-start gap-2 text-sm leading-tight">
+              <span class="mt-1 w-2.5 h-2.5 rounded-full flex-shrink-0" style="background-color: ${getTrackColor(s.course.course_level.track.id)}"></span>
+              <div class="min-w-0">
+                <div class="font-medium">${s.course.course_level.track.name} - ${s.course.course_level.name}</div>
+                <div class="text-xs text-slate-500">Prof. ${s.teacher.name} · <span class="${isFull ? 'text-danger font-medium' : ''}">${s.enrolled_count}/${s.capacity} ${isFull ? 'completo' : 'alumnos'}</span></div>
+              </div>
+            </div>
+          `,
+        }
+      }
       return {
         html: `
           <div class="p-1.5 text-xs leading-tight overflow-hidden h-full">
@@ -258,6 +282,12 @@ export function useEnrollments() {
     applyFilters()
   }
 
+  function closeDetail() {
+    document.querySelectorAll('.fc-event.fc-selected-schedule')
+      .forEach(e => e.classList.remove('fc-selected-schedule'))
+    selectedSchedule.value = null
+  }
+
   // ── Enrollment actions ─────────────────────────────────────────────────────
   function openQuickModal() { showQuickModal.value = true }
   function openFullModal() { showFullModal.value = true }
@@ -318,6 +348,10 @@ export function useEnrollments() {
   }
 
   // ── Watchers ───────────────────────────────────────────────────────────────
+  watch(isMobile, () => {
+    calendarRef.value?.getApi().changeView(calendarView())
+  })
+
   watch(locale, (newLocale) => {
     calendarOptions.locale = newLocale === 'es' ? esLocale : 'en'
   })
@@ -336,12 +370,18 @@ export function useEnrollments() {
   )
 
   onMounted(async () => {
+    mobileQuery.addEventListener('change', onMobileQueryChange)
     showLoading()
     const all = await loadAllSchedules()
     await loadSchedules(hasActiveFilters() ? undefined : all)
   })
 
+  onUnmounted(() => {
+    mobileQuery.removeEventListener('change', onMobileQueryChange)
+  })
+
   return {
+    isMobile, calendarRef, closeDetail,
     t, filters, loading, selectedSchedule, showQuickModal, showFullModal,
     showToast, toastMessage, toastType, calendarOptions,
     uniqueCourses, uniqueTeachers, uniqueTracks, days,
