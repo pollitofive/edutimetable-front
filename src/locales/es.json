@@ -38,7 +38,8 @@
     "schedules": "Horarios",
     "enrollments": "Inscripciones",
     "logout": "Cerrar sesión",
-    "session": "Sesión"
+    "session": "Sesión",
+    "profile": "Mi perfil"
   },
   "courseLevels": {
     "title": "Gestión de Niveles de Curso",
@@ -687,6 +688,44 @@
       "allTracks": "Todas las Pistas",
       "allTeachers": "Todos los Profesores",
       "allDays": "Todos los Días"
+    }
+  },
+  "profile": {
+    "title": "Mi perfil",
+    "data": {
+      "title": "Mis datos",
+      "name": "Nombre",
+      "email": "Correo electrónico"
+    },
+    "password": {
+      "title": "Cambiar contraseña",
+      "current": "Contraseña actual",
+      "new": "Contraseña nueva",
+      "confirm": "Repetí la contraseña nueva",
+      "otherSessionsNote": "Al cambiarla se cierran tus otras sesiones abiertas (otros navegadores o dispositivos). Esta sigue abierta."
+    },
+    "actions": {
+      "save": "Guardar",
+      "changePassword": "Cambiar contraseña",
+      "retry": "Reintentar"
+    },
+    "validation": {
+      "nameRequired": "El nombre es obligatorio.",
+      "emailRequired": "El correo electrónico es obligatorio.",
+      "emailInvalid": "Ingresá un correo electrónico válido.",
+      "emailTaken": "Ese correo ya lo usa otro usuario.",
+      "currentPasswordRequired": "Ingresá tu contraseña actual.",
+      "currentPasswordWrong": "La contraseña actual no es correcta.",
+      "passwordRequired": "Ingresá la contraseña nueva.",
+      "passwordMinLength": "La contraseña debe tener al menos {min} caracteres.",
+      "passwordMismatch": "Las contraseñas no coinciden."
+    },
+    "messages": {
+      "profileSaved": "Tus datos se guardaron.",
+      "profileError": "No se pudieron guardar tus datos. Intentá de nuevo.",
+      "passwordChanged": "Contraseña cambiada. Se cerraron tus otras sesiones.",
+      "passwordError": "No se pudo cambiar la contraseña. Intentá de nuevo.",
+      "loadError": "No se pudieron cargar tus datos."
     }
   }
 }

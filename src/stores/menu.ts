@@ -85,17 +85,11 @@ export const useMenuStore = defineStore("menu", {
                     title: t('menu.enrollments'),
                 },
                 t('menu.session'),
-                /*
                 {
                     icon: "SquareUser",
-                    pageName: "my-data",
-                    title: t('menu.myData'),
+                    pageName: "profile",
+                    title: t('menu.profile'),
                 },
-                {
-                    icon: "FlipVertical",
-                    pageName: "change-password",
-                    title: t('menu.changePassword'),
-                },*/
                 {
                     icon: "FlipHorizontal",
                     title: t('menu.logout'),

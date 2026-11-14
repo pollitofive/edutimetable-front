@@ -3,22 +3,12 @@ import axios from 'axios'
 import { useBusinessStore } from './business'
 import { useLoading } from '@/composables/useLoading'
 
-interface User {
+export interface User {
     id: number
-    business_id: number
-    first_name: string
-    last_name: string
-    dni: string
+    name: string
     email: string
-    birth_date: string | null
-    gender: string | null
-    phone: string | null
-    is_admin: boolean
-    can_view_incoming: boolean
-    can_view_outgoing: boolean
-    deleted_at: string | null
-    created_at: string
-    updated_at: string
+    default_business_id: number | null
+    locale: string | null
 }
 
 interface AuthState {
@@ -29,7 +19,7 @@ interface AuthState {
 export const useAuthStore = defineStore('auth', {
     state: (): AuthState => ({
         token: localStorage.getItem('token'),
-        user: null,
+        user: JSON.parse(localStorage.getItem('user') ?? 'null'),
     }),
     actions: {
         async login(email: string, password: string) {
@@ -47,11 +37,15 @@ export const useAuthStore = defineStore('auth', {
             const businessStore = useBusinessStore()
             await businessStore.initialize()
         },
+        setUser(user: User) {
+            this.user = user
+            localStorage.setItem('user', JSON.stringify(user))
+        },
         async logout() {
             const { show: showLoading } = useLoading()
             showLoading()
             try {
-                await axios.post(`${import.meta.env.VITE_API_URL}/logout`, {}, {
+                await axios.post(`${import.meta.env.VITE_API_URL}/logout-token`, {}, {
                     headers: {
                         Authorization: `Bearer ${this.token}`,
                     }
@@ -59,17 +53,22 @@ export const useAuthStore = defineStore('auth', {
             } catch (error) {
                 console.error("Error en logout", error);
             } finally {
-                this.user = null;
-                this.token = null;
-                localStorage.removeItem("token");
-                localStorage.removeItem("user");
-
-                // Clear business context
-                const businessStore = useBusinessStore()
-                businessStore.clear()
-
-                window.location.href = "/login";
+                this.clearSession()
             }
+        },
+        // Drop the local session and go to the login, without calling the API: also used when
+        // the token was revoked (e.g. the password was changed from another session)
+        clearSession() {
+            this.user = null;
+            this.token = null;
+            localStorage.removeItem("token");
+            localStorage.removeItem("user");
+
+            // Clear business context
+            const businessStore = useBusinessStore()
+            businessStore.clear()
+
+            window.location.href = "/login";
         },
         isAuthenticated(): boolean {
             return !!this.token
