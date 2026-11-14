@@ -1,13 +1,15 @@
 import '@/assets/css/vendors/full-calendar.css'
+import axios from 'axios'
 import timeGridPlugin from '@fullcalendar/timegrid'
 import interactionPlugin from '@fullcalendar/interaction'
 import listPlugin from '@fullcalendar/list'
 import { type CalendarApi, type CalendarOptions, type EventApi, type EventInput } from '@fullcalendar/core'
 import esLocale from '@fullcalendar/core/locales/es'
-import { ref, reactive, computed, onMounted, onUnmounted, watch } from 'vue'
+import { ref, reactive, computed, onMounted, onUnmounted, watch, toRef } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from '@/composables/useI18n'
 import { useLoading } from '@/composables/useLoading'
+import { useQueryFilterSync } from '@/composables/useQueryFilterSync'
 import {
   enrollmentService,
   type ScheduleData,
@@ -56,12 +58,25 @@ export function useEnrollments() {
   const calendarRef = ref<{ getApi: () => CalendarApi } | null>(null)
   const calendarView = () => (isMobile.value ? 'listWeek' : 'timeGridWeek')
 
-  // The service accepts partial filters; the page always holds all four
-  const filters = reactive<Required<ScheduleFilters>>({
+  // The service accepts partial filters; the page always holds all four combos
+  // (the student filter is apart: it has no combo)
+  const filters = reactive<Required<Omit<ScheduleFilters, 'student_id'>>>({
     course_ids: toArr(route.query.courses as string | string[]),
     track_ids: toArr(route.query.track_ids as string | string[]),
     teacher_ids: toArr(route.query.teachers as string | string[]),
     days_of_week: toArr(route.query.days as string | string[]),
+  })
+
+  // ?student=<id> (from the quick search): only the courses that student attends. It has no
+  // combo of its own, just a removable chip with the name taken from the enrollments
+  const studentId = ref((route.query.student as string) || '')
+  const studentName = computed(() => {
+    if (!studentId.value) return ''
+    for (const s of allSchedules.value) {
+      const e = s.active_enrollments.find(e => String(e.student.id) === studentId.value)
+      if (e) return e.student.name
+    }
+    return ''
   })
 
   // ── Filter options ─────────────────────────────────────────────────────────
@@ -235,7 +250,7 @@ export function useEnrollments() {
   // ── Data loading ───────────────────────────────────────────────────────────
   const hasActiveFilters = () =>
     filters.course_ids.length > 0 || filters.track_ids.length > 0 ||
-    filters.teacher_ids.length > 0 || filters.days_of_week.length > 0
+    filters.teacher_ids.length > 0 || filters.days_of_week.length > 0 || studentId.value !== ''
 
   async function loadAllSchedules() {
     allSchedules.value = await enrollmentService.getSchedules({})
@@ -248,11 +263,20 @@ export function useEnrollments() {
     loading.value = true
     showLoading()
     try {
-      const data = preloaded ?? await enrollmentService.getSchedules(filters)
+      const data = preloaded ?? await enrollmentService.getSchedules({ ...filters, student_id: studentId.value || undefined })
       schedules.value = data
       if (selectedSchedule.value)
         selectedSchedule.value = data.find(s => s.id === selectedSchedule.value!.id) ?? null
       calendarOptions.events = buildEvents(data)
+    } catch (err) {
+      // ?student= of a student that doesn't exist (or isn't of this business): drop it
+      if (axios.isAxiosError(err) && err.response?.status === 422 && err.response.data?.errors?.student_id) {
+        studentId.value = ''
+        notify(t('enrollments.studentFilter.notFound'), 'error')
+        await loadSchedules()
+        return
+      }
+      throw err
     } finally {
       loading.value = false
       hideLoading()
@@ -273,6 +297,27 @@ export function useEnrollments() {
     if (filterTimeout.value) clearTimeout(filterTimeout.value)
     filterTimeout.value = setTimeout(loadSchedules, 1000)
   }
+
+  function clearStudentFilter() {
+    studentId.value = ''
+    applyFilters()
+  }
+
+  // Filters changed from outside while the page is open (the quick search): reload now
+  useQueryFilterSync(
+    {
+      student: studentId,
+      courses: toRef(filters, 'course_ids'),
+      track_ids: toRef(filters, 'track_ids'),
+      teachers: toRef(filters, 'teacher_ids'),
+      days: toRef(filters, 'days_of_week'),
+    },
+    () => {
+      selectedSchedule.value = null
+      calendarOptions.hiddenDays = computeHiddenDays()
+      void loadSchedules()
+    }
+  )
 
   // Drops the selected courses that no longer belong to the selected tracks,
   // so the calendar never ends up filtered by a course the combo doesn't show
@@ -357,9 +402,10 @@ export function useEnrollments() {
   })
 
   watch(
-    () => ({ ...filters }),
+    () => ({ ...filters, student: studentId.value }),
     (v) => {
       const q: Record<string, string | string[]> = {}
+      if (v.student) q.student = v.student
       if (v.course_ids.length) q.courses = v.course_ids
       if (v.track_ids.length) q.track_ids = v.track_ids
       if (v.teacher_ids.length) q.teachers = v.teacher_ids
@@ -382,7 +428,7 @@ export function useEnrollments() {
 
   return {
     isMobile, calendarRef, closeDetail,
-    t, filters, loading, selectedSchedule, showQuickModal, showFullModal,
+    t, filters, loading, selectedSchedule, schedules, studentId, studentName, clearStudentFilter, showQuickModal, showFullModal,
     showToast, toastMessage, toastType, calendarOptions,
     uniqueCourses, uniqueTeachers, uniqueTracks, days,
     selectedGroupDaysLabel, selectedGroupIds,

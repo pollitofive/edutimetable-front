@@ -4,6 +4,7 @@ import { ref, watch, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from '@/composables/useI18n'
 import { useLoading } from '@/composables/useLoading'
+import { useQueryFilterSync } from '@/composables/useQueryFilterSync'
 import { useDayNames } from '@/composables/useDayNames'
 
 export interface Teacher { id: string; name: string }
@@ -80,6 +81,10 @@ export function useSchedules() {
   const filterDescription = ref((route.query.description as string) || '')
   const filterStartTime = ref((route.query.from as string) || '')
   const filterEndTime = ref((route.query.to as string) || '')
+  useQueryFilterSync({
+    course: filterCourseId, day: filterDayOfWeek, teacher: filterTeacherId,
+    description: filterDescription, from: filterStartTime, to: filterEndTime,
+  })
 
   const queryVariables = computed(() => ({
     first: perPage.value, page: currentPage.value,

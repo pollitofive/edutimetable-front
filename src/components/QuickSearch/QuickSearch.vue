@@ -31,12 +31,20 @@ const router = useRouter();
 
 const DEBOUNCE_MS = 300;
 
+/** A secondary link of a row (e.g. the student's courses in the calendar) */
+interface ResultAction {
+  label: string;
+  icon: Icon;
+  to: RouteLocationRaw;
+}
+
 /** One selectable row, already resolved to where it leads */
 interface ResultItem {
   key: string;
   title: string;
   subtitle: string;
   to: RouteLocationRaw;
+  actions: ResultAction[];
 }
 
 interface ResultGroup {
@@ -50,6 +58,8 @@ const results = ref<SearchResults | null>(null);
 const loading = ref(false);
 const error = ref(false);
 const activeIndex = ref(0);
+// Within the active row: 0 is the row itself, 1..n its actions (←/→ move between them)
+const activeAction = ref(0);
 
 const term = computed(() => search.value.trim());
 const tooShort = computed(() => term.value.length < SEARCH_MIN_LENGTH);
@@ -70,6 +80,13 @@ const groups = computed<ResultGroup[]>(() => {
         title: s.name,
         subtitle: [s.email, levelLabel(s.level, s.track)].filter(Boolean).join(" — "),
         to: { name: "students", query: { search: s.name } },
+        actions: [
+          {
+            label: t("quickSearch.actions.calendar"),
+            icon: "CalendarDays" as Icon,
+            to: { name: "student-enrollments", query: { student: String(s.id) } },
+          },
+        ],
       })),
     },
     {
@@ -80,6 +97,7 @@ const groups = computed<ResultGroup[]>(() => {
         title: tc.name,
         subtitle: tc.email ?? "",
         to: { name: "teachers", query: { name: tc.name } },
+        actions: [],
       })),
     },
     {
@@ -90,6 +108,18 @@ const groups = computed<ResultGroup[]>(() => {
         title: c.name,
         subtitle: levelLabel(c.level, c.track),
         to: { name: "courses", query: { id: String(c.id) } },
+        actions: [
+          {
+            label: t("quickSearch.actions.calendar"),
+            icon: "CalendarDays" as Icon,
+            to: { name: "student-enrollments", query: { courses: String(c.id) } },
+          },
+          {
+            label: t("quickSearch.actions.schedules"),
+            icon: "Clock" as Icon,
+            to: { name: "schedules", query: { course: String(c.id) } },
+          },
+        ],
       })),
     },
   ].filter((group) => group.items.length > 0);
@@ -111,6 +141,7 @@ const runSearch = async (q: string) => {
   try {
     results.value = await searchService.search(q, controller.signal);
     activeIndex.value = 0;
+    activeAction.value = 0;
   } catch (e) {
     if ((e as { code?: string }).code === "ERR_CANCELED") return;
     results.value = null;
@@ -140,16 +171,19 @@ watch(
       search.value = "";
       results.value = null;
       activeIndex.value = 0;
+      activeAction.value = 0;
     }
   }
 );
 
 const close = () => props.setQuickSearch(false);
 
-const select = (item: ResultItem) => {
+const go = (to: RouteLocationRaw) => {
   close();
-  void router.push(item.to);
+  void router.push(to);
 };
+
+const select = (item: ResultItem) => go(item.to);
 
 const onInputKeydown = (evt: KeyboardEvent) => {
   const total = flatItems.value.length;
@@ -159,14 +193,23 @@ const onInputKeydown = (evt: KeyboardEvent) => {
   } else if (evt.key === "ArrowUp" && total) {
     evt.preventDefault();
     activeIndex.value = (activeIndex.value - 1 + total) % total;
+  } else if ((evt.key === "ArrowRight" || evt.key === "ArrowLeft") && total) {
+    const actions = flatItems.value[activeIndex.value].actions.length;
+    if (!actions) return;
+    evt.preventDefault();
+    const step = evt.key === "ArrowRight" ? 1 : -1;
+    activeAction.value = (activeAction.value + step + actions + 1) % (actions + 1);
   } else if (evt.key === "Enter" && total) {
     evt.preventDefault();
-    select(flatItems.value[activeIndex.value]);
+    const item = flatItems.value[activeIndex.value];
+    const action = item.actions[activeAction.value - 1];
+    go(action ? action.to : item.to);
   }
 };
 
 // Keep the highlighted row visible while moving with the keyboard
 watch(activeIndex, (i) => {
+  activeAction.value = 0;
   document
     .querySelector(`[data-quick-search-index="${i}"]`)
     ?.scrollIntoView({ block: "nearest" });
@@ -282,6 +325,7 @@ onUnmounted(() => {
                   </div>
                   <div class="mt-3.5 text-slate-500">
                     {{ t("quickSearch.helpText", { min: SEARCH_MIN_LENGTH }) }}
+                    <span class="hidden sm:inline">{{ t("quickSearch.keyboardHint") }}</span>
                   </div>
                 </div>
 
@@ -330,38 +374,60 @@ onUnmounted(() => {
                       {{ t(`quickSearch.groups.${group.type}`) }}
                     </div>
                     <div class="flex flex-col gap-1 mt-3">
-                      <button
+                      <div
                         v-for="item in group.items"
                         :key="item.key"
-                        type="button"
                         :data-quick-search-index="indexOf(item)"
                         :class="[
-                          'flex items-center gap-2.5 p-1.5 text-left border rounded-md',
+                          'flex items-center gap-1 border rounded-md',
                           indexOf(item) === activeIndex
                             ? 'bg-slate-100 border-slate-200 dark:bg-darkmode-400 dark:border-darkmode-400'
                             : 'border-transparent hover:bg-slate-50/80 hover:border-slate-100',
                         ]"
                         @mouseenter="activeIndex = indexOf(item)"
-                        @click="select(item)"
                       >
-                        <div
-                          class="flex items-center justify-center flex-none w-7 h-7 border rounded-md border-theme-1/10 bg-theme-1/10"
+                        <button
+                          type="button"
+                          :class="[
+                            'flex items-center flex-1 min-w-0 gap-2.5 p-1.5 text-left rounded-md',
+                            { 'ring-1 ring-theme-1/40': indexOf(item) === activeIndex && activeAction === 0 && item.actions.length },
+                          ]"
+                          @click="select(item)"
                         >
-                          <Lucide
-                            :icon="group.icon"
-                            class="w-4 h-4 stroke-[1.3] text-theme-1"
-                          />
-                        </div>
-                        <div class="min-w-0">
-                          <div class="font-medium truncate">{{ item.title }}</div>
                           <div
-                            v-if="item.subtitle"
-                            class="text-xs truncate text-slate-500"
+                            class="flex items-center justify-center flex-none w-7 h-7 border rounded-md border-theme-1/10 bg-theme-1/10"
                           >
-                            {{ item.subtitle }}
+                            <Lucide
+                              :icon="group.icon"
+                              class="w-4 h-4 stroke-[1.3] text-theme-1"
+                            />
                           </div>
-                        </div>
-                      </button>
+                          <div class="min-w-0">
+                            <div class="font-medium truncate">{{ item.title }}</div>
+                            <div
+                              v-if="item.subtitle"
+                              class="text-xs truncate text-slate-500"
+                            >
+                              {{ item.subtitle }}
+                            </div>
+                          </div>
+                        </button>
+                        <button
+                          v-for="(action, actionIndex) in item.actions"
+                          :key="action.label"
+                          type="button"
+                          :title="action.label"
+                          :aria-label="`${action.label}: ${item.title}`"
+                          :class="[
+                            'flex items-center flex-none gap-1.5 px-2 py-2 mr-1 text-xs rounded-md text-slate-500 hover:bg-theme-1/10 hover:text-theme-1',
+                            { 'bg-theme-1/10 text-theme-1': indexOf(item) === activeIndex && activeAction === actionIndex + 1 },
+                          ]"
+                          @click="go(action.to)"
+                        >
+                          <Lucide :icon="action.icon" class="w-4 h-4 stroke-[1.5]" />
+                          <span class="hidden sm:inline whitespace-nowrap">{{ action.label }}</span>
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
