@@ -28,6 +28,7 @@
   },
   "menu": {
     "dashboard": "Dashboard",
+    "home": "Inicio",
     "tracks": "Pistas",
     "courseLevels": "Niveles de Curso",
     "teachers": "Profesores",
@@ -571,6 +572,41 @@
       "entries": "entradas",
       "showingInfo": "Mostrando {start} a {end} de {total} cursos"
     }
+  },
+  "dashboard": {
+    "title": "Inicio",
+    "subtitle": "Resumen del instituto",
+    "totals": {
+      "activeStudents": "Alumnos activos",
+      "courses": "Cursos",
+      "teachers": "Profesores",
+      "activeEnrollments": "Inscripciones activas"
+    },
+    "coursesWithCapacity": {
+      "title": "Cursos con cupo",
+      "subtitle": "Ordenados por ocupación: primero los que están más cerca de llenarse",
+      "course": "Curso",
+      "schedule": "Días y horario",
+      "teacher": "Profesor",
+      "occupancy": "Ocupación",
+      "spots": "{n} lugares",
+      "empty": "No hay cursos con lugares disponibles",
+      "allTeachers": "Todos los profesores",
+      "allDays": "Todos los días",
+      "clearFilters": "Limpiar filtros",
+      "noMatches": "Ningún curso con cupo coincide con los filtros",
+      "goToEnrollments": "Ver en Inscripciones"
+    },
+    "teacherLoad": {
+      "title": "Ocupación por profesor",
+      "teacher": "Profesor",
+      "hours": "Horas semanales",
+      "students": "Alumnos",
+      "hoursValue": "{n} h",
+      "empty": "Todavía no hay profesores cargados"
+    },
+    "error": "No se pudo cargar el resumen",
+    "retry": "Reintentar"
   },
   "enrollments": {
     "title": "Inscripciones",
