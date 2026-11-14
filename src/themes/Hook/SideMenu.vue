@@ -19,6 +19,7 @@ import {
 import { watch, reactive, ref, computed, onMounted, onUnmounted, provide } from "vue";
 import SimpleBar from "simplebar";
 import QuickSearch from "@/components/QuickSearch";
+import { useI18n } from "@/composables/useI18n";
 import BusinessSelector from "@/views/components/BusinessSelector.vue";
 
 const projectName = import.meta.env.VITE_PROJECT_NAME || "Edutimetable";
@@ -27,7 +28,10 @@ const compactMenu = useCompactMenuStore();
 const setCompactMenu = (val: boolean) => {
   compactMenu.setCompactMenu(val);
 };
+const { t } = useI18n();
 const quickSearch = ref(false);
+// Shortcut hint of the header search (the shortcut itself is in QuickSearch)
+const quickSearchShortcut = /Mac|iPhone|iPad/.test(navigator.platform) ? "⌘K" : "Ctrl K";
 const setQuickSearch = (value: boolean) => {
   quickSearch.value = value;
 };
@@ -425,8 +429,8 @@ onUnmounted(() => {
                 className="bg-slate-50 border w-[350px] flex items-center py-2 px-3.5 rounded-[0.5rem] text-slate-400 cursor-pointer hover:bg-slate-100 transition-colors dark:bg-darkmode-800"
               >
                 <Lucide icon="Search" class="w-[18px] h-[18px]" />
-                <div class="ml-2.5 mr-auto">Quick search...</div>
-                <div>⌘K</div>
+                <div class="ml-2.5 mr-auto truncate">{{ t("quickSearch.headerHint") }}</div>
+                <div class="ml-2 whitespace-nowrap">{{ quickSearchShortcut }}</div>
               </div>
             </div>
             <QuickSearch

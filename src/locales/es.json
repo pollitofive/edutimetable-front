@@ -727,5 +727,19 @@
       "passwordError": "No se pudo cambiar la contraseña. Intentá de nuevo.",
       "loadError": "No se pudieron cargar tus datos."
     }
+  },
+  "quickSearch": {
+    "headerHint": "Búsqueda rápida...",
+    "placeholder": "Buscar alumnos, profesores o cursos...",
+    "helpTitle": "¿Qué podés buscar?",
+    "helpText": "Escribí al menos {min} letras: nombre, email o teléfono de un alumno, nombre o email de un profesor, o nombre de un curso.",
+    "groups": {
+      "students": "Alumnos",
+      "teachers": "Profesores",
+      "courses": "Cursos"
+    },
+    "noResultsTitle": "Sin resultados",
+    "noResultsText": "No encontramos nada para \"{term}\". Probá con otro término.",
+    "error": "No se pudo buscar. Intentá de nuevo."
   }
 }

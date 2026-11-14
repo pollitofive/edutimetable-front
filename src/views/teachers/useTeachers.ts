@@ -4,6 +4,7 @@ import { ref, watch, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from '@/composables/useI18n'
 import { useLoading } from '@/composables/useLoading'
+import { useQueryFilterSync } from '@/composables/useQueryFilterSync'
 import { useDayNames } from '@/composables/useDayNames'
 
 export interface Teacher {
@@ -148,6 +149,7 @@ export function useTeachers() {
   // ── Filters ────────────────────────────────────────────────────────────────
   const filterName = ref((route.query.name as string) || '')
   const filterEmail = ref((route.query.email as string) || '')
+  useQueryFilterSync({ name: filterName, email: filterEmail })
   let filterTimeout: ReturnType<typeof setTimeout> | null = null
 
   // ── Apollo ─────────────────────────────────────────────────────────────────

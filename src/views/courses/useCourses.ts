@@ -4,6 +4,7 @@ import { ref, watch, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from '@/composables/useI18n'
 import { useLoading } from '@/composables/useLoading'
+import { useQueryFilterSync } from '@/composables/useQueryFilterSync'
 import { useTrackOptions } from '@/views/tracks/useTracks'
 
 export interface Teacher { id: string; name: string; email: string }
@@ -92,6 +93,7 @@ export function useCourses() {
   const filterName = ref((route.query.name as string) || '')
   const filterTrackId = ref((route.query.track_id as string) || '')
   const filterCourseLevel = ref((route.query.level as string) || '')
+  useQueryFilterSync({ id: filterId, name: filterName, track_id: filterTrackId, level: filterCourseLevel })
   let filterTimeout: ReturnType<typeof setTimeout> | null = null
 
   // ── Apollo ─────────────────────────────────────────────────────────────────
@@ -164,7 +166,7 @@ export function useCourses() {
     }
   })
 
-  watch([filterName, filterTrackId, filterCourseLevel], () => {
+  watch([filterId, filterName, filterTrackId, filterCourseLevel], () => {
     if (filterTimeout) clearTimeout(filterTimeout)
     filterTimeout = setTimeout(applyFilters, 500)
   })
