@@ -688,6 +688,13 @@
       "allTracks": "Todas las Pistas",
       "allTeachers": "Todos los Profesores",
       "allDays": "Todos los Días"
+    },
+    "studentFilter": {
+      "label": "Cursos de {name}",
+      "unnamed": "Cursos del alumno",
+      "remove": "Quitar el filtro de alumno",
+      "empty": "Este alumno no tiene cursos activos con los filtros elegidos.",
+      "notFound": "No encontramos ese alumno: se muestran todos los cursos."
     }
   },
   "profile": {
@@ -740,6 +747,11 @@
     },
     "noResultsTitle": "Sin resultados",
     "noResultsText": "No encontramos nada para \"{term}\". Probá con otro término.",
-    "error": "No se pudo buscar. Intentá de nuevo."
+    "error": "No se pudo buscar. Intentá de nuevo.",
+    "actions": {
+      "calendar": "Ver en calendario",
+      "schedules": "Horarios"
+    },
+    "keyboardHint": "Con ↑/↓ elegís un resultado, con ←/→ sus accesos (calendario, horarios) y con Enter lo abrís."
   }
 }

@@ -688,6 +688,13 @@
       "allTracks": "All Tracks",
       "allTeachers": "All Teachers",
       "allDays": "All Days"
+    },
+    "studentFilter": {
+      "label": "Courses of {name}",
+      "unnamed": "The student's courses",
+      "remove": "Remove the student filter",
+      "empty": "This student has no active courses with the selected filters.",
+      "notFound": "That student was not found: showing every course."
     }
   },
   "profile": {
@@ -740,6 +747,11 @@
     },
     "noResultsTitle": "No results",
     "noResultsText": "Nothing found for \"{term}\". Try a different term.",
-    "error": "The search failed. Try again."
+    "error": "The search failed. Try again.",
+    "actions": {
+      "calendar": "View in calendar",
+      "schedules": "Schedules"
+    },
+    "keyboardHint": "Use ↑/↓ to pick a result, ←/→ for its shortcuts (calendar, schedules) and Enter to open it."
   }
 }

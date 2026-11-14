@@ -14,7 +14,7 @@ import { useEnrollments } from './useEnrollments'
 
 const {
   isMobile, calendarRef, closeDetail,
-  t, filters, loading, selectedSchedule, showQuickModal, showFullModal,
+  t, filters, loading, selectedSchedule, schedules, studentId, studentName, clearStudentFilter, showQuickModal, showFullModal,
   showToast, toastMessage, toastType, calendarOptions,
   uniqueCourses, uniqueTeachers, uniqueTracks, days,
   selectedGroupDaysLabel, selectedGroupIds,
@@ -64,6 +64,18 @@ onUnmounted(() => window.removeEventListener('keydown', closeSheetOnEscape))
         <option v-for="day in days" :key="day.value" :value="day.value">{{ day.label }}</option>
       </TomSelect>
       <Lucide v-if="loading" icon="Loader" class="w-4 h-4 animate-spin text-slate-400 flex-shrink-0" />
+    </div>
+
+    <!-- Student filter (from the quick search) -->
+    <div v-if="studentId" class="flex flex-wrap items-center gap-2 mt-3">
+      <div class="flex items-center gap-1.5 pl-3 pr-1 py-0.5 text-sm border rounded-full border-primary/30 bg-primary/5 text-primary">
+        <Lucide icon="GraduationCap" class="w-4 h-4 stroke-[1.5]" />
+        <span>{{ studentName ? t('enrollments.studentFilter.label', { name: studentName }) : t('enrollments.studentFilter.unnamed') }}</span>
+        <button type="button" class="p-1 rounded-full hover:bg-primary/10" :aria-label="t('enrollments.studentFilter.remove')" :title="t('enrollments.studentFilter.remove')" @click="clearStudentFilter">
+          <Lucide icon="X" class="w-3.5 h-3.5" />
+        </button>
+      </div>
+      <span v-if="!loading && !schedules.length" class="text-sm text-slate-500">{{ t('enrollments.studentFilter.empty') }}</span>
     </div>
   </div>
 

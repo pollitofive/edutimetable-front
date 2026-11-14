@@ -111,6 +111,8 @@ export interface ScheduleFilters {
   track_ids?: string[]
   teacher_ids?: string[]
   days_of_week?: string[]
+  // Only the schedules this student actively attends
+  student_id?: string
 }
 
 export interface EnrollmentData {
@@ -204,6 +206,7 @@ export const enrollmentService = {
     if (filters.track_ids?.length) params.track_ids = filters.track_ids
     if (filters.teacher_ids?.length) params.teacher_ids = filters.teacher_ids
     if (filters.days_of_week?.length) params.days_of_week = filters.days_of_week
+    if (filters.student_id) params.student_id = filters.student_id
     const res = await http.get('/enrollments/schedules', { params })
     return res.data
   },
