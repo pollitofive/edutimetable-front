@@ -38,7 +38,8 @@
     "schedules": "Schedules",
     "enrollments": "Enrollments",
     "logout": "Log Out",
-    "session": "Session"
+    "session": "Session",
+    "profile": "My profile"
   },
   "courseLevels": {
     "title": "Course Level Management",
@@ -687,6 +688,44 @@
       "allTracks": "All Tracks",
       "allTeachers": "All Teachers",
       "allDays": "All Days"
+    }
+  },
+  "profile": {
+    "title": "My profile",
+    "data": {
+      "title": "My details",
+      "name": "Name",
+      "email": "Email"
+    },
+    "password": {
+      "title": "Change password",
+      "current": "Current password",
+      "new": "New password",
+      "confirm": "Repeat the new password",
+      "otherSessionsNote": "Changing it signs you out of your other open sessions (other browsers or devices). This one stays open."
+    },
+    "actions": {
+      "save": "Save",
+      "changePassword": "Change password",
+      "retry": "Retry"
+    },
+    "validation": {
+      "nameRequired": "Name is required.",
+      "emailRequired": "Email is required.",
+      "emailInvalid": "Enter a valid email.",
+      "emailTaken": "That email is already used by another user.",
+      "currentPasswordRequired": "Enter your current password.",
+      "currentPasswordWrong": "The current password is not correct.",
+      "passwordRequired": "Enter the new password.",
+      "passwordMinLength": "The password must be at least {min} characters.",
+      "passwordMismatch": "The passwords do not match."
+    },
+    "messages": {
+      "profileSaved": "Your details were saved.",
+      "profileError": "Your details could not be saved. Try again.",
+      "passwordChanged": "Password changed. Your other sessions were signed out.",
+      "passwordError": "The password could not be changed. Try again.",
+      "loadError": "Your details could not be loaded."
     }
   }
 }
