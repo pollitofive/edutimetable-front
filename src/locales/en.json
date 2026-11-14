@@ -727,5 +727,19 @@
       "passwordError": "The password could not be changed. Try again.",
       "loadError": "Your details could not be loaded."
     }
+  },
+  "quickSearch": {
+    "headerHint": "Quick search...",
+    "placeholder": "Search students, teachers or courses...",
+    "helpTitle": "What can you search?",
+    "helpText": "Type at least {min} letters: a student's name, email or phone, a teacher's name or email, or a course name.",
+    "groups": {
+      "students": "Students",
+      "teachers": "Teachers",
+      "courses": "Courses"
+    },
+    "noResultsTitle": "No results",
+    "noResultsText": "Nothing found for \"{term}\". Try a different term.",
+    "error": "The search failed. Try again."
   }
 }
