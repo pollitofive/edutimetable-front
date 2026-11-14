@@ -43,6 +43,32 @@ export function useDashboard() {
     return course.slots.map((s, i) => `${days[i]} ${s.starts_at} - ${s.ends_at}`).join(' · ')
   }
 
+  // Filters of the "courses with open spots" table, applied on the client
+  const filterTeacherId = ref('')
+  const filterDay = ref('')
+
+  const teacherOptions = computed(() =>
+    [...(data.value?.teacher_load ?? [])].map(l => l.teacher).sort((a, b) => a.name.localeCompare(b.name))
+  )
+
+  const dayOptions = computed(() =>
+    [1, 2, 3, 4, 5, 6, 0].map(d => ({ value: String(d), label: t(`schedules.days.${dayKeys[d]}`) }))
+  )
+
+  const filteredCourses = computed(() =>
+    (data.value?.courses_with_capacity ?? []).filter(course =>
+      (!filterTeacherId.value || course.teachers.some(teacher => String(teacher.id) === filterTeacherId.value)) &&
+      (!filterDay.value || course.slots.some(slot => String(slot.day_of_week) === filterDay.value))
+    )
+  )
+
+  const hasActiveFilters = computed(() => !!filterTeacherId.value || !!filterDay.value)
+
+  function clearFilters() {
+    filterTeacherId.value = ''
+    filterDay.value = ''
+  }
+
   const occupancy = (course: CourseWithCapacity) =>
     course.capacity > 0 ? Math.round((course.enrolled / course.capacity) * 100) : 0
 
@@ -52,5 +78,8 @@ export function useDashboard() {
 
   onMounted(load)
 
-  return { t, data, error, load, totalCards, slotsLabel, occupancy, maxWeeklyHours }
+  return {
+    t, data, error, load, totalCards, slotsLabel, occupancy, maxWeeklyHours,
+    filterTeacherId, filterDay, teacherOptions, dayOptions, filteredCourses, hasActiveFilters, clearFilters,
+  }
 }

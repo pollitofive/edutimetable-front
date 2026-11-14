@@ -591,6 +591,10 @@
       "occupancy": "Ocupación",
       "spots": "{n} lugares",
       "empty": "No hay cursos con lugares disponibles",
+      "allTeachers": "Todos los profesores",
+      "allDays": "Todos los días",
+      "clearFilters": "Limpiar filtros",
+      "noMatches": "Ningún curso con cupo coincide con los filtros",
       "goToEnrollments": "Ver en Inscripciones"
     },
     "teacherLoad": {

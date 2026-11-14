@@ -591,6 +591,10 @@
       "occupancy": "Occupancy",
       "spots": "{n} spots",
       "empty": "No courses with open spots",
+      "allTeachers": "All teachers",
+      "allDays": "All days",
+      "clearFilters": "Clear filters",
+      "noMatches": "No courses with open spots match the filters",
       "goToEnrollments": "View in Enrollments"
     },
     "teacherLoad": {

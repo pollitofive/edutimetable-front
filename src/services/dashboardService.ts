@@ -14,7 +14,7 @@ export interface CourseWithCapacity {
   course: { id: number; name: string }
   track: { id: number; name: string }
   level: string
-  teachers: string[]
+  teachers: Array<{ id: number; name: string }>
   slots: Array<{ day_of_week: number; starts_at: string; ends_at: string }>
   capacity: number
   enrolled: number

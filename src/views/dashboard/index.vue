@@ -2,9 +2,13 @@
 import Lucide from '@/components/Base/Lucide'
 import Button from '@/components/Base/Button'
 import Table from '@/components/Base/Table'
+import { FormSelect } from '@/components/Base/Form'
 import { useDashboard } from './useDashboard'
 
-const { t, data, error, load, totalCards, slotsLabel, occupancy, maxWeeklyHours } = useDashboard()
+const {
+  t, data, error, load, totalCards, slotsLabel, occupancy, maxWeeklyHours,
+  filterTeacherId, filterDay, teacherOptions, dayOptions, filteredCourses, hasActiveFilters, clearFilters,
+} = useDashboard()
 </script>
 
 <template>
@@ -47,10 +51,33 @@ const { t, data, error, load, totalCards, slotsLabel, occupancy, maxWeeklyHours 
         <div class="p-5 border-b border-slate-200/60">
           <div class="font-medium">{{ t('dashboard.coursesWithCapacity.title') }}</div>
           <div class="text-xs text-slate-400 mt-0.5">{{ t('dashboard.coursesWithCapacity.subtitle') }}</div>
+          <div class="flex flex-col gap-3 mt-4 sm:flex-row sm:items-center">
+            <div class="relative sm:flex-1">
+              <div class="absolute inset-y-0 left-0 z-10 flex items-center pl-3 pointer-events-none">
+                <Lucide icon="SquareUser" class="w-4 h-4 text-slate-400" />
+              </div>
+              <FormSelect v-model="filterTeacherId" class="pl-10">
+                <option value="">{{ t('dashboard.coursesWithCapacity.allTeachers') }}</option>
+                <option v-for="teacher in teacherOptions" :key="teacher.id" :value="String(teacher.id)">{{ teacher.name }}</option>
+              </FormSelect>
+            </div>
+            <div class="relative sm:flex-1">
+              <div class="absolute inset-y-0 left-0 z-10 flex items-center pl-3 pointer-events-none">
+                <Lucide icon="Calendar" class="w-4 h-4 text-slate-400" />
+              </div>
+              <FormSelect v-model="filterDay" class="pl-10">
+                <option value="">{{ t('dashboard.coursesWithCapacity.allDays') }}</option>
+                <option v-for="day in dayOptions" :key="day.value" :value="day.value">{{ day.label }}</option>
+              </FormSelect>
+            </div>
+            <Button v-if="hasActiveFilters" variant="outline-secondary" class="w-full sm:w-auto" @click="clearFilters">
+              <Lucide icon="X" class="w-4 h-4 mr-2" />{{ t('dashboard.coursesWithCapacity.clearFilters') }}
+            </Button>
+          </div>
         </div>
-        <div v-if="!data.courses_with_capacity.length" class="flex flex-col items-center gap-3 py-10 text-sm text-slate-500">
+        <div v-if="!filteredCourses.length" class="flex flex-col items-center gap-3 py-10 text-sm text-slate-500">
           <Lucide icon="Inbox" class="w-10 h-10 text-slate-300" />
-          {{ t('dashboard.coursesWithCapacity.empty') }}
+          {{ hasActiveFilters ? t('dashboard.coursesWithCapacity.noMatches') : t('dashboard.coursesWithCapacity.empty') }}
         </div>
         <div v-else class="overflow-x-auto">
           <Table>
@@ -64,14 +91,14 @@ const { t, data, error, load, totalCards, slotsLabel, occupancy, maxWeeklyHours 
               </Table.Tr>
             </Table.Thead>
             <Table.Tbody>
-              <Table.Tr v-for="course in data.courses_with_capacity" :key="course.group_id ?? course.schedule_id" class="[&_td]:last:border-b-0">
+              <Table.Tr v-for="course in filteredCourses" :key="course.group_id ?? course.schedule_id" class="[&_td]:last:border-b-0">
                 <Table.Td class="py-4 border-dashed dark:bg-darkmode-600">
                   <div class="font-medium">{{ course.course.name }}</div>
                   <div class="px-2 py-0.5 mt-1 text-xs font-semibold rounded-md bg-primary/10 text-primary inline-block">{{ course.track.name }} · {{ course.level }}</div>
                   <div class="mt-1 text-xs text-slate-500 md:hidden">{{ slotsLabel(course) }}</div>
                 </Table.Td>
                 <Table.Td class="hidden md:table-cell py-4 border-dashed dark:bg-darkmode-600 text-slate-600">{{ slotsLabel(course) }}</Table.Td>
-                <Table.Td class="hidden lg:table-cell py-4 border-dashed dark:bg-darkmode-600 text-slate-600">{{ course.teachers.join(', ') }}</Table.Td>
+                <Table.Td class="hidden lg:table-cell py-4 border-dashed dark:bg-darkmode-600 text-slate-600">{{ course.teachers.map(teacher => teacher.name).join(', ') }}</Table.Td>
                 <Table.Td class="py-4 border-dashed dark:bg-darkmode-600">
                   <div class="flex items-center gap-2 whitespace-nowrap">
                     <span class="font-mono text-sm">{{ course.enrolled }}/{{ course.capacity }}</span>
