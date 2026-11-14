@@ -27,6 +27,14 @@ const {
   <div class="flex flex-col gap-y-3 md:h-10 md:flex-row md:items-center">
     <div class="text-base font-medium">{{ t('teachers.title') }}</div>
     <div class="flex flex-col gap-x-3 gap-y-2 sm:flex-row md:ml-auto">
+      <Button
+        as="router-link"
+        variant="outline-secondary"
+        :to="{ name: 'print-teacher', params: { id: 'all' }, query: { ...(filterName ? { name: filterName } : {}), ...(filterEmail ? { email: filterEmail } : {}) } }"
+      >
+        <Lucide icon="Printer" class="w-4 h-4 mr-2" />
+        {{ t('print.actions.printAllTeachers') }}
+      </Button>
       <Button variant="primary" @click="openCreateModal">
         <Lucide icon="Plus" class="w-4 h-4 mr-2" />
         {{ t('teachers.newTeacher') }}
@@ -157,6 +165,16 @@ const {
             </Table.Td>
             <Table.Td class="relative py-4 border-dashed dark:bg-darkmode-600">
               <div class="flex items-center justify-center gap-2">
+                <Button
+                  as="router-link"
+                  variant="outline-secondary"
+                  size="sm"
+                  :to="{ name: 'print-teacher', params: { id: teacher.id }, query: { teacher_name: teacher.name } }"
+                  :title="t('print.actions.printTeacher')"
+                  :aria-label="t('print.actions.printTeacher')"
+                >
+                  <Lucide icon="Printer" class="w-3.5 h-3.5" />
+                </Button>
                 <Button variant="outline-secondary" size="sm" @click="openEditModal(teacher)" :title="t('teachers.actions.edit')" class="sm:w-20">
                   <Lucide icon="Edit" class="w-3.5 h-3.5 sm:mr-1" />
                   <span class="hidden sm:inline">{{ t('teachers.actions.edit') }}</span>

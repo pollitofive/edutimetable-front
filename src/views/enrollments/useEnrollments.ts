@@ -18,6 +18,7 @@ import {
   type ScheduleChangeApplyResult,
 } from '@/services/enrollmentService'
 import { useTrackOptions } from '@/views/tracks/useTracks'
+import { getTrackColor } from '@/utils/trackColor'
 
 type EnrollmentToDrop = ScheduleData['active_enrollments'][number]
 
@@ -141,15 +142,6 @@ export function useEnrollments() {
     return monday.toISOString().split('T')[0]
   }
 
-  // Deterministic color per track id — stays stable regardless of locale or
-  // track name, and needs no hardcoded entry when a new track is created.
-  const trackColorPalette = ['#10b981', '#f97316', '#3b82f6', '#8b5cf6', '#ec4899', '#14b8a6', '#eab308', '#ef4444']
-
-  function getTrackColor(trackId: number | string): string {
-    const id = Number(trackId)
-    if (isNaN(id)) return '#6b7280'
-    return trackColorPalette[id % trackColorPalette.length]
-  }
 
   function buildEvents(data: ScheduleData[]): EventInput[] {
     return data.map(s => ({

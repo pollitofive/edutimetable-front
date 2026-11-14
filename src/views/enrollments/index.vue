@@ -40,7 +40,11 @@ onUnmounted(() => window.removeEventListener('keydown', closeSheetOnEscape))
       <div class="text-base font-medium">{{ t('enrollments.title') }}</div>
       <div class="text-xs text-slate-400 mt-0.5">{{ t('enrollments.subtitle') }}</div>
     </div>
-    <div class="md:ml-auto">
+    <div class="flex flex-col gap-2 sm:flex-row md:ml-auto">
+      <Button as="router-link" variant="outline-secondary" :to="{ name: 'print-timetable', query: $route.query }">
+        <Lucide icon="Printer" class="w-4 h-4 mr-2" />
+        {{ t('print.actions.printTimetable') }}
+      </Button>
       <Button variant="primary" @click="openFullModal">
         <Lucide icon="UserPlus" class="w-4 h-4 mr-2" />
         {{ t('enrollments.enrollStudent') }}

@@ -11,6 +11,25 @@ const router = createRouter({
             name: "login",
             component: () => import("../views/login/index.vue"),
         },
+        // Printable views: outside the layout (no menu or header)
+        {
+            path: "/print/timetable",
+            name: "print-timetable",
+            meta: { requiresAuth: true },
+            component: () => import("../views/print/PrintTimetable.vue"),
+        },
+        {
+            path: "/print/teacher/:id",
+            name: "print-teacher",
+            meta: { requiresAuth: true },
+            component: () => import("../views/print/PrintTeacher.vue"),
+        },
+        {
+            path: "/print/course/:groupId",
+            name: "print-course",
+            meta: { requiresAuth: true },
+            component: () => import("../views/print/PrintCourse.vue"),
+        },
         {
             path: "/",
             component: Layout,
