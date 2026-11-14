@@ -794,6 +794,11 @@
       "printTeacher": "Print timetable",
       "printAllTeachers": "Print timetables"
     },
-    "previewHint": "Sheet preview: pinch to zoom in."
+    "zoom": {
+      "label": "Preview zoom",
+      "in": "Zoom in",
+      "out": "Zoom out",
+      "fit": "Fit to screen"
+    }
   }
 }

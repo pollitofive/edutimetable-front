@@ -794,6 +794,11 @@
       "printTeacher": "Imprimir horario",
       "printAllTeachers": "Imprimir horarios"
     },
-    "previewHint": "Vista previa de la hoja: pellizcá para ampliar."
+    "zoom": {
+      "label": "Zoom de la vista previa",
+      "in": "Acercar",
+      "out": "Alejar",
+      "fit": "Ajustar a la pantalla"
+    }
   }
 }

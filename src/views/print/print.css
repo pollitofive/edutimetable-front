@@ -20,23 +20,16 @@
   max-width: 210mm;
 }
 
-.print-preview-hint {
-  margin: -0.5rem 0 0.75rem;
-  text-align: center;
-  font-size: 0.75rem;
-  color: #64748b;
-}
-
 /* On screen the sheet is a preview of the paper: the real A4 width (minus the 10mm
-   margins as padding), shrunk with zoom by PrintLayout when the screen is narrower */
+   margins as padding), zoomed by PrintLayout (fit to the screen, or the −/+ buttons);
+   zoomed in, the stage scrolls sideways */
 .print-stage {
-  display: flex;
-  justify-content: center;
+  overflow-x: auto;
 }
 
 .print-sheet {
-  flex: none;
   box-sizing: border-box;
+  margin: 0 auto;
   width: 297mm;
   padding: 10mm;
   background: #fff;
@@ -230,7 +223,7 @@
   }
 
   .print-stage {
-    display: block;
+    overflow: visible;
   }
 
   .print-sheet {
