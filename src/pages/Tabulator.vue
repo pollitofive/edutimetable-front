@@ -10,7 +10,6 @@ import {
   FormLabel,
   FormSelect,
 } from "@/components/Base/Form";
-import * as xlsx from "xlsx";
 import { onMounted, ref, reactive } from "vue";
 import { createIcons, icons } from "lucide";
 import { TabulatorFull as Tabulator } from "tabulator-tables";
@@ -294,15 +293,6 @@ const onExportJson = () => {
   }
 };
 
-const onExportXlsx = () => {
-  if (tabulator.value) {
-    (window as any).XLSX = xlsx;
-    tabulator.value.download("xlsx", "data.xlsx", {
-      sheetName: "Products",
-    });
-  }
-};
-
 const onExportHtml = () => {
   if (tabulator.value) {
     tabulator.value.download("html", "data.html", {
@@ -449,10 +439,6 @@ onMounted(() => {
                   <Menu.Item @click="onExportJson">
                     <Lucide icon="FileCheck2" class="w-4 h-4 mr-2" />
                     Export JSON
-                  </Menu.Item>
-                  <Menu.Item @click="onExportXlsx">
-                    <Lucide icon="FileCheck2" class="w-4 h-4 mr-2" />
-                    Export XLSX
                   </Menu.Item>
                   <Menu.Item @click="onExportHtml">
                     <Lucide icon="FileCheck2" class="w-4 h-4 mr-2" />

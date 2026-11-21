@@ -800,5 +800,95 @@
       "out": "Alejar",
       "fit": "Ajustar a la pantalla"
     }
+  },
+  "imports": {
+    "title": {
+      "students": "Importar alumnos",
+      "teachers": "Importar profesores"
+    },
+    "importButton": "Importar",
+    "stepOf": "Paso {n} de {total}",
+    "steps": {
+      "file": "Archivo",
+      "columns": "Columnas",
+      "levels": "Niveles",
+      "review": "Revisión",
+      "result": "Resultado"
+    },
+    "fields": {
+      "name": "Nombre",
+      "email": "Email",
+      "phone": "Teléfono",
+      "level": "Nivel"
+    },
+    "status": {
+      "new": "Nuevas",
+      "update": "Se actualizan",
+      "skip": "Se saltean",
+      "error": "Con error"
+    },
+    "next": "Siguiente",
+    "back": "Volver",
+    "cancel": "Cancelar",
+    "templateFilename": {
+      "students": "plantilla-alumnos.xlsx",
+      "teachers": "plantilla-profesores.xlsx"
+    },
+    "file": {
+      "intro": {
+        "students": "Subí la planilla con tus alumnos. La primera fila tiene que tener los encabezados (nombre, email, teléfono, nivel).",
+        "teachers": "Subí la planilla con tus profesores. La primera fila tiene que tener los encabezados (nombre, email, teléfono)."
+      },
+      "choose": "Elegí un archivo o arrastralo acá",
+      "reading": "Leyendo el archivo...",
+      "formats": "Excel (.xlsx) o CSV, hasta 2 MB y 2000 filas",
+      "template": "Descargar planilla de ejemplo"
+    },
+    "columns": {
+      "intro": "Encontramos {n} filas. Indicá en qué columna está cada dato.",
+      "choose": "Elegí una columna",
+      "skip": "No importar",
+      "missing": "Falta elegir la columna de: {fields}.",
+      "repeated": "Hay una misma columna asignada a dos datos.",
+      "sample": "Así se van a leer las primeras filas"
+    },
+    "levels": {
+      "intro": "Elegí a qué nivel corresponde cada valor de la columna Nivel. Se asigna una sola vez por valor.",
+      "rows": "{n} fila | {n} filas",
+      "unassigned": "Sin asignar (esas filas no se importan)",
+      "noLevels": "Todavía no hay niveles cargados. Creá las pistas y sus niveles antes de importar alumnos.",
+      "unmappedHint": "Queda {n} valor sin asignar: sus filas van a figurar con error. | Quedan {n} valores sin asignar: sus filas van a figurar con error."
+    },
+    "review": {
+      "duplicates": "Si el email ya existe:",
+      "duplicatesMode": {
+        "skip": "Saltear",
+        "update": "Actualizar datos"
+      },
+      "downloadErrors": "Descargar filas con error",
+      "reasonColumn": "Motivo",
+      "errorsFilename": "{file}-errores.csv",
+      "row": "Fila {n}",
+      "empty": "No hay filas con este estado.",
+      "truncated": "Se muestran {shown} de {total} filas.",
+      "import": "Importar {n} fila | Importar {n} filas"
+    },
+    "result": {
+      "title": "Importación terminada",
+      "created": "{n} creado | {n} creados",
+      "updated": "{n} actualizado | {n} actualizados",
+      "skipped": "{n} salteado (ya existía) | {n} salteados (ya existían)",
+      "rejected": "{n} fila con error no se importó | {n} filas con error no se importaron",
+      "goToList": {
+        "students": "Ver alumnos",
+        "teachers": "Ver profesores"
+      }
+    },
+    "errors": {
+      "parse": "No se pudo leer el archivo.",
+      "preview": "No se pudo revisar la importación.",
+      "commit": "No se pudo importar. No se guardó ningún cambio.",
+      "template": "No se pudo descargar la planilla de ejemplo."
+    }
   }
 }
