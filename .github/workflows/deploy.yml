@@ -19,7 +19,21 @@ env:
   VPS_HOST_KEY: 82.25.93.70 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIZC7NZzC6B5X+kGQzbV3E5b6v43CoKyazr8O4IQROvG
 
 jobs:
+  # Si los tests fallan, no se deploya a ningún ambiente.
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npm run test
+
   deploy:
+    needs: test
     runs-on: ubuntu-latest
     timeout-minutes: 20
     environment:
