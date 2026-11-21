@@ -19,7 +19,7 @@ const projectName = import.meta.env.VITE_PROJECT_NAME || 'Edutimetable'
       </div>
     </div>
     <div class="mt-3 font-medium text-slate-500">{{ projectName }}</div>
-    <div class="mt-8 text-6xl font-medium text-primary">404</div>
+    <div data-testid="not-found" class="mt-8 text-6xl font-medium text-primary">404</div>
     <div class="mt-4 text-xl font-medium">{{ t('notFound.title') }}</div>
     <div class="mt-2 text-slate-500">{{ t('notFound.description') }}</div>
     <RouterLink to="/" class="mt-8">

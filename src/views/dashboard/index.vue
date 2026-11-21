@@ -28,7 +28,7 @@ const {
 
   <template v-else-if="data">
     <!-- Totals -->
-    <div class="grid grid-cols-2 gap-4 mt-5 lg:grid-cols-4">
+    <div data-testid="dashboard-totals" class="grid grid-cols-2 gap-4 mt-5 lg:grid-cols-4">
       <router-link
         v-for="card in totalCards"
         :key="card.label"

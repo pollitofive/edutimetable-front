@@ -25,11 +25,11 @@ const { t, email, password, rememberMe, isLoading, errors, handleLogin, handleKe
           <div class="text-2xl font-medium">{{ t('login.title') }}</div>
           <div class="mt-6">
             <FormLabel>{{ t('login.email') }}*</FormLabel>
-            <FormInput v-model="email" type="email" class="block px-4 py-3.5 rounded-[0.6rem] border-slate-300/80" :class="{ 'border-red-500': errors.email }" placeholder="admin@example.com" @keypress="handleKeyPress" :disabled="isLoading" />
+            <FormInput v-model="email" data-testid="login-email" type="email" class="block px-4 py-3.5 rounded-[0.6rem] border-slate-300/80" :class="{ 'border-red-500': errors.email }" placeholder="admin@example.com" @keypress="handleKeyPress" :disabled="isLoading" />
             <div v-if="errors.email" class="mt-1 text-xs text-red-500">{{ errors.email }}</div>
 
             <FormLabel class="mt-4">{{ t('login.password') }}*</FormLabel>
-            <FormInput v-model="password" type="password" class="block px-4 py-3.5 rounded-[0.6rem] border-slate-300/80" :class="{ 'border-red-500': errors.password }" placeholder="************" @keypress="handleKeyPress" :disabled="isLoading" />
+            <FormInput v-model="password" data-testid="login-password" type="password" class="block px-4 py-3.5 rounded-[0.6rem] border-slate-300/80" :class="{ 'border-red-500': errors.password }" placeholder="************" @keypress="handleKeyPress" :disabled="isLoading" />
             <div v-if="errors.password" class="mt-1 text-xs text-red-500">{{ errors.password }}</div>
 
             <div class="flex mt-4 text-xs text-slate-500 sm:text-sm">
@@ -41,7 +41,7 @@ const { t, email, password, rememberMe, isLoading, errors, handleLogin, handleKe
             </div>
 
             <div class="mt-5 text-center xl:mt-8 xl:text-left">
-              <Button variant="primary" rounded class="bg-gradient-to-r from-theme-1/70 to-theme-2/70 w-full py-3.5 xl:mr-3 dark:border-darkmode-400" @click="handleLogin" :disabled="isLoading">
+              <Button variant="primary" rounded class="bg-gradient-to-r from-theme-1/70 to-theme-2/70 w-full py-3.5 xl:mr-3 dark:border-darkmode-400" data-testid="login-submit" @click="handleLogin" :disabled="isLoading">
                 <Lucide v-if="isLoading" icon="Loader" class="w-4 h-4 mr-2 animate-spin" />
                 {{ isLoading ? t('login.signingIn') : t('login.signIn') }}
               </Button>

@@ -85,7 +85,7 @@ onUnmounted(() => window.removeEventListener('keydown', closeSheetOnEscape))
 
   <!-- Calendar + Panel -->
   <div class="flex gap-4 mt-4 items-start">
-    <div class="flex-1 min-w-0 box box--stacked overflow-hidden">
+    <div data-testid="enrollments-calendar" class="flex-1 min-w-0 box box--stacked overflow-hidden">
       <FullCalendar ref="calendarRef" :options="calendarOptions" />
     </div>
 
@@ -97,16 +97,17 @@ onUnmounted(() => window.removeEventListener('keydown', closeSheetOnEscape))
       </div>
 
       <!-- Schedule detail -->
-      <ScheduleDetail
-        v-if="selectedSchedule && !isMobile"
-        :schedule="selectedSchedule"
-        :group-days-label="selectedGroupDaysLabel"
-        :track-color="getTrackColor(selectedSchedule.course.course_level.track.id)"
-        :show-drag-hint="true"
-        @enroll="openQuickModal"
-        @drop="openDropConfirm"
-        @schedule-change="openScheduleChange"
-      />
+      <div v-if="selectedSchedule && !isMobile" data-testid="schedule-detail">
+        <ScheduleDetail
+          :schedule="selectedSchedule"
+          :group-days-label="selectedGroupDaysLabel"
+          :track-color="getTrackColor(selectedSchedule.course.course_level.track.id)"
+          :show-drag-hint="true"
+          @enroll="openQuickModal"
+          @drop="openDropConfirm"
+          @schedule-change="openScheduleChange"
+        />
+      </div>
     </div>
   </div>
 
@@ -114,7 +115,7 @@ onUnmounted(() => window.removeEventListener('keydown', closeSheetOnEscape))
   <Teleport to="body">
   <div v-if="isMobile && selectedSchedule" class="fixed inset-0 z-50 flex flex-col justify-end md:hidden">
     <div class="absolute inset-0 bg-black/50" @click="closeDetail"></div>
-    <div class="relative max-h-[85vh] overflow-y-auto bg-white rounded-t-2xl shadow-xl dark:bg-darkmode-600">
+    <div data-testid="schedule-detail" class="relative max-h-[85vh] overflow-y-auto bg-white rounded-t-2xl shadow-xl dark:bg-darkmode-600">
       <div class="sticky top-0 z-10 flex items-center justify-end px-3 py-2 bg-white rounded-t-2xl dark:bg-darkmode-600">
         <div class="absolute left-1/2 -translate-x-1/2 w-10 h-1 rounded-full bg-slate-300"></div>
         <button type="button" class="p-1.5 rounded-full text-slate-500 hover:bg-slate-100" :title="t('enrollments.cancel')" @click="closeDetail">
