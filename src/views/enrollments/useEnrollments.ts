@@ -19,11 +19,11 @@ import {
 } from '@/services/enrollmentService'
 import { useTrackOptions } from '@/views/tracks/useTracks'
 import { getTrackColor } from '@/utils/trackColor'
+import {
+  toArr, getMonday, buildEvents, computeHiddenDays, uniqueCoursesFor, uniqueTeachersFor,
+} from './calendarEvents'
 
 type EnrollmentToDrop = ScheduleData['active_enrollments'][number]
-
-const toArr =(v: string | string[] | undefined): string[] =>
-  v === undefined ? [] : Array.isArray(v) ? v : [v]
 
 export function useEnrollments() {
   const { t, locale } = useI18n()
@@ -82,23 +82,9 @@ export function useEnrollments() {
 
   // ── Filter options ─────────────────────────────────────────────────────────
   // Narrowed to the selected tracks; with no track selected it lists them all
-  const uniqueCourses = computed(() => {
-    const seen = new Set<number>()
-    const trackIds = filters.track_ids.map(String)
-    return allSchedules.value
-      .filter(s => !trackIds.length || trackIds.includes(String(s.course.course_level.track.id)))
-      .filter(s => { const ok = !seen.has(s.course.id); seen.add(s.course.id); return ok })
-      .map(s => s.course)
-      .sort((a, b) => a.name.localeCompare(b.name))
-  })
+  const uniqueCourses = computed(() => uniqueCoursesFor(allSchedules.value, filters.track_ids))
 
-  const uniqueTeachers = computed(() => {
-    const seen = new Set<number>()
-    return allSchedules.value
-      .filter(s => { const ok = !seen.has(s.teacher.id); seen.add(s.teacher.id); return ok })
-      .map(s => s.teacher)
-      .sort((a, b) => a.name.localeCompare(b.name))
-  })
+  const uniqueTeachers = computed(() => uniqueTeachersFor(allSchedules.value))
 
   const uniqueTracks = computed(() => [...trackOptions.value].sort((a, b) => a.name.localeCompare(b.name)))
 
@@ -128,35 +114,6 @@ export function useEnrollments() {
   const selectedGroupIds = computed(() => selectedGroupSchedules.value.map(s => s.id))
 
   // ── Calendar helpers ───────────────────────────────────────────────────────
-  function getMonday(): string {
-    const now = new Date()
-    const diff = now.getDay() === 0 ? -6 : 1 - now.getDay()
-    const monday = new Date(now)
-    monday.setDate(now.getDate() + diff)
-    return monday.toISOString().split('T')[0]
-  }
-
-  function getDateForDow(dow: number): string {
-    const monday = new Date(getMonday())
-    monday.setDate(monday.getDate() + (dow === 0 ? 6 : dow - 1))
-    return monday.toISOString().split('T')[0]
-  }
-
-
-  function buildEvents(data: ScheduleData[]): EventInput[] {
-    return data.map(s => ({
-      id: String(s.id),
-      start: `${getDateForDow(s.day_of_week)}T${s.starts_at}`,
-      end: `${getDateForDow(s.day_of_week)}T${s.ends_at}`,
-      backgroundColor: getTrackColor(s.course.course_level.track.id),
-      borderColor: 'transparent',
-      // Only single-day courses are moved by dragging; the others go through
-      // the "simulate schedule change" button in the panel
-      editable: s.group_slots.length === 1,
-      extendedProps: { schedule: s },
-    }))
-  }
-
   const toHHmm = (d: Date) => `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
 
   // Drop or resize of a single-day course: simulate it right away. The block
@@ -277,15 +234,9 @@ export function useEnrollments() {
 
   const filterTimeout = ref<ReturnType<typeof setTimeout> | null>(null)
 
-  function computeHiddenDays(): number[] {
-    if (!filters.days_of_week.length) return [0]
-    const selected = filters.days_of_week.map(Number)
-    return [0, 1, 2, 3, 4, 5, 6].filter(d => !selected.includes(d))
-  }
-
   function applyFilters() {
     selectedSchedule.value = null
-    calendarOptions.hiddenDays = computeHiddenDays()
+    calendarOptions.hiddenDays = computeHiddenDays(filters.days_of_week)
     if (filterTimeout.value) clearTimeout(filterTimeout.value)
     filterTimeout.value = setTimeout(loadSchedules, 1000)
   }
@@ -306,7 +257,7 @@ export function useEnrollments() {
     },
     () => {
       selectedSchedule.value = null
-      calendarOptions.hiddenDays = computeHiddenDays()
+      calendarOptions.hiddenDays = computeHiddenDays(filters.days_of_week)
       void loadSchedules()
     }
   )
