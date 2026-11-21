@@ -11,7 +11,10 @@
     "type-check": "vue-tsc --build --force",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "e2e": "bash scripts/e2e.sh local",
+    "e2e:staging": "bash scripts/e2e.sh staging",
+    "e2e:ui": "bash scripts/e2e.sh local --ui"
   },
   "dependencies": {
     "@apollo/client": "^3.14.0",
@@ -58,6 +61,7 @@
     "zoom-vanilla.js": "2.0.6"
   },
   "devDependencies": {
+    "@playwright/test": "1.65.1",
     "@tailwindcss/forms": "0.5.7",
     "@tsconfig/node18": "18.2.2",
     "@types/dropzone": "5.7.8",

@@ -84,7 +84,7 @@ const {
 
     <!-- Table -->
     <div v-else class="overflow-x-auto">
-      <Table class="border-b border-slate-200/60">
+      <Table data-testid="students-table" class="border-b border-slate-200/60">
         <Table.Thead>
           <Table.Tr>
             <Table.Td class="py-4 font-medium bg-slate-50 dark:bg-darkmode-800 text-slate-500 border-slate-200/60 whitespace-nowrap">{{ t('students.columns.name') }}</Table.Td>

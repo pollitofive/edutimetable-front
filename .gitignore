@@ -35,3 +35,9 @@ coverage
 
 # Local AI dev tools
 .clauderules
+
+# Playwright (E2E)
+.env.e2e
+/test-results/
+/playwright-report/
+/e2e/.auth/
