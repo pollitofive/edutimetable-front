@@ -6,6 +6,8 @@ import { FormInput, FormLabel, FormSelect } from '@/components/Base/Form'
 import Table from '@/components/Base/Table'
 import Pagination from '@/components/Base/Pagination'
 import ToastNotification from '@/views/components/ToastNotification.vue'
+import { ref } from 'vue'
+import ImportWizard from '@/views/components/imports/ImportWizard.vue'
 import { useStudents } from './useStudents'
 
 const {
@@ -19,12 +21,18 @@ const {
   handleSave, openDeleteConfirm, handleDelete, cancelDelete,
   goToPage, changePerPage, clearFilters, retryFetch, handleToastClose,
 } = useStudents()
+
+const showImport = ref(false)
 </script>
 
 <template>
   <div class="flex flex-col gap-y-3 md:h-10 md:flex-row md:items-center">
     <div class="text-base font-medium">{{ t('students.title') }}</div>
     <div class="flex flex-col gap-x-3 gap-y-2 sm:flex-row md:ml-auto">
+      <Button variant="outline-secondary" @click="showImport = true">
+        <Lucide icon="Upload" class="w-4 h-4 mr-2" />
+        {{ t('imports.importButton') }}
+      </Button>
       <Button variant="primary" @click="openCreateModal">
         <Lucide icon="Plus" class="w-4 h-4 mr-2" />
         {{ t('students.newStudent') }}
@@ -175,7 +183,8 @@ const {
         </div>
         <div class="col-span-12">
           <FormLabel htmlFor="student-phone">{{ t('students.form.phoneLabel') }}</FormLabel>
-          <FormInput id="student-phone" v-model="formData.phone" type="tel" :placeholder="t('students.form.phonePlaceholder')" />
+          <FormInput id="student-phone" v-model="formData.phone" type="tel" :placeholder="t('students.form.phonePlaceholder')" :class="{ 'border-danger': formErrors.phone }" />
+          <div v-if="formErrors.phone" class="mt-1 text-xs text-danger">{{ formErrors.phone }}</div>
         </div>
         <div class="col-span-12 sm:col-span-6">
           <FormLabel htmlFor="student-track">{{ t('students.form.trackLabel') }} {{ t('students.form.required') }}</FormLabel>
@@ -227,4 +236,6 @@ const {
   </Dialog>
 
   <ToastNotification :show="showToast" :message="toastMessage" :type="toastType" @close="handleToastClose" />
+
+  <ImportWizard :visible="showImport" type="students" @close="showImport = false" @imported="retryFetch()" />
 </template>

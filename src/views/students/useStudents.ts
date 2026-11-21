@@ -6,6 +6,7 @@ import { useI18n } from '@/composables/useI18n'
 import { useLoading } from '@/composables/useLoading'
 import { useQueryFilterSync } from '@/composables/useQueryFilterSync'
 import { useTrackOptions } from '@/views/tracks/useTracks'
+import { graphqlValidationErrors } from '@/utils/graphqlErrors'
 
 export interface CourseLevel { id: string; track: { id: string; name: string }; name: string; slug: string; sort_order: number }
 export interface Student { id: string; name: string; email: string; phone?: string; course_level_id: string; courseLevel?: CourseLevel }
@@ -47,7 +48,7 @@ export function useStudents() {
   const selectedStudent = ref<Student | null>(null)
   const formData = ref<FormData>({ name: '', email: '', phone: '', course_level_id: '' })
   const formState = ref({ selectedTrackId: '' })
-  const formErrors = ref<{ name?: string; email?: string; course_level_id?: string }>({})
+  const formErrors = ref<{ name?: string; email?: string; phone?: string; course_level_id?: string }>({})
   const deleteConfirmModal = ref(false)
   const studentToDelete = ref<Student | null>(null)
   const showToast = ref(false)
@@ -171,7 +172,12 @@ export function useStudents() {
         notify(t('students.messages.createSuccess'))
       }
       closeModal(); applyFilters()
-    } catch (err: any) { notify(err.message || t('students.messages.generalError'), 'error') }
+    } catch (err: any) {
+      // Server-side validation (e.g. an email already used): shown under each field
+      const validation = graphqlValidationErrors(err)
+      if (validation) { formErrors.value = validation; return }
+      notify(err.message || t('students.messages.generalError'), 'error')
+    }
   }
 
   const openDeleteConfirm = (student: Student) => { studentToDelete.value = student; deleteConfirmModal.value = true }

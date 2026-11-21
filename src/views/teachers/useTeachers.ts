@@ -6,6 +6,7 @@ import { useI18n } from '@/composables/useI18n'
 import { useLoading } from '@/composables/useLoading'
 import { useQueryFilterSync } from '@/composables/useQueryFilterSync'
 import { useDayNames } from '@/composables/useDayNames'
+import { graphqlValidationErrors } from '@/utils/graphqlErrors'
 
 export interface Teacher {
   id: string
@@ -133,7 +134,7 @@ export function useTeachers() {
   const showModal = ref(false)
   const selectedTeacher = ref<Teacher | null>(null)
   const formData = ref<FormData>({ name: '', email: '', phone: '' })
-  const formErrors = ref<{ name?: string; email?: string }>({})
+  const formErrors = ref<{ name?: string; email?: string; phone?: string }>({})
   const deleteConfirmModal = ref(false)
   const teacherToDelete = ref<Teacher | null>(null)
   const showToast = ref(false)
@@ -267,6 +268,12 @@ export function useTeachers() {
       closeModal()
       refetch()
     } catch (err: any) {
+      // Server-side validation (e.g. an email already used): shown under each field
+      const validation = graphqlValidationErrors(err)
+      if (validation) {
+        formErrors.value = validation
+        return
+      }
       notify(err.message || t('teachers.messages.generalError'), 'error')
     }
   }

@@ -800,5 +800,95 @@
       "out": "Zoom out",
       "fit": "Fit to screen"
     }
+  },
+  "imports": {
+    "title": {
+      "students": "Import students",
+      "teachers": "Import teachers"
+    },
+    "importButton": "Import",
+    "stepOf": "Step {n} of {total}",
+    "steps": {
+      "file": "File",
+      "columns": "Columns",
+      "levels": "Levels",
+      "review": "Review",
+      "result": "Result"
+    },
+    "fields": {
+      "name": "Name",
+      "email": "Email",
+      "phone": "Phone",
+      "level": "Level"
+    },
+    "status": {
+      "new": "New",
+      "update": "Updated",
+      "skip": "Skipped",
+      "error": "With errors"
+    },
+    "next": "Next",
+    "back": "Back",
+    "cancel": "Cancel",
+    "templateFilename": {
+      "students": "students-template.xlsx",
+      "teachers": "teachers-template.xlsx"
+    },
+    "file": {
+      "intro": {
+        "students": "Upload the spreadsheet with your students. The first row must have the headers (name, email, phone, level).",
+        "teachers": "Upload the spreadsheet with your teachers. The first row must have the headers (name, email, phone)."
+      },
+      "choose": "Choose a file or drop it here",
+      "reading": "Reading the file...",
+      "formats": "Excel (.xlsx) or CSV, up to 2 MB and 2000 rows",
+      "template": "Download a sample spreadsheet"
+    },
+    "columns": {
+      "intro": "We found {n} rows. Choose the column of each field.",
+      "choose": "Choose a column",
+      "skip": "Don't import",
+      "missing": "Choose the column of: {fields}.",
+      "repeated": "The same column is assigned to two fields.",
+      "sample": "This is how the first rows will be read"
+    },
+    "levels": {
+      "intro": "Choose the level of each value of the Level column. It is assigned once per value.",
+      "rows": "{n} row | {n} rows",
+      "unassigned": "Unassigned (those rows are not imported)",
+      "noLevels": "There are no levels yet. Create the tracks and their levels before importing students.",
+      "unmappedHint": "{n} value is unassigned: its rows will have an error. | {n} values are unassigned: their rows will have an error."
+    },
+    "review": {
+      "duplicates": "If the email already exists:",
+      "duplicatesMode": {
+        "skip": "Skip",
+        "update": "Update data"
+      },
+      "downloadErrors": "Download rows with errors",
+      "reasonColumn": "Reason",
+      "errorsFilename": "{file}-errors.csv",
+      "row": "Row {n}",
+      "empty": "No rows with this status.",
+      "truncated": "Showing {shown} of {total} rows.",
+      "import": "Import {n} row | Import {n} rows"
+    },
+    "result": {
+      "title": "Import finished",
+      "created": "{n} created | {n} created",
+      "updated": "{n} updated | {n} updated",
+      "skipped": "{n} skipped (already existed) | {n} skipped (already existed)",
+      "rejected": "{n} row with errors was not imported | {n} rows with errors were not imported",
+      "goToList": {
+        "students": "See students",
+        "teachers": "See teachers"
+      }
+    },
+    "errors": {
+      "parse": "The file could not be read.",
+      "preview": "The import could not be reviewed.",
+      "commit": "The import failed. No changes were saved.",
+      "template": "The sample spreadsheet could not be downloaded."
+    }
   }
 }

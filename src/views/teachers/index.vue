@@ -6,6 +6,8 @@ import { FormInput, FormLabel } from '@/components/Base/Form'
 import Table from '@/components/Base/Table'
 import Pagination from '@/components/Base/Pagination'
 import ToastNotification from '@/views/components/ToastNotification.vue'
+import { ref } from 'vue'
+import ImportWizard from '@/views/components/imports/ImportWizard.vue'
 import { useTeachers } from './useTeachers'
 
 const {
@@ -21,6 +23,8 @@ const {
   goToPage, changePerPage, clearFilters, handleToastClose,
   toggleExpand, getTeacherScheduleGroups, formatScheduleDays,
 } = useTeachers()
+
+const showImport = ref(false)
 </script>
 
 <template>
@@ -34,6 +38,10 @@ const {
       >
         <Lucide icon="Printer" class="w-4 h-4 mr-2" />
         {{ t('print.actions.printAllTeachers') }}
+      </Button>
+      <Button variant="outline-secondary" @click="showImport = true">
+        <Lucide icon="Upload" class="w-4 h-4 mr-2" />
+        {{ t('imports.importButton') }}
       </Button>
       <Button variant="primary" @click="openCreateModal">
         <Lucide icon="Plus" class="w-4 h-4 mr-2" />
@@ -274,7 +282,8 @@ const {
         </div>
         <div class="col-span-12">
           <FormLabel htmlFor="teacher-phone">{{ t('teachers.form.phoneLabel') }}</FormLabel>
-          <FormInput id="teacher-phone" v-model="formData.phone" type="tel" :placeholder="t('teachers.form.phonePlaceholder')" />
+          <FormInput id="teacher-phone" v-model="formData.phone" type="tel" :placeholder="t('teachers.form.phonePlaceholder')" :class="{ 'border-danger': formErrors.phone }" />
+          <div v-if="formErrors.phone" class="mt-1 text-xs text-danger">{{ formErrors.phone }}</div>
         </div>
       </Dialog.Description>
       <Dialog.Footer class="text-right">
@@ -315,4 +324,6 @@ const {
 
   <!-- Toast -->
   <ToastNotification :show="showToast" :message="toastMessage" :type="toastType" @close="handleToastClose" />
+
+  <ImportWizard :visible="showImport" type="teachers" @close="showImport = false" @imported="refetch()" />
 </template>
