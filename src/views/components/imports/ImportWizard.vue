@@ -60,7 +60,7 @@ const stepNumber = () => steps.value.indexOf(step.value) + 1
 
 <template>
   <Dialog :open="visible" size="xl" :staticBackdrop="true" @close="close">
-    <Dialog.Panel class="p-0 overflow-hidden">
+    <Dialog.Panel class="p-0 overflow-hidden" data-testid="import-wizard">
       <!-- Header -->
       <div class="px-4 sm:px-6 pt-6 pb-4 border-b border-slate-100">
         <h2 class="text-lg font-semibold text-slate-800">{{ t(`imports.title.${type}`) }}</h2>
@@ -85,7 +85,7 @@ const stepNumber = () => steps.value.indexOf(step.value) + 1
             <Lucide v-else icon="FileSpreadsheet" class="w-8 h-8 text-slate-400" />
             <span class="text-sm font-medium text-slate-700">{{ busy ? t('imports.file.reading') : t('imports.file.choose') }}</span>
             <span class="text-xs text-slate-400">{{ t('imports.file.formats') }}</span>
-            <input ref="fileInput" type="file" accept=".xlsx,.csv" class="hidden" :disabled="busy" @change="onFileChange" />
+            <input ref="fileInput" data-testid="import-file" type="file" accept=".xlsx,.csv" class="hidden" :disabled="busy" @change="onFileChange" />
           </label>
           <button type="button" class="flex items-center gap-1.5 text-sm text-primary hover:underline" :disabled="busy" @click="downloadTemplate">
             <Lucide icon="Download" class="w-4 h-4" />{{ t('imports.file.template') }}
@@ -100,7 +100,7 @@ const stepNumber = () => steps.value.indexOf(step.value) + 1
               <label class="block mb-1 text-xs font-medium text-slate-500">
                 {{ t(`imports.fields.${field}`) }}<span v-if="requiredFields.includes(field)"> *</span>
               </label>
-              <select v-model="mapping[field]" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
+              <select v-model="mapping[field]" :data-testid="`import-column-${field}`" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
                 <option :value="null">{{ requiredFields.includes(field) ? t('imports.columns.choose') : t('imports.columns.skip') }}</option>
                 <option v-for="(header, i) in parsed.headers" :key="i" :value="i">{{ header }}</option>
               </select>
@@ -138,6 +138,7 @@ const stepNumber = () => steps.value.indexOf(step.value) + 1
             </div>
             <select
               v-model="levelMapping[item.value]"
+              data-testid="import-level"
               class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
               :class="levelMapping[item.value] ? 'border-slate-200' : 'border-amber-300'"
             >
@@ -157,6 +158,8 @@ const stepNumber = () => steps.value.indexOf(step.value) + 1
               v-for="status in statuses"
               :key="status"
               type="button"
+              :data-testid="`import-status-${status}`"
+              :data-count="preview.summary[status]"
               class="rounded-lg border px-3 py-2 text-left transition-colors"
               :class="statusFilter === status ? 'border-primary ring-1 ring-primary' : 'border-slate-200 hover:border-slate-300'"
               @click="statusFilter = statusFilter === status ? 'all' : status"
@@ -186,7 +189,7 @@ const stepNumber = () => steps.value.indexOf(step.value) + 1
 
           <ul class="divide-y divide-slate-100 border border-slate-100 rounded-lg">
             <li v-if="filteredRows.length === 0" class="px-3 py-6 text-center text-sm text-slate-400">{{ t('imports.review.empty') }}</li>
-            <li v-for="row in visibleRows" :key="row.row" class="px-3 py-2 flex items-start gap-3">
+            <li v-for="row in visibleRows" :key="row.row" data-testid="import-row" :data-row="row.row" :data-status="row.status" class="px-3 py-2 flex items-start gap-3">
               <span class="w-12 shrink-0 text-xs text-slate-400 pt-0.5">{{ t('imports.review.row', { n: row.row }) }}</span>
               <div class="min-w-0 flex-1">
                 <div class="text-sm text-slate-800 truncate">
@@ -217,7 +220,7 @@ const stepNumber = () => steps.value.indexOf(step.value) + 1
         </div>
       </div>
 
-      <p v-if="error" class="px-4 sm:px-6 pb-2 text-sm text-danger">{{ error }}</p>
+      <p v-if="error" data-testid="import-error" class="px-4 sm:px-6 pb-2 text-sm text-danger">{{ error }}</p>
 
       <!-- Footer -->
       <div class="px-4 sm:px-6 py-4 border-t border-slate-100 flex justify-end gap-3">
@@ -230,6 +233,7 @@ const stepNumber = () => steps.value.indexOf(step.value) + 1
           <Button
             v-if="step !== 'file'"
             variant="primary"
+            data-testid="import-next"
             :disabled="busy || (step === 'columns' && !!columnError) || (step === 'review' && importableCount === 0)"
             @click="next"
           >

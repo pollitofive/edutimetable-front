@@ -10,16 +10,17 @@ import {
   type CommitResult,
   type DuplicatesMode,
   type ImportField,
-  type ImportRequest,
   type ImportType,
   type ParseResult,
   type PreviewResult,
   type RowStatus,
 } from '@/services/importService'
+import {
+  buildRequest, columnProblem, distinctValues, errorRowsCsv, groupLevels,
+  sampleRows as firstRows, syncLevelMapping as syncLevels, type CourseLevelOption,
+} from './importWizard'
 
 export type WizardStep = 'file' | 'columns' | 'levels' | 'review' | 'result'
-
-interface CourseLevelOption { id: string; name: string; sort_order: number; track: { id: string; name: string } }
 
 const GET_COURSE_LEVELS = gql`
   query GetCourseLevels { courseLevels(first: 100, page: 1) { data { id track { id name } name slug sort_order } } }
@@ -27,10 +28,6 @@ const GET_COURSE_LEVELS = gql`
 
 // Rows listed per status filter in the review step; the totals always count all of them
 export const REVIEW_ROWS_LIMIT = 100
-
-// Lowercase, without accents nor punctuation: "Inglés - Inicial" → "ingles inicial"
-const normalize = (value: string) =>
-  value.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim()
 
 export function useImportWizard(type: Ref<ImportType>) {
   const { t } = useI18n()
@@ -57,17 +54,7 @@ export function useImportWizard(type: Ref<ImportType>) {
   const courseLevels = computed<CourseLevelOption[]>(() => levelsResult.value?.courseLevels?.data ?? [])
 
   // Levels grouped by track, for the <optgroup>s of the level selects
-  const levelGroups = computed(() => {
-    const groups = new Map<string, { track: string; levels: CourseLevelOption[] }>()
-    for (const level of courseLevels.value) {
-      const group = groups.get(level.track.id) ?? { track: level.track.name, levels: [] }
-      group.levels.push(level)
-      groups.set(level.track.id, group)
-    }
-    return [...groups.values()]
-      .map(g => ({ ...g, levels: [...g.levels].sort((a, b) => a.sort_order - b.sort_order) }))
-      .sort((a, b) => a.track.localeCompare(b.track))
-  })
+  const levelGroups = computed(() => groupLevels(courseLevels.value))
 
   const fields = computed<ImportField[]>(() => parsed.value?.fields ?? [])
   const requiredFields = computed<ImportField[]>(() => isStudents.value ? ['name', 'email', 'level'] : ['name', 'email'])
@@ -77,35 +64,17 @@ export function useImportWizard(type: Ref<ImportType>) {
   )
 
   const columnError = computed(() => {
-    const missing = requiredFields.value.filter(f => mapping.value[f] == null)
-    if (missing.length) return t('imports.columns.missing', { fields: missing.map(f => t(`imports.fields.${f}`)).join(', ') })
-
-    const used = Object.values(mapping.value).filter((c): c is number => c != null)
-    if (new Set(used).size !== used.length) return t('imports.columns.repeated')
-
+    const problem = columnProblem(mapping.value, requiredFields.value)
+    if (problem?.kind === 'missing') return t('imports.columns.missing', { fields: problem.fields.map(f => t(`imports.fields.${f}`)).join(', ') })
+    if (problem?.kind === 'repeated') return t('imports.columns.repeated')
     return ''
   })
 
   // First rows of the file, as they would be read with the current mapping
-  const sampleRows = computed(() =>
-    (parsed.value?.rows ?? []).slice(0, 3).map(row =>
-      Object.fromEntries(fields.value.map(f => [f, mapping.value[f] != null ? row[mapping.value[f] as number] ?? '' : '']))
-    )
-  )
+  const sampleRows = computed(() => firstRows(parsed.value?.rows ?? [], fields.value, mapping.value))
 
   // Distinct values of the level column with how many rows have each
-  const levelValues = computed(() => {
-    const column = mapping.value.level
-    if (column == null || !parsed.value) return []
-    const counts = new Map<string, number>()
-    for (const row of parsed.value.rows) {
-      const value = (row[column] ?? '').trim()
-      if (value) counts.set(value, (counts.get(value) ?? 0) + 1)
-    }
-    return [...counts.entries()]
-      .map(([value, count]) => ({ value, count }))
-      .sort((a, b) => a.value.localeCompare(b.value, undefined, { numeric: true }))
-  })
+  const levelValues = computed(() => distinctValues(parsed.value?.rows ?? [], mapping.value.level))
 
   const unmappedLevels = computed(() => levelValues.value.filter(v => !levelMapping.value[v.value]).length)
 
@@ -116,45 +85,15 @@ export function useImportWizard(type: Ref<ImportType>) {
   const visibleRows = computed(() => filteredRows.value.slice(0, REVIEW_ROWS_LIMIT))
   const importableCount = computed(() => (preview.value?.summary.new ?? 0) + (preview.value?.summary.update ?? 0))
 
-  // A level of the file is suggested when it matches one level by name, "track level" or
-  // "level track". A name repeated in several tracks is left for the user to choose.
-  function suggestLevel(value: string): string {
-    const target = normalize(value)
-    const matches = courseLevels.value.filter(level => [
-      level.name,
-      `${level.track.name} ${level.name}`,
-      `${level.name} ${level.track.name}`,
-    ].some(candidate => normalize(candidate) === target))
-
-    return matches.length === 1 ? matches[0].id : ''
+  function syncLevelMapping(onlyEmpty = false) {
+    levelMapping.value = syncLevels(levelValues.value.map(v => v.value), levelMapping.value, courseLevels.value, onlyEmpty)
   }
 
-  // Keeps what the user already chose; suggests the rest
-  function syncLevelMapping() {
-    const next: Record<string, string> = {}
-    for (const { value } of levelValues.value) {
-      next[value] = levelMapping.value[value] ?? suggestLevel(value)
-    }
-    levelMapping.value = next
-  }
+  watch(levelValues, () => syncLevelMapping())
+  // Levels arrived after the file was read: fill the suggestions still empty
+  watch(courseLevels, () => syncLevelMapping(true))
 
-  watch(levelValues, syncLevelMapping)
-  watch(courseLevels, () => {
-    // Levels arrived after the file was read: fill the suggestions still empty
-    for (const { value } of levelValues.value) {
-      if (!levelMapping.value[value]) levelMapping.value[value] = suggestLevel(value)
-    }
-  })
-
-  function request(): ImportRequest {
-    return {
-      rows: parsed.value?.rows ?? [],
-      row_numbers: parsed.value?.row_numbers ?? [],
-      mapping: Object.fromEntries(fields.value.map(f => [f, mapping.value[f] ?? null])),
-      level_mapping: Object.entries(levelMapping.value).map(([value, id]) => ({ value, course_level_id: id ? Number(id) : null })),
-      duplicates: duplicates.value,
-    }
-  }
+  const request = () => buildRequest(parsed.value, fields.value, mapping.value, levelMapping.value, duplicates.value)
 
   async function run<T>(action: () => Promise<T>, fallback: string): Promise<T | undefined> {
     busy.value = true
@@ -225,21 +164,11 @@ export function useImportWizard(type: Ref<ImportType>) {
     void loadPreview()
   }
 
-  // Rows with an error, as in the file plus a column with the reason, so they can be fixed
-  // and imported again. ";" and a BOM so Excel in Spanish opens it right.
+  // Rows with an error plus the reason, to fix them and import again
   function downloadErrorRows() {
     if (!parsed.value || !preview.value) return
 
-    const quote = (value: string) => `"${value.replace(/"/g, '""')}"`
-    const lines = [[...parsed.value.headers, t('imports.review.reasonColumn')]]
-    // The preview rows come in the same order as the parsed ones
-    preview.value.rows.forEach((row, i) => {
-      if (row.status === 'error') {
-        lines.push([...(parsed.value?.rows[i] ?? []), row.errors.map(e => e.message).join(' / ')])
-      }
-    })
-
-    const csv = '﻿' + lines.map(line => line.map(quote).join(';')).join('\r\n')
+    const csv = errorRowsCsv(parsed.value.headers, parsed.value.rows, preview.value.rows, t('imports.review.reasonColumn'))
     downloadBlob(new Blob([csv], { type: 'text/csv;charset=utf-8' }), t('imports.review.errorsFilename', { file: fileName.value.replace(/\.[^.]+$/, '') }))
   }
 

@@ -29,7 +29,7 @@ const showImport = ref(false)
   <div class="flex flex-col gap-y-3 md:h-10 md:flex-row md:items-center">
     <div class="text-base font-medium">{{ t('students.title') }}</div>
     <div class="flex flex-col gap-x-3 gap-y-2 sm:flex-row md:ml-auto">
-      <Button variant="outline-secondary" @click="showImport = true">
+      <Button variant="outline-secondary" data-testid="students-import" @click="showImport = true">
         <Lucide icon="Upload" class="w-4 h-4 mr-2" />
         {{ t('imports.importButton') }}
       </Button>

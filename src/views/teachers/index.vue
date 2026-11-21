@@ -39,7 +39,7 @@ const showImport = ref(false)
         <Lucide icon="Printer" class="w-4 h-4 mr-2" />
         {{ t('print.actions.printAllTeachers') }}
       </Button>
-      <Button variant="outline-secondary" @click="showImport = true">
+      <Button variant="outline-secondary" data-testid="teachers-import" @click="showImport = true">
         <Lucide icon="Upload" class="w-4 h-4 mr-2" />
         {{ t('imports.importButton') }}
       </Button>
