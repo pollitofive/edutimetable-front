@@ -14,7 +14,8 @@ test.describe("login", () => {
     await page.goto("/login");
     await page.getByTestId("login-email").fill(credentials.email);
     await page.getByTestId("login-password").fill("incorrecta-123");
-    const response = page.waitForResponse(r => r.url().includes("/login-token"));
+    // Solo el POST: antes llega el preflight de CORS (OPTIONS → 204)
+    const response = page.waitForResponse(r => r.url().includes("/login-token") && r.request().method() === "POST");
     await page.getByTestId("login-submit").click();
 
     expect((await response).status()).toBeGreaterThanOrEqual(400);
