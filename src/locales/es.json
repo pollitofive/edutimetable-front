@@ -890,5 +890,16 @@
       "commit": "No se pudo importar. No se guardó ningún cambio.",
       "template": "No se pudo descargar la planilla de ejemplo."
     }
+  },
+  "changelog": {
+    "title": "Novedades",
+    "empty": "Todavía no hay novedades publicadas.",
+    "badgeTitle": "Ver las novedades de la versión",
+    "close": "Cerrar",
+    "types": {
+      "nuevo": "Nuevo",
+      "mejora": "Mejoras",
+      "correccion": "Correcciones"
+    }
   }
 }

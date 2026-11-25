@@ -21,6 +21,7 @@ import SimpleBar from "simplebar";
 import QuickSearch from "@/components/QuickSearch";
 import { useI18n } from "@/composables/useI18n";
 import BusinessSelector from "@/views/components/BusinessSelector.vue";
+import VersionBadge from "@/components/VersionBadge/VersionBadge.vue";
 
 const projectName = import.meta.env.VITE_PROJECT_NAME || "Edutimetable";
 
@@ -438,11 +439,12 @@ onUnmounted(() => {
               :setQuickSearch="setQuickSearch"
             />
             <!-- END: Search -->
-            <!-- BEGIN: Business Selector -->
-            <div class="ml-auto">
+            <!-- BEGIN: Version Badge + Business Selector -->
+            <div class="ml-auto flex items-center gap-3">
+              <VersionBadge />
               <BusinessSelector />
             </div>
-            <!-- END: Business Selector -->
+            <!-- END: Version Badge + Business Selector -->
           </div>
         </div>
       </div>

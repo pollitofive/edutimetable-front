@@ -890,5 +890,16 @@
       "commit": "The import failed. No changes were saved.",
       "template": "The sample spreadsheet could not be downloaded."
     }
+  },
+  "changelog": {
+    "title": "What's new",
+    "empty": "No release notes published yet.",
+    "badgeTitle": "See what's new in this version",
+    "close": "Close",
+    "types": {
+      "nuevo": "New",
+      "mejora": "Improvements",
+      "correccion": "Fixes"
+    }
   }
 }
