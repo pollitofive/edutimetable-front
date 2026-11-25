@@ -2,6 +2,7 @@ import {
   type TomSelectProps,
   type TomSelectElement,
   type TomSelectEmit,
+  type TomSelectOptions,
 } from "./TomSelect.vue";
 import { type TomSettings } from "tom-select/dist/esm/types/settings.js";
 import { type RecursivePartial } from "tom-select/dist/esm/types/core.js";
@@ -34,7 +35,7 @@ const init = (
   originalEl: TomSelectElement,
   clonedEl: TomSelectElement,
   props: TomSelectProps,
-  computedOptions: RecursivePartial<TomSettings>,
+  computedOptions: TomSelectOptions,
   emit: TomSelectEmit
 ) => {
   // On option add
@@ -54,7 +55,11 @@ const init = (
     };
   }
 
-  clonedEl.TomSelect = new TomSelect(clonedEl, computedOptions);
+  // tom-select documenta maxOptions: null como "sin límite", pero sus tipos no lo admiten
+  clonedEl.TomSelect = new TomSelect(
+    clonedEl,
+    computedOptions as RecursivePartial<TomSettings>
+  );
 
   // On change
   clonedEl.TomSelect.on("change", function (selectedItems: string[] | string) {
@@ -87,7 +92,7 @@ const updateValue = (
   clonedEl: TomSelectElement,
   value: string | string[],
   props: TomSelectProps,
-  computedOptions: RecursivePartial<TomSettings>,
+  computedOptions: TomSelectOptions,
   emit: TomSelectEmit
 ) => {
   // Remove old options

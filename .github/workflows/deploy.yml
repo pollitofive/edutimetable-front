@@ -30,6 +30,7 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci --no-audit --no-fund
+      - run: npm run type-check
       - run: npm run test
 
   deploy:

@@ -17,9 +17,14 @@ export interface TomSelectElement extends HTMLSelectElement {
   TomSelect: TomSelectPlugin;
 }
 
+// tom-select acepta maxOptions: null ("sin límite") aunque sus tipos no lo admiten
+export type TomSelectOptions = Omit<RecursivePartial<TomSettings>, "maxOptions"> & {
+  maxOptions?: number | null;
+};
+
 export interface TomSelectProps extends /* @vue-ignore */ SelectHTMLAttributes {
   modelValue: string | string[];
-  options?: RecursivePartial<TomSettings>;
+  options?: TomSelectOptions;
   refKey?: string;
 }
 
