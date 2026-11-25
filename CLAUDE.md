@@ -5,7 +5,7 @@ SPA Vue 3 + Vite + TypeScript. En local corre en el contenedor `edutimetable_vue
 ## Tests (Vitest)
 
 - **Correr:** `npm run test` (una pasada), `npm run test:watch` y `npm run test:coverage` (reporte en `coverage/`).
-- **CI:** el job `test` de `.github/workflows/deploy.yml` corre `npm run test`, y `deploy` depende de él. Si un test falla, no se deploya a ningún ambiente.
+- **CI:** el job `test` de `.github/workflows/deploy.yml` corre `npm run type-check` y `npm run test`, y `deploy` depende de él. Si el type-check o un test falla, no se deploya a ningún ambiente.
 - **Ubicación:** `*.spec.ts` al lado del archivo que prueban (`calendarEvents.ts` → `calendarEvents.spec.ts`). Solo se toman los que están bajo `src/`.
 - **Config:** `vitest.config.ts` extiende `vite.config.ts` (plugin de Vue y alias `@/`) con environment `jsdom`.
 - **Zona horaria:** los tests corren con `TZ=America/Argentina/Buenos_Aires`. Las fechas se arman con `new Date(año, mes, día, hora)` (hora local) y no dependen del reloj real: se le pasa `now` a la función o se usa `vi.useFakeTimers()`.
