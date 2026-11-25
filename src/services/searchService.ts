@@ -4,8 +4,8 @@ export interface StudentResult {
   id: number
   name: string
   email: string
-  level: string | null
-  track: string | null
+  // One per track the student studies
+  levels: Array<{ level: string; track: string | null }>
 }
 
 export interface TeacherResult {

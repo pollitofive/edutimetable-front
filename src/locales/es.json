@@ -354,14 +354,18 @@
       "trackPlaceholder": "Seleccione una pista...",
       "levelPlaceholder": "Seleccione un nivel...",
       "selectTrackFirst": "Seleccione una pista primero",
-      "required": "*"
+      "required": "*",
+      "addTrack": "Agregar otra pista",
+      "removeTrack": "Quitar pista",
+      "tracksLabel": "Pistas y niveles"
     },
     "validation": {
       "nameRequired": "El nombre es obligatorio",
       "emailRequired": "El correo electrónico es obligatorio",
       "emailInvalid": "Formato de correo electrónico inválido",
       "trackRequired": "La pista es obligatoria",
-      "courseLevelRequired": "El nivel de curso es obligatorio"
+      "courseLevelRequired": "El nivel de curso es obligatorio",
+      "levelPerTrackRequired": "Elegí un nivel para cada pista"
     },
     "messages": {
       "loading": "Cargando estudiantes...",

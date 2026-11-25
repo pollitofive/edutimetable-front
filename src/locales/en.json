@@ -354,14 +354,18 @@
       "trackPlaceholder": "Select a track...",
       "levelPlaceholder": "Select a level...",
       "selectTrackFirst": "Select a track first",
-      "required": "*"
+      "required": "*",
+      "addTrack": "Add another track",
+      "removeTrack": "Remove track",
+      "tracksLabel": "Tracks and levels"
     },
     "validation": {
       "nameRequired": "Name is required",
       "emailRequired": "Email is required",
       "emailInvalid": "Invalid email format",
       "trackRequired": "Track is required",
-      "courseLevelRequired": "Course level is required"
+      "courseLevelRequired": "Course level is required",
+      "levelPerTrackRequired": "Choose a level for each track"
     },
     "messages": {
       "loading": "Loading students...",

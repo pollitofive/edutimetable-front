@@ -78,7 +78,7 @@ const groups = computed<ResultGroup[]>(() => {
       items: students.map((s) => ({
         key: `student-${s.id}`,
         title: s.name,
-        subtitle: [s.email, levelLabel(s.level, s.track)].filter(Boolean).join(" — "),
+        subtitle: [s.email, s.levels.map((l) => levelLabel(l.level, l.track)).join(", ")].filter(Boolean).join(" — "),
         to: { name: "students", query: { search: s.name } },
         actions: [
           {
