@@ -155,9 +155,14 @@ watch(() => selectedStudent.value, () => { selectedGroupId.value = null })
 
               <!-- Level & phone -->
               <div class="mt-3 space-y-1.5 text-sm text-slate-600">
-                <div v-if="selectedStudent.student.course_level" class="flex items-center gap-2">
+                <div
+                  v-for="level in selectedStudent.student.course_levels"
+                  :key="level.id"
+                  class="flex items-center gap-2"
+                  data-testid="enroll-student-level"
+                >
                   <Lucide icon="GraduationCap" class="w-4 h-4 text-slate-400 flex-shrink-0" />
-                  {{ selectedStudent.student.course_level.track.name }} - {{ selectedStudent.student.course_level.name }}
+                  {{ level.track.name }} - {{ level.name }}
                 </div>
                 <div v-if="selectedStudent.student.phone" class="flex items-center gap-2">
                   <Lucide icon="Phone" class="w-4 h-4 text-slate-400 flex-shrink-0" />
@@ -283,7 +288,13 @@ watch(() => selectedStudent.value, () => { selectedGroupId.value = null })
                   class="accent-orange-500"
                 />
                 <div class="flex-1 min-w-0">
-                  <p class="text-sm font-medium text-slate-800">{{ group.course_name }}</p>
+                  <p class="text-sm font-medium text-slate-800">
+                    {{ group.course_name }}
+                    <span
+                      v-if="selectedStudent.student.course_levels.length > 1"
+                      class="ml-1 px-1.5 py-0.5 text-[10px] font-semibold rounded bg-primary/10 text-primary align-middle"
+                    >{{ group.course_level.track.name }}</span>
+                  </p>
                   <p class="text-xs text-slate-500">
                     {{ group.days_label }} {{ group.starts_at }} - {{ group.ends_at }} · Prof. {{ group.teacher_name }}
                   </p>

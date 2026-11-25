@@ -11,13 +11,14 @@ import ImportWizard from '@/views/components/imports/ImportWizard.vue'
 import { useStudents } from './useStudents'
 
 const {
-  t, students, showModal, selectedStudent, formData, formState, formErrors,
+  t, students, showModal, selectedStudent, formData, formErrors,
   deleteConfirmModal, studentToDelete, showToast, toastMessage, toastType,
   currentPage, perPage, totalItems, filterSearch, filterTrackId, filterCourseLevel,
   loading, error, creating, deleting,
   isSubmitting, modalTitle, startItem, endItem, totalPages, hasActiveFilters,
-  trackOptions, filteredCourseLevels, filteredCourseLevelsForFilter,
-  openCreateModal, openEditModal, closeModal, handleTrackChange, handleFilterTrackChange,
+  trackOptions, filteredCourseLevelsForFilter,
+  tracksForRow, levelsForRow, canAddLevelRow, addLevelRow, removeLevelRow, handleRowTrackChange,
+  openCreateModal, openEditModal, closeModal, handleFilterTrackChange,
   handleSave, openDeleteConfirm, handleDelete, cancelDelete,
   goToPage, changePerPage, clearFilters, retryFetch, handleToastClose,
 } = useStudents()
@@ -33,7 +34,7 @@ const showImport = ref(false)
         <Lucide icon="Upload" class="w-4 h-4 mr-2" />
         {{ t('imports.importButton') }}
       </Button>
-      <Button variant="primary" @click="openCreateModal">
+      <Button variant="primary" data-testid="students-new" @click="openCreateModal">
         <Lucide icon="Plus" class="w-4 h-4 mr-2" />
         {{ t('students.newStudent') }}
       </Button>
@@ -49,7 +50,7 @@ const showImport = ref(false)
             <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
               <Lucide icon="Search" class="w-4 h-4 text-slate-400" />
             </div>
-            <FormInput v-model="filterSearch" type="text" :placeholder="t('students.filters.searchByNameOrEmail')" class="pl-10" />
+            <FormInput v-model="filterSearch" data-testid="students-search" type="text" :placeholder="t('students.filters.searchByNameOrEmail')" class="pl-10" />
           </div>
         </div>
         <div class="w-full lg:flex-1">
@@ -111,13 +112,15 @@ const showImport = ref(false)
               </div>
             </Table.Td>
           </Table.Tr>
-          <Table.Tr v-for="student in students" :key="student.id" class="[&_td]:last:border-b-0">
-            <Table.Td class="py-4 border-dashed dark:bg-darkmode-600"><div class="font-medium">{{ student.name }}</div><div v-if="student.courseLevel" class="mt-0.5 text-xs text-slate-500 md:hidden">{{ student.courseLevel.track.name }} · {{ student.courseLevel.name }}</div></Table.Td>
+          <Table.Tr v-for="student in students" :key="student.id" class="[&_td]:last:border-b-0" data-testid="students-row">
+            <Table.Td class="py-4 border-dashed dark:bg-darkmode-600"><div class="font-medium">{{ student.name }}</div><div v-for="level in student.courseLevels" :key="level.id" class="mt-0.5 text-xs text-slate-500 md:hidden">{{ level.track.name }} · {{ level.name }}</div></Table.Td>
             <Table.Td class="hidden lg:table-cell py-4 border-dashed dark:bg-darkmode-600"><div class="text-slate-500">{{ student.email }}</div></Table.Td>
             <Table.Td class="hidden md:table-cell py-4 border-dashed dark:bg-darkmode-600">
-              <div v-if="student.courseLevel" class="flex flex-col gap-1">
-                <div class="font-medium text-slate-700">{{ student.courseLevel.name }}</div>
-                <div class="px-2 py-0.5 text-xs font-semibold rounded-md bg-primary/10 text-primary inline-block w-fit">{{ student.courseLevel.track.name }}</div>
+              <div v-if="student.courseLevels.length" class="flex flex-col gap-1.5" data-testid="students-levels">
+                <div v-for="level in student.courseLevels" :key="level.id" class="flex items-center gap-2">
+                  <div class="px-2 py-0.5 text-xs font-semibold rounded-md bg-primary/10 text-primary inline-block w-fit">{{ level.track.name }}</div>
+                  <div class="font-medium text-slate-700">{{ level.name }}</div>
+                </div>
               </div>
               <div v-else class="text-xs text-slate-400">-</div>
             </Table.Td>
@@ -129,10 +132,10 @@ const showImport = ref(false)
             </Table.Td>
             <Table.Td class="relative py-4 border-dashed dark:bg-darkmode-600">
               <div class="flex items-center justify-center gap-2">
-                <Button variant="outline-secondary" size="sm" @click="openEditModal(student)" :title="t('students.actions.edit')" class="sm:w-20">
+                <Button variant="outline-secondary" size="sm" data-testid="students-edit" @click="openEditModal(student)" :title="t('students.actions.edit')" class="sm:w-20">
                   <Lucide icon="Edit" class="w-3.5 h-3.5 sm:mr-1" /><span class="hidden sm:inline">{{ t('students.actions.edit') }}</span>
                 </Button>
-                <Button variant="outline-danger" size="sm" @click="openDeleteConfirm(student)" :title="t('students.actions.delete')" class="sm:w-20">
+                <Button variant="outline-danger" size="sm" data-testid="students-delete" @click="openDeleteConfirm(student)" :title="t('students.actions.delete')" class="sm:w-20">
                   <Lucide icon="Trash2" class="w-3.5 h-3.5 sm:mr-1" /><span class="hidden sm:inline">{{ t('students.actions.delete') }}</span>
                 </Button>
               </div>
@@ -173,12 +176,12 @@ const showImport = ref(false)
       <Dialog.Description class="grid grid-cols-12 gap-4 gap-y-3">
         <div class="col-span-12">
           <FormLabel htmlFor="student-name">{{ t('students.form.nameLabel') }} {{ t('students.form.required') }}</FormLabel>
-          <FormInput id="student-name" v-model="formData.name" type="text" :placeholder="t('students.form.namePlaceholder')" :class="{ 'border-danger': formErrors.name }" />
+          <FormInput id="student-name" data-testid="student-name" v-model="formData.name" type="text" :placeholder="t('students.form.namePlaceholder')" :class="{ 'border-danger': formErrors.name }" />
           <div v-if="formErrors.name" class="mt-1 text-xs text-danger">{{ formErrors.name }}</div>
         </div>
         <div class="col-span-12">
           <FormLabel htmlFor="student-email">{{ t('students.form.emailLabel') }} {{ t('students.form.required') }}</FormLabel>
-          <FormInput id="student-email" v-model="formData.email" type="email" :placeholder="t('students.form.emailPlaceholder')" :class="{ 'border-danger': formErrors.email }" />
+          <FormInput id="student-email" data-testid="student-email" v-model="formData.email" type="email" :placeholder="t('students.form.emailPlaceholder')" :class="{ 'border-danger': formErrors.email }" />
           <div v-if="formErrors.email" class="mt-1 text-xs text-danger">{{ formErrors.email }}</div>
         </div>
         <div class="col-span-12">
@@ -186,26 +189,31 @@ const showImport = ref(false)
           <FormInput id="student-phone" v-model="formData.phone" type="tel" :placeholder="t('students.form.phonePlaceholder')" :class="{ 'border-danger': formErrors.phone }" />
           <div v-if="formErrors.phone" class="mt-1 text-xs text-danger">{{ formErrors.phone }}</div>
         </div>
-        <div class="col-span-12 sm:col-span-6">
-          <FormLabel htmlFor="student-track">{{ t('students.form.trackLabel') }} {{ t('students.form.required') }}</FormLabel>
-          <FormSelect id="student-track" v-model="formState.selectedTrackId" @change="handleTrackChange" :class="{ 'border-danger': formErrors.course_level_id && !formState.selectedTrackId }">
-            <option value="">{{ t('students.form.trackPlaceholder') }}</option>
-            <option v-for="track in trackOptions" :key="track.id" :value="track.id">{{ track.name }}</option>
-          </FormSelect>
-          <div v-if="formErrors.course_level_id && !formState.selectedTrackId" class="mt-1 text-xs text-danger">{{ t('students.validation.trackRequired') }}</div>
-        </div>
-        <div class="col-span-12 sm:col-span-6">
-          <FormLabel htmlFor="student-level">{{ t('students.form.levelLabel') }} {{ t('students.form.required') }}</FormLabel>
-          <FormSelect id="student-level" v-model="formData.course_level_id" :disabled="!formState.selectedTrackId" :class="{ 'border-danger': formErrors.course_level_id, 'opacity-50 cursor-not-allowed': !formState.selectedTrackId }">
-            <option value="">{{ formState.selectedTrackId ? t('students.form.levelPlaceholder') : t('students.form.selectTrackFirst') }}</option>
-            <option v-for="level in filteredCourseLevels" :key="level.id" :value="level.id">{{ level.name }}</option>
-          </FormSelect>
-          <div v-if="formErrors.course_level_id" class="mt-1 text-xs text-danger">{{ formErrors.course_level_id }}</div>
+        <!-- One row per track the student studies, at one level each -->
+        <div class="col-span-12" data-testid="student-levels">
+          <FormLabel>{{ t('students.form.tracksLabel') }} {{ t('students.form.required') }}</FormLabel>
+          <div v-for="(row, index) in formData.levels" :key="index" class="flex items-start gap-2 mt-2 first:mt-0" data-testid="student-level-row">
+            <FormSelect :id="`student-track-${index}`" data-testid="student-track" v-model="row.trackId" @change="handleRowTrackChange(index)" :aria-label="t('students.form.trackLabel')" class="flex-1" :class="{ 'border-danger': formErrors.course_level_ids && !row.trackId && formData.levels.length === 1 }">
+              <option value="">{{ t('students.form.trackPlaceholder') }}</option>
+              <option v-for="track in tracksForRow(index)" :key="track.id" :value="track.id">{{ track.name }}</option>
+            </FormSelect>
+            <FormSelect :id="`student-level-${index}`" data-testid="student-level" v-model="row.courseLevelId" :disabled="!row.trackId" :aria-label="t('students.form.levelLabel')" class="flex-1" :class="{ 'border-danger': formErrors.course_level_ids && row.trackId && !row.courseLevelId, 'opacity-50 cursor-not-allowed': !row.trackId }">
+              <option value="">{{ row.trackId ? t('students.form.levelPlaceholder') : t('students.form.selectTrackFirst') }}</option>
+              <option v-for="level in levelsForRow(index)" :key="level.id" :value="level.id">{{ level.name }}</option>
+            </FormSelect>
+            <Button v-if="formData.levels.length > 1" type="button" variant="outline-secondary" class="px-2 shrink-0" :title="t('students.form.removeTrack')" :aria-label="t('students.form.removeTrack')" @click="removeLevelRow(index)">
+              <Lucide icon="X" class="w-4 h-4" />
+            </Button>
+          </div>
+          <button v-if="canAddLevelRow" type="button" class="mt-2 flex items-center gap-1 text-xs text-primary hover:underline" data-testid="student-add-track" @click="addLevelRow">
+            <Lucide icon="Plus" class="w-3.5 h-3.5" />{{ t('students.form.addTrack') }}
+          </button>
+          <div v-if="formErrors.course_level_ids" class="mt-1 text-xs text-danger">{{ formErrors.course_level_ids }}</div>
         </div>
       </Dialog.Description>
       <Dialog.Footer class="text-right">
         <Button type="button" variant="outline-secondary" @click="closeModal" :disabled="isSubmitting" class="w-20 mr-2">{{ t('students.actions.cancel') }}</Button>
-        <Button type="button" variant="primary" @click="handleSave" :disabled="isSubmitting" class="w-20">
+        <Button type="button" variant="primary" data-testid="student-save" @click="handleSave" :disabled="isSubmitting" class="w-20">
           <Lucide v-if="isSubmitting" icon="Loader" class="w-4 h-4 animate-spin" />
           <span v-else>{{ t('students.actions.save') }}</span>
         </Button>
@@ -227,7 +235,7 @@ const showImport = ref(false)
       </div>
       <div class="px-5 pb-8 text-center">
         <Button type="button" variant="outline-secondary" @click="cancelDelete" :disabled="deleting" class="w-24 mr-2">{{ t('students.actions.cancel') }}</Button>
-        <Button type="button" variant="danger" @click="handleDelete" :disabled="deleting" class="w-24">
+        <Button type="button" variant="danger" data-testid="students-delete-confirm" @click="handleDelete" :disabled="deleting" class="w-24">
           <Lucide v-if="deleting" icon="Loader" class="w-4 h-4 animate-spin" />
           <span v-else>{{ t('students.actions.delete') }}</span>
         </Button>

@@ -6,6 +6,9 @@ export interface CourseLevel {
   name: string
 }
 
+// The student's level in the track of the schedule at hand (a student has one per track)
+type StudentLevelInTrack = CourseLevel | null
+
 export interface ScheduleData {
   id: number
   course_id: number
@@ -42,7 +45,7 @@ export interface ScheduleData {
       name: string
       email: string
       phone: string | null
-      course_level: { name: string; track: { id: number; name: string } } | null
+      course_level: StudentLevelInTrack
     }
     status: string
   }>
@@ -67,7 +70,7 @@ export interface EligibleStudent {
   is_available: boolean
   blocked_reason: Exclude<BlockedReason, 'full'>
   conflict: EnrollmentConflict | null
-  course_level: { name: string; track: { id: number; name: string } } | null
+  course_level: StudentLevelInTrack
 }
 
 export interface StudentData {
@@ -75,13 +78,16 @@ export interface StudentData {
   name: string
   email: string
   phone: string | null
-  course_level: { name: string; track: { id: number; name: string } } | null
+  // One per track the student studies
+  course_levels: CourseLevel[]
 }
 
 export interface ScheduleGroup {
   group_id: string | null
   schedule_ids: number[]
   course_name: string
+  // A student with several tracks gets schedules of each one
+  course_level: CourseLevel
   teacher_name: string
   days_label: string
   starts_at: string
@@ -129,7 +135,6 @@ export interface EnrollmentData {
     name: string
     email: string
     phone: string | null
-    level: string | null
   }
   schedule: {
     id: number
